@@ -1,0 +1,84 @@
+'use server';
+import { z } from 'zod';
+
+import db from '@/shared/lib/prisma';
+import { TBrand } from '@/shared/types';
+import { InputJsonValue, JsonValue } from '@prisma/client/runtime/client';
+import { NullableJsonNullValueInput } from '@/shared/lib/generated/prisma/internal/prismaNamespace';
+
+const ValidateUpdateBrand = z.object({
+  id: z.string().min(6),
+  name: z.string().min(3),
+});
+
+export const addBrand = async (
+  brandName: string,
+  userId: string,
+  description: string,
+  metadata: NullableJsonNullValueInput | InputJsonValue | undefined
+) => {
+  if (!brandName.trim()) return { error: 'Invalid Data!' };
+
+  try {
+    const result = db.brand.create({
+      data: {
+        name: brandName,
+        createdById: userId,
+        description,
+        metadata,
+      },
+    });
+    if (!result) return { error: "Can't Insert Data" };
+    return { res: result };
+  } catch (error) {
+    return { error };
+  }
+};
+
+export const getAllBrands = async () => {
+  try {
+    const result: TBrand[] | null = await db.brand.findMany();
+
+    if (!result) return { error: "Can't Get Data from Database!" };
+    return { res: result };
+  } catch (error) {
+    return { error };
+  }
+};
+
+export const deleteBrand = async (brandID: string) => {
+  if (!brandID || brandID === '') return { error: 'Invalid Data!' };
+  try {
+    const result = await db.brand.delete({
+      where: {
+        id: brandID,
+      },
+    });
+
+    if (!result) return { error: "Can't Delete!" };
+    return { res: result };
+  } catch (error) {
+    return { error };
+  }
+};
+
+export const updateBrand = async (data: TBrand) => {
+  if (!ValidateUpdateBrand.safeParse(data).success) return { error: 'Invalid Data!' };
+
+  try {
+    const result = await db.brand.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        name: data?.name,
+        description: data?.description,
+      },
+    });
+
+    if (!result) return { error: "Can't Delete!" };
+    return { res: result };
+  } catch (error) {
+    return { error };
+  }
+};

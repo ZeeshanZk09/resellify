@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Resellify Logo</title>
+    <style>
+      :root {
+        --green-dark: #0b6b2e; /* dark green */
+        --green-light: #7be08a; /* light green */
+        --accent-shadow: rgba(6, 35, 15, 0.14);
+        --logo-size: 48px;
+        --font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+
+      /* Page layout for preview only */
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f6f7f8;
+        margin: 0;
+        font-family: var(--font-family);
+      }
+
+      /* Logo (h1) */
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        line-height: 1;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+        transform: translateZ(0); /* make rendering crisper on some browsers */
+      }
+
+      /* Icon / mark on left */
+      .logo .mark {
+        width: calc(var(--logo-size) * 1.05);
+        height: calc(var(--logo-size) * 1.05);
+        min-width: calc(var(--logo-size) * 1.05);
+        border-radius: 10px;
+        display: inline-grid;
+        place-items: center;
+        font-weight: 900;
+        color: white;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-light) 100%);
+        box-shadow: 0 6px 18px var(--accent-shadow), inset 0 -8px 16px rgba(0, 0, 0, 0.06);
+        transform: skewX(-12deg);
+      }
+
+      /* Main wordmark */
+      .logo .word {
+        display: inline-block;
+        font-size: 44px;
+        font-weight: 800;
+        font-family: var(--font-family);
+        letter-spacing: -0.02em;
+        line-height: 1;
+        /* gradient fill for text */
+        background: linear-gradient(
+          90deg,
+          var(--green-dark) 0%,
+          var(--green-dark) 40%,
+          var(--green-light) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        /* subtle dark stroke for sharpness */
+        -webkit-text-stroke: 0.6px rgba(3, 20, 10, 0.12);
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.02), 0 2px 0 rgba(0, 0, 0, 0.02);
+        transform: translateY(-1px);
+      }
+
+      /* Optional: compact / small variant */
+      .logo.small .mark {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      .logo.small .word {
+        font-size: 28px;
+      }
+
+      /* Dark background variant (if you toggle .dark on body) */
+      body.dark {
+        background: #07120b;
+      }
+      body.dark .logo .mark {
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), inset 0 -8px 14px rgba(0, 0, 0, 0.25);
+      }
+      body.dark .logo .word {
+        -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.35);
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Logo: 'mark' can be replaced with an SVG icon if you want -->
+    <h1 class="logo" aria-label="Resellify - brand">
+      <span class="mark" aria-hidden>R</span>
+      <span class="word">Resellify</span>
+    </h1>
+
+    <!-- Examples:
+       <h1 class="logo small"> ... </h1>
+       add class="small" to use compact sizing
+  --></body>
+</html>
