@@ -42,7 +42,7 @@ export const login = async (password: string) => {
   // Combine checks to reduce multiple queries
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { password: true, emailVerified: true },
+    select: { id: true,password: true, emailVerified: true },
   });
 
   if (!user) {
@@ -65,6 +65,19 @@ export const login = async (password: string) => {
   try {
     // Login attempt using credentials
     await signIn('credentials', { email, password, redirect: false });
+
+    await prisma.session.deleteMany({
+      where: { userId: user.id },
+    });
+
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        expires: new Date(Date.now() + 60 * 60 * 1000),
+        sessionToken: crypto.randomUUID(),
+      },
+    });
+
     return { success: true };
   } catch (error) {
     console.error('Login error:', error); // Log detailed error for debugging
