@@ -1,10 +1,11 @@
-'use server';
-import { z } from 'zod';
+"use server";
+import { z } from "zod";
 
-import db from '@/shared/lib/prisma';
-import { TBrand } from '@/shared/types';
-import { InputJsonValue, JsonValue } from '@prisma/client/runtime/client';
-import { NullableJsonNullValueInput } from '@/shared/lib/generated/prisma/internal/prismaNamespace';
+import db from "@/shared/lib/prisma";
+import { TBrand } from "@/shared/types";
+import { InputJsonValue } from "@prisma/client/runtime/client";
+import { NullableJsonNullValueInput } from "@/shared/lib/generated/prisma/internal/prismaNamespace";
+import { uploadImage } from "../product/product-image";
 
 const ValidateUpdateBrand = z.object({
   id: z.string().min(6),
@@ -14,13 +15,14 @@ const ValidateUpdateBrand = z.object({
 export const addBrand = async (
   brandName: string,
   userId: string,
+  logo: File,
   description: string,
   metadata: NullableJsonNullValueInput | InputJsonValue | undefined
 ) => {
-  if (!brandName.trim()) return { error: 'Invalid Data!' };
+  if (!brandName.trim()) return { error: "Invalid Data!" };
 
   try {
-    const result = db.brand.create({
+    const result = await db.brand.create({
       data: {
         name: brandName,
         createdById: userId,
@@ -28,7 +30,23 @@ export const addBrand = async (
         metadata,
       },
     });
-    if (!result) return { error: "Can't Insert Data" };
+
+    const { logoUrl } = await uploadImage(
+      {
+        type: "BRAND",
+        brandId: result.id,
+      },
+      logo
+    );
+    if (!logoUrl) return { error: "Can't Upload Logo!" };
+    await db.brand.update({
+      where: {
+        id: result.id,
+      },
+      data: {
+        logo: logoUrl,
+      },
+    });
     return { res: result };
   } catch (error) {
     return { error };
@@ -47,7 +65,7 @@ export const getAllBrands = async () => {
 };
 
 export const deleteBrand = async (brandID: string) => {
-  if (!brandID || brandID === '') return { error: 'Invalid Data!' };
+  if (!brandID || brandID === "") return { error: "Invalid Data!" };
   try {
     const result = await db.brand.delete({
       where: {
@@ -63,7 +81,8 @@ export const deleteBrand = async (brandID: string) => {
 };
 
 export const updateBrand = async (data: TBrand) => {
-  if (!ValidateUpdateBrand.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!ValidateUpdateBrand.safeParse(data).success)
+    return { error: "Invalid Data!" };
 
   try {
     const result = await db.brand.update({

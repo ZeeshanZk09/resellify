@@ -1,4 +1,5 @@
 import { NameValue, OptionSetType, PageType } from "@prisma/client";
+import { Visit } from "../lib/generated/prisma/client";
 
 export type TProductCard = {
   name: string;
@@ -70,9 +71,4 @@ export type TSingleSpec = {
   value: string;
 };
 
-export type TAddPageVisit = {
-  pageType: PageType;
-  pagePath?: string;
-  productID?: string;
-  deviceResolution?: string;
-};
+export type TAddPageVisit = Visit

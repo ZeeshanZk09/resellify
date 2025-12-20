@@ -28,6 +28,7 @@ export type SessionMinAggregateOutputType = {
   id: string | null
   sessionToken: string | null
   userId: string | null
+  isExpired: boolean | null
   expires: Date | null
 }
 
@@ -35,6 +36,7 @@ export type SessionMaxAggregateOutputType = {
   id: string | null
   sessionToken: string | null
   userId: string | null
+  isExpired: boolean | null
   expires: Date | null
 }
 
@@ -42,6 +44,7 @@ export type SessionCountAggregateOutputType = {
   id: number
   sessionToken: number
   userId: number
+  isExpired: number
   expires: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type SessionMinAggregateInputType = {
   id?: true
   sessionToken?: true
   userId?: true
+  isExpired?: true
   expires?: true
 }
 
@@ -58,6 +62,7 @@ export type SessionMaxAggregateInputType = {
   id?: true
   sessionToken?: true
   userId?: true
+  isExpired?: true
   expires?: true
 }
 
@@ -65,6 +70,7 @@ export type SessionCountAggregateInputType = {
   id?: true
   sessionToken?: true
   userId?: true
+  isExpired?: true
   expires?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type SessionGroupByOutputType = {
   id: string
   sessionToken: string
   userId: string
+  isExpired: boolean
   expires: Date | null
   _count: SessionCountAggregateOutputType | null
   _min: SessionMinAggregateOutputType | null
@@ -173,6 +180,7 @@ export type SessionWhereInput = {
   id?: Prisma.StringFilter<"Session"> | string
   sessionToken?: Prisma.StringFilter<"Session"> | string
   userId?: Prisma.StringFilter<"Session"> | string
+  isExpired?: Prisma.BoolFilter<"Session"> | boolean
   expires?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
@@ -181,6 +189,7 @@ export type SessionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   sessionToken?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  isExpired?: Prisma.SortOrder
   expires?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
 }
@@ -192,6 +201,7 @@ export type SessionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.SessionWhereInput[]
   NOT?: Prisma.SessionWhereInput | Prisma.SessionWhereInput[]
   userId?: Prisma.StringFilter<"Session"> | string
+  isExpired?: Prisma.BoolFilter<"Session"> | boolean
   expires?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "sessionToken">
@@ -200,6 +210,7 @@ export type SessionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   sessionToken?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  isExpired?: Prisma.SortOrder
   expires?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.SessionCountOrderByAggregateInput
   _max?: Prisma.SessionMaxOrderByAggregateInput
@@ -213,12 +224,14 @@ export type SessionScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Session"> | string
   sessionToken?: Prisma.StringWithAggregatesFilter<"Session"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Session"> | string
+  isExpired?: Prisma.BoolWithAggregatesFilter<"Session"> | boolean
   expires?: Prisma.DateTimeNullableWithAggregatesFilter<"Session"> | Date | string | null
 }
 
 export type SessionCreateInput = {
   id?: string
   sessionToken: string
+  isExpired?: boolean
   expires?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutSessionsInput
 }
@@ -227,12 +240,14 @@ export type SessionUncheckedCreateInput = {
   id?: string
   sessionToken: string
   userId: string
+  isExpired?: boolean
   expires?: Date | string | null
 }
 
 export type SessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
+  isExpired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutSessionsNestedInput
 }
@@ -241,6 +256,7 @@ export type SessionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  isExpired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -248,12 +264,14 @@ export type SessionCreateManyInput = {
   id?: string
   sessionToken: string
   userId: string
+  isExpired?: boolean
   expires?: Date | string | null
 }
 
 export type SessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
+  isExpired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -261,6 +279,7 @@ export type SessionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  isExpired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -278,6 +297,7 @@ export type SessionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   sessionToken?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  isExpired?: Prisma.SortOrder
   expires?: Prisma.SortOrder
 }
 
@@ -285,6 +305,7 @@ export type SessionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   sessionToken?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  isExpired?: Prisma.SortOrder
   expires?: Prisma.SortOrder
 }
 
@@ -292,6 +313,7 @@ export type SessionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   sessionToken?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  isExpired?: Prisma.SortOrder
   expires?: Prisma.SortOrder
 }
 
@@ -340,12 +362,14 @@ export type SessionUncheckedUpdateManyWithoutUserNestedInput = {
 export type SessionCreateWithoutUserInput = {
   id?: string
   sessionToken: string
+  isExpired?: boolean
   expires?: Date | string | null
 }
 
 export type SessionUncheckedCreateWithoutUserInput = {
   id?: string
   sessionToken: string
+  isExpired?: boolean
   expires?: Date | string | null
 }
 
@@ -382,30 +406,35 @@ export type SessionScalarWhereInput = {
   id?: Prisma.StringFilter<"Session"> | string
   sessionToken?: Prisma.StringFilter<"Session"> | string
   userId?: Prisma.StringFilter<"Session"> | string
+  isExpired?: Prisma.BoolFilter<"Session"> | boolean
   expires?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
 }
 
 export type SessionCreateManyUserInput = {
   id?: string
   sessionToken: string
+  isExpired?: boolean
   expires?: Date | string | null
 }
 
 export type SessionUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
+  isExpired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type SessionUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
+  isExpired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type SessionUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
+  isExpired?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -415,6 +444,7 @@ export type SessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   sessionToken?: boolean
   userId?: boolean
+  isExpired?: boolean
   expires?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["session"]>
@@ -423,6 +453,7 @@ export type SessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   sessionToken?: boolean
   userId?: boolean
+  isExpired?: boolean
   expires?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["session"]>
@@ -431,6 +462,7 @@ export type SessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   sessionToken?: boolean
   userId?: boolean
+  isExpired?: boolean
   expires?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["session"]>
@@ -439,10 +471,11 @@ export type SessionSelectScalar = {
   id?: boolean
   sessionToken?: boolean
   userId?: boolean
+  isExpired?: boolean
   expires?: boolean
 }
 
-export type SessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionToken" | "userId" | "expires", ExtArgs["result"]["session"]>
+export type SessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionToken" | "userId" | "isExpired" | "expires", ExtArgs["result"]["session"]>
 export type SessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -462,6 +495,7 @@ export type $SessionPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     sessionToken: string
     userId: string
+    isExpired: boolean
     expires: Date | null
   }, ExtArgs["result"]["session"]>
   composites: {}
@@ -890,6 +924,7 @@ export interface SessionFieldRefs {
   readonly id: Prisma.FieldRef<"Session", 'String'>
   readonly sessionToken: Prisma.FieldRef<"Session", 'String'>
   readonly userId: Prisma.FieldRef<"Session", 'String'>
+  readonly isExpired: Prisma.FieldRef<"Session", 'Boolean'>
   readonly expires: Prisma.FieldRef<"Session", 'DateTime'>
 }
     

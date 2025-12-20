@@ -1,8 +1,8 @@
-'use server';
-import { ProductSpec } from '@prisma/client';
-import { z } from 'zod';
+"use server";
+import { ProductSpec } from "@prisma/client";
+import { z } from "zod";
 
-import db from '@/shared/lib/prisma';
+import db from "@/shared/lib/prisma";
 import {
   TAddProductFormValues,
   TCartListItemDB,
@@ -10,36 +10,120 @@ import {
   TProductListItem,
   TProductPageInfo,
   TSpecification,
-} from '@/shared/types/product';
+} from "@/shared/types/product";
+// id               String        @id @default(cuid())
+// name             String
+// description      String? // long description / HTML or markdown
+// shortDescription String?
+// slug             String        @unique
+// sku              String?       @unique
+// price            Decimal?
+// currency         String?       @default("PKR")
+// status           ProductStatus @default(DRAFT)
+// visibility       Visibility    @default(PUBLIC)
+// metadata         Json?
+// publishedAt      DateTime?
+// createdAt        DateTime      @default(now())
+// updatedAt        DateTime?     @updatedAt
+
+// // inventory
+// inventory         Int @default(0) // simple inventory count
+// lowStockThreshold Int @default(5) // optional, for alerts
+
+// // images
+// images Upload[]
+
+// // SEO
+// metaTitle       String?
+// metaDescription String?
+// metaKeywords    Json?
+// canonicalUrl    String?
+// ogTitle         String?
+// ogDescription   String?
+// ogImageId       String?
+// twitterCard     TwitterCard?
+// structuredData  Json?
+// locale          String?
+// translations    Json?
+
+// // relations
+// categories ProductCategory[]
+// tags       ProductTag[]
+
+// createdById String?
+// createdBy   User?   @relation("ProductUploader", fields: [createdById], references: [id])
+
+// publishedById String?
+// publishedBy   User?   @relation("ProductPublisher", fields: [publishedById], references: [id])
+
+// favouritedBy Favourite[] // reverse relation via Favourite model
+
+// // Offers & coupons join tables
+// productOffers  ProductOffer[]
+// couponProducts CouponProduct[]
+
+// // social proof
+// averageRating Float?      @default(0)
+// reviewCount   Int?        @default(0) // reviewCount (by visits and reviews of that product will be counted for each products to check out )
+// featured      Boolean     @default(false)
+// cartItems     CartItem[]
+// orderItems    OrderItem[]
+// reviews       Review[]
+// stockLogs     StockLog[]
+// waitlists     Waitlist[]
+// visits        Visit[]
+
+// @@index([name])
+// @@index([status, visibility])
 
 const ValidateAddProduct = z.object({
+  // according to product table schema
   name: z.string().min(3),
-  brandID: z.string().min(6),
-  specialFeatures: z.array(z.string()),
-  desc: z.string().optional(),
-  images: z.array(z.string()),
-  categoryID: z.string().min(6),
+  description: z.string().optional(),
+  shortDescription: z.string().optional(),
+  slug: z.string().min(3),
+  sku: z.string().optional(),
   price: z.string().min(1),
-  salePrice: z.string(),
-  specifications: z.array(
-    z.object({
-      specGroupID: z.string().min(6),
-      specValues: z.array(z.string()),
-    })
-  ),
+  currency: z.string().optional(),
+  status: z.string().optional(),
+  visibility: z.string().optional(),
+  metaTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  metaKeywords: z.string().optional(),
+  canonicalUrl: z.string().optional(),
+  ogTitle: z.string().optional(),
+  ogDescription: z.string().optional(),
+  ogImageId: z.string().optional(),
+  twitterCard: z.string().optional(),
+  structuredData: z.string().optional(),
+  locale: z.string().optional(),
+  translations: z.string().optional(),
+  categories: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+  createdById: z.string().optional(),
+  publishedById: z.string().optional(),
+  featured: z.boolean().optional(),
+  inventory: z.number().optional(),
+  lowStockThreshold: z.number().optional(),
+  images: z.array(z.string()).optional(),
+  metadata: z.string().optional(),
+  
 });
 
 const convertStringToFloat = (str: string) => {
-  str.replace(/,/, '.');
+  str.replace(/,/, ".");
   return str ? parseFloat(str) : 0.0;
 };
 
 export const addProduct = async (data: TAddProductFormValues) => {
-  if (!ValidateAddProduct.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!ValidateAddProduct.safeParse(data).success)
+    return { error: "Invalid Data!" };
 
   try {
     const price = convertStringToFloat(data.price);
-    const salePrice = data.salePrice ? convertStringToFloat(data.salePrice) : null;
+    const salePrice = data.salePrice
+      ? convertStringToFloat(data.salePrice)
+      : null;
 
     const result = db.category.update({
       where: {
@@ -91,7 +175,7 @@ export const getAllProducts = async () => {
 };
 
 export const getOneProduct = async (productID: string) => {
-  if (!productID || productID === '') return { error: 'Invalid Product ID!' };
+  if (!productID || productID === "") return { error: "Invalid Product ID!" };
 
   try {
     const result = await db.product.findFirst({
@@ -117,16 +201,17 @@ export const getOneProduct = async (productID: string) => {
         },
       },
     });
-    if (!result) return { error: 'Invalid Data!' };
+    if (!result) return { error: "Invalid Data!" };
 
     const specifications = await generateSpecTable(result.specs);
-    if (!specifications || specifications.length === 0) return { error: 'Invalid Date' };
+    if (!specifications || specifications.length === 0)
+      return { error: "Invalid Date" };
 
     const pathArray: TPath[] | null = await getPathByCategoryID(
       result.category.id,
       result.category.parentID
     );
-    if (!pathArray || pathArray.length === 0) return { error: 'Invalid Date' };
+    if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
 
     //eslint-disable-next-line
     const { specs, ...others } = result;
@@ -143,7 +228,8 @@ export const getOneProduct = async (productID: string) => {
 };
 
 export const getCartProducts = async (productIDs: string[]) => {
-  if (!productIDs || productIDs.length === 0) return { error: 'Invalid Product List' };
+  if (!productIDs || productIDs.length === 0)
+    return { error: "Invalid Product List" };
 
   try {
     const result: TCartListItemDB[] | null = await db.product.findMany({
@@ -167,7 +253,7 @@ export const getCartProducts = async (productIDs: string[]) => {
 };
 
 export const deleteProduct = async (productID: string) => {
-  if (!productID || productID === '') return { error: 'Invalid Data!' };
+  if (!productID || productID === "") return { error: "Invalid Data!" };
   try {
     const result = await db.product.delete({
       where: {
@@ -200,13 +286,13 @@ const generateSpecTable = async (rawSpec: ProductSpec[]) => {
       const tempSpecs: { name: string; value: string }[] = [];
       spec.specValues.forEach((s, index) => {
         tempSpecs.push({
-          name: result[groupSpecIndex].specs[index] || '',
-          value: s || '',
+          name: result[groupSpecIndex].specs[index] || "",
+          value: s || "",
         });
       });
 
       specifications.push({
-        groupName: result[groupSpecIndex].title || '',
+        groupName: result[groupSpecIndex].title || "",
         specs: tempSpecs,
       });
     });
@@ -218,10 +304,13 @@ const generateSpecTable = async (rawSpec: ProductSpec[]) => {
   }
 };
 
-const getPathByCategoryID = async (categoryID: string, parentID: string | null) => {
+const getPathByCategoryID = async (
+  categoryID: string,
+  parentID: string | null
+) => {
   try {
-    if (!categoryID || categoryID === '') return null;
-    if (!parentID || parentID === '') return null;
+    if (!categoryID || categoryID === "") return null;
+    if (!parentID || parentID === "") return null;
     const result: TPath[] = await db.category.findMany({
       where: {
         OR: [{ id: categoryID }, { id: parentID }, { parentID: null }],

@@ -27,6 +27,7 @@ export type AggregateVisit = {
 export type VisitMinAggregateOutputType = {
   id: string | null
   userId: string | null
+  productId: string | null
   path: string | null
   referrer: string | null
   ip: string | null
@@ -39,6 +40,7 @@ export type VisitMinAggregateOutputType = {
 export type VisitMaxAggregateOutputType = {
   id: string | null
   userId: string | null
+  productId: string | null
   path: string | null
   referrer: string | null
   ip: string | null
@@ -51,6 +53,7 @@ export type VisitMaxAggregateOutputType = {
 export type VisitCountAggregateOutputType = {
   id: number
   userId: number
+  productId: number
   path: number
   referrer: number
   ip: number
@@ -66,6 +69,7 @@ export type VisitCountAggregateOutputType = {
 export type VisitMinAggregateInputType = {
   id?: true
   userId?: true
+  productId?: true
   path?: true
   referrer?: true
   ip?: true
@@ -78,6 +82,7 @@ export type VisitMinAggregateInputType = {
 export type VisitMaxAggregateInputType = {
   id?: true
   userId?: true
+  productId?: true
   path?: true
   referrer?: true
   ip?: true
@@ -90,6 +95,7 @@ export type VisitMaxAggregateInputType = {
 export type VisitCountAggregateInputType = {
   id?: true
   userId?: true
+  productId?: true
   path?: true
   referrer?: true
   ip?: true
@@ -176,6 +182,7 @@ export type VisitGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type VisitGroupByOutputType = {
   id: string
   userId: string | null
+  productId: string | null
   path: string
   referrer: string | null
   ip: string | null
@@ -210,6 +217,7 @@ export type VisitWhereInput = {
   NOT?: Prisma.VisitWhereInput | Prisma.VisitWhereInput[]
   id?: Prisma.StringFilter<"Visit"> | string
   userId?: Prisma.StringNullableFilter<"Visit"> | string | null
+  productId?: Prisma.StringNullableFilter<"Visit"> | string | null
   path?: Prisma.StringFilter<"Visit"> | string
   referrer?: Prisma.StringNullableFilter<"Visit"> | string | null
   ip?: Prisma.StringNullableFilter<"Visit"> | string | null
@@ -219,11 +227,13 @@ export type VisitWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Visit"> | Date | string
   metadata?: Prisma.JsonFilter<"Visit">
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
 }
 
 export type VisitOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
+  productId?: Prisma.SortOrderInput | Prisma.SortOrder
   path?: Prisma.SortOrder
   referrer?: Prisma.SortOrderInput | Prisma.SortOrder
   ip?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -233,6 +243,7 @@ export type VisitOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  product?: Prisma.ProductOrderByWithRelationInput
 }
 
 export type VisitWhereUniqueInput = Prisma.AtLeast<{
@@ -241,6 +252,7 @@ export type VisitWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.VisitWhereInput[]
   NOT?: Prisma.VisitWhereInput | Prisma.VisitWhereInput[]
   userId?: Prisma.StringNullableFilter<"Visit"> | string | null
+  productId?: Prisma.StringNullableFilter<"Visit"> | string | null
   path?: Prisma.StringFilter<"Visit"> | string
   referrer?: Prisma.StringNullableFilter<"Visit"> | string | null
   ip?: Prisma.StringNullableFilter<"Visit"> | string | null
@@ -250,11 +262,13 @@ export type VisitWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Visit"> | Date | string
   metadata?: Prisma.JsonFilter<"Visit">
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
 }, "id">
 
 export type VisitOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
+  productId?: Prisma.SortOrderInput | Prisma.SortOrder
   path?: Prisma.SortOrder
   referrer?: Prisma.SortOrderInput | Prisma.SortOrder
   ip?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -274,6 +288,7 @@ export type VisitScalarWhereWithAggregatesInput = {
   NOT?: Prisma.VisitScalarWhereWithAggregatesInput | Prisma.VisitScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Visit"> | string
   userId?: Prisma.StringNullableWithAggregatesFilter<"Visit"> | string | null
+  productId?: Prisma.StringNullableWithAggregatesFilter<"Visit"> | string | null
   path?: Prisma.StringWithAggregatesFilter<"Visit"> | string
   referrer?: Prisma.StringNullableWithAggregatesFilter<"Visit"> | string | null
   ip?: Prisma.StringNullableWithAggregatesFilter<"Visit"> | string | null
@@ -295,11 +310,13 @@ export type VisitCreateInput = {
   createdAt?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   user?: Prisma.UserCreateNestedOneWithoutVisitsInput
+  product?: Prisma.ProductCreateNestedOneWithoutVisitsInput
 }
 
 export type VisitUncheckedCreateInput = {
   id?: string
   userId?: string | null
+  productId?: string | null
   path: string
   referrer?: string | null
   ip?: string | null
@@ -321,11 +338,13 @@ export type VisitUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   user?: Prisma.UserUpdateOneWithoutVisitsNestedInput
+  product?: Prisma.ProductUpdateOneWithoutVisitsNestedInput
 }
 
 export type VisitUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   path?: Prisma.StringFieldUpdateOperationsInput | string
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -339,6 +358,7 @@ export type VisitUncheckedUpdateInput = {
 export type VisitCreateManyInput = {
   id?: string
   userId?: string | null
+  productId?: string | null
   path: string
   referrer?: string | null
   ip?: string | null
@@ -364,6 +384,7 @@ export type VisitUpdateManyMutationInput = {
 export type VisitUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   path?: Prisma.StringFieldUpdateOperationsInput | string
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -387,6 +408,7 @@ export type VisitOrderByRelationAggregateInput = {
 export type VisitCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   path?: Prisma.SortOrder
   referrer?: Prisma.SortOrder
   ip?: Prisma.SortOrder
@@ -400,6 +422,7 @@ export type VisitCountOrderByAggregateInput = {
 export type VisitMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   path?: Prisma.SortOrder
   referrer?: Prisma.SortOrder
   ip?: Prisma.SortOrder
@@ -412,6 +435,7 @@ export type VisitMaxOrderByAggregateInput = {
 export type VisitMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
   path?: Prisma.SortOrder
   referrer?: Prisma.SortOrder
   ip?: Prisma.SortOrder
@@ -463,6 +487,48 @@ export type VisitUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.VisitScalarWhereInput | Prisma.VisitScalarWhereInput[]
 }
 
+export type VisitCreateNestedManyWithoutProductInput = {
+  create?: Prisma.XOR<Prisma.VisitCreateWithoutProductInput, Prisma.VisitUncheckedCreateWithoutProductInput> | Prisma.VisitCreateWithoutProductInput[] | Prisma.VisitUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.VisitCreateOrConnectWithoutProductInput | Prisma.VisitCreateOrConnectWithoutProductInput[]
+  createMany?: Prisma.VisitCreateManyProductInputEnvelope
+  connect?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+}
+
+export type VisitUncheckedCreateNestedManyWithoutProductInput = {
+  create?: Prisma.XOR<Prisma.VisitCreateWithoutProductInput, Prisma.VisitUncheckedCreateWithoutProductInput> | Prisma.VisitCreateWithoutProductInput[] | Prisma.VisitUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.VisitCreateOrConnectWithoutProductInput | Prisma.VisitCreateOrConnectWithoutProductInput[]
+  createMany?: Prisma.VisitCreateManyProductInputEnvelope
+  connect?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+}
+
+export type VisitUpdateManyWithoutProductNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitCreateWithoutProductInput, Prisma.VisitUncheckedCreateWithoutProductInput> | Prisma.VisitCreateWithoutProductInput[] | Prisma.VisitUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.VisitCreateOrConnectWithoutProductInput | Prisma.VisitCreateOrConnectWithoutProductInput[]
+  upsert?: Prisma.VisitUpsertWithWhereUniqueWithoutProductInput | Prisma.VisitUpsertWithWhereUniqueWithoutProductInput[]
+  createMany?: Prisma.VisitCreateManyProductInputEnvelope
+  set?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  disconnect?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  delete?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  connect?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  update?: Prisma.VisitUpdateWithWhereUniqueWithoutProductInput | Prisma.VisitUpdateWithWhereUniqueWithoutProductInput[]
+  updateMany?: Prisma.VisitUpdateManyWithWhereWithoutProductInput | Prisma.VisitUpdateManyWithWhereWithoutProductInput[]
+  deleteMany?: Prisma.VisitScalarWhereInput | Prisma.VisitScalarWhereInput[]
+}
+
+export type VisitUncheckedUpdateManyWithoutProductNestedInput = {
+  create?: Prisma.XOR<Prisma.VisitCreateWithoutProductInput, Prisma.VisitUncheckedCreateWithoutProductInput> | Prisma.VisitCreateWithoutProductInput[] | Prisma.VisitUncheckedCreateWithoutProductInput[]
+  connectOrCreate?: Prisma.VisitCreateOrConnectWithoutProductInput | Prisma.VisitCreateOrConnectWithoutProductInput[]
+  upsert?: Prisma.VisitUpsertWithWhereUniqueWithoutProductInput | Prisma.VisitUpsertWithWhereUniqueWithoutProductInput[]
+  createMany?: Prisma.VisitCreateManyProductInputEnvelope
+  set?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  disconnect?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  delete?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  connect?: Prisma.VisitWhereUniqueInput | Prisma.VisitWhereUniqueInput[]
+  update?: Prisma.VisitUpdateWithWhereUniqueWithoutProductInput | Prisma.VisitUpdateWithWhereUniqueWithoutProductInput[]
+  updateMany?: Prisma.VisitUpdateManyWithWhereWithoutProductInput | Prisma.VisitUpdateManyWithWhereWithoutProductInput[]
+  deleteMany?: Prisma.VisitScalarWhereInput | Prisma.VisitScalarWhereInput[]
+}
+
 export type VisitCreateWithoutUserInput = {
   id?: string
   path: string
@@ -473,10 +539,12 @@ export type VisitCreateWithoutUserInput = {
   city?: string | null
   createdAt?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  product?: Prisma.ProductCreateNestedOneWithoutVisitsInput
 }
 
 export type VisitUncheckedCreateWithoutUserInput = {
   id?: string
+  productId?: string | null
   path: string
   referrer?: string | null
   ip?: string | null
@@ -519,6 +587,7 @@ export type VisitScalarWhereInput = {
   NOT?: Prisma.VisitScalarWhereInput | Prisma.VisitScalarWhereInput[]
   id?: Prisma.StringFilter<"Visit"> | string
   userId?: Prisma.StringNullableFilter<"Visit"> | string | null
+  productId?: Prisma.StringNullableFilter<"Visit"> | string | null
   path?: Prisma.StringFilter<"Visit"> | string
   referrer?: Prisma.StringNullableFilter<"Visit"> | string | null
   ip?: Prisma.StringNullableFilter<"Visit"> | string | null
@@ -529,8 +598,61 @@ export type VisitScalarWhereInput = {
   metadata?: Prisma.JsonFilter<"Visit">
 }
 
+export type VisitCreateWithoutProductInput = {
+  id?: string
+  path: string
+  referrer?: string | null
+  ip?: string | null
+  userAgent?: string | null
+  country?: string | null
+  city?: string | null
+  createdAt?: Date | string
+  metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  user?: Prisma.UserCreateNestedOneWithoutVisitsInput
+}
+
+export type VisitUncheckedCreateWithoutProductInput = {
+  id?: string
+  userId?: string | null
+  path: string
+  referrer?: string | null
+  ip?: string | null
+  userAgent?: string | null
+  country?: string | null
+  city?: string | null
+  createdAt?: Date | string
+  metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+}
+
+export type VisitCreateOrConnectWithoutProductInput = {
+  where: Prisma.VisitWhereUniqueInput
+  create: Prisma.XOR<Prisma.VisitCreateWithoutProductInput, Prisma.VisitUncheckedCreateWithoutProductInput>
+}
+
+export type VisitCreateManyProductInputEnvelope = {
+  data: Prisma.VisitCreateManyProductInput | Prisma.VisitCreateManyProductInput[]
+  skipDuplicates?: boolean
+}
+
+export type VisitUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.VisitWhereUniqueInput
+  update: Prisma.XOR<Prisma.VisitUpdateWithoutProductInput, Prisma.VisitUncheckedUpdateWithoutProductInput>
+  create: Prisma.XOR<Prisma.VisitCreateWithoutProductInput, Prisma.VisitUncheckedCreateWithoutProductInput>
+}
+
+export type VisitUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.VisitWhereUniqueInput
+  data: Prisma.XOR<Prisma.VisitUpdateWithoutProductInput, Prisma.VisitUncheckedUpdateWithoutProductInput>
+}
+
+export type VisitUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.VisitScalarWhereInput
+  data: Prisma.XOR<Prisma.VisitUpdateManyMutationInput, Prisma.VisitUncheckedUpdateManyWithoutProductInput>
+}
+
 export type VisitCreateManyUserInput = {
   id?: string
+  productId?: string | null
   path: string
   referrer?: string | null
   ip?: string | null
@@ -551,10 +673,12 @@ export type VisitUpdateWithoutUserInput = {
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  product?: Prisma.ProductUpdateOneWithoutVisitsNestedInput
 }
 
 export type VisitUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   path?: Prisma.StringFieldUpdateOperationsInput | string
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -567,6 +691,59 @@ export type VisitUncheckedUpdateWithoutUserInput = {
 
 export type VisitUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  path?: Prisma.StringFieldUpdateOperationsInput | string
+  referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+}
+
+export type VisitCreateManyProductInput = {
+  id?: string
+  userId?: string | null
+  path: string
+  referrer?: string | null
+  ip?: string | null
+  userAgent?: string | null
+  country?: string | null
+  city?: string | null
+  createdAt?: Date | string
+  metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+}
+
+export type VisitUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.StringFieldUpdateOperationsInput | string
+  referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  user?: Prisma.UserUpdateOneWithoutVisitsNestedInput
+}
+
+export type VisitUncheckedUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  path?: Prisma.StringFieldUpdateOperationsInput | string
+  referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+}
+
+export type VisitUncheckedUpdateManyWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   path?: Prisma.StringFieldUpdateOperationsInput | string
   referrer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -582,6 +759,7 @@ export type VisitUncheckedUpdateManyWithoutUserInput = {
 export type VisitSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
+  productId?: boolean
   path?: boolean
   referrer?: boolean
   ip?: boolean
@@ -591,11 +769,13 @@ export type VisitSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdAt?: boolean
   metadata?: boolean
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
+  product?: boolean | Prisma.Visit$productArgs<ExtArgs>
 }, ExtArgs["result"]["visit"]>
 
 export type VisitSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
+  productId?: boolean
   path?: boolean
   referrer?: boolean
   ip?: boolean
@@ -605,11 +785,13 @@ export type VisitSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   createdAt?: boolean
   metadata?: boolean
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
+  product?: boolean | Prisma.Visit$productArgs<ExtArgs>
 }, ExtArgs["result"]["visit"]>
 
 export type VisitSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
+  productId?: boolean
   path?: boolean
   referrer?: boolean
   ip?: boolean
@@ -619,11 +801,13 @@ export type VisitSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   createdAt?: boolean
   metadata?: boolean
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
+  product?: boolean | Prisma.Visit$productArgs<ExtArgs>
 }, ExtArgs["result"]["visit"]>
 
 export type VisitSelectScalar = {
   id?: boolean
   userId?: boolean
+  productId?: boolean
   path?: boolean
   referrer?: boolean
   ip?: boolean
@@ -634,25 +818,30 @@ export type VisitSelectScalar = {
   metadata?: boolean
 }
 
-export type VisitOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "path" | "referrer" | "ip" | "userAgent" | "country" | "city" | "createdAt" | "metadata", ExtArgs["result"]["visit"]>
+export type VisitOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "productId" | "path" | "referrer" | "ip" | "userAgent" | "country" | "city" | "createdAt" | "metadata", ExtArgs["result"]["visit"]>
 export type VisitInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
+  product?: boolean | Prisma.Visit$productArgs<ExtArgs>
 }
 export type VisitIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
+  product?: boolean | Prisma.Visit$productArgs<ExtArgs>
 }
 export type VisitIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
+  product?: boolean | Prisma.Visit$productArgs<ExtArgs>
 }
 
 export type $VisitPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Visit"
   objects: {
     user: Prisma.$UserPayload<ExtArgs> | null
+    product: Prisma.$ProductPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     userId: string | null
+    productId: string | null
     path: string
     referrer: string | null
     ip: string | null
@@ -1056,6 +1245,7 @@ readonly fields: VisitFieldRefs;
 export interface Prisma__VisitClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.Visit$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visit$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  product<T extends Prisma.Visit$productArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Visit$productArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1087,6 +1277,7 @@ export interface Prisma__VisitClient<T, Null = never, ExtArgs extends runtime.Ty
 export interface VisitFieldRefs {
   readonly id: Prisma.FieldRef<"Visit", 'String'>
   readonly userId: Prisma.FieldRef<"Visit", 'String'>
+  readonly productId: Prisma.FieldRef<"Visit", 'String'>
   readonly path: Prisma.FieldRef<"Visit", 'String'>
   readonly referrer: Prisma.FieldRef<"Visit", 'String'>
   readonly ip: Prisma.FieldRef<"Visit", 'String'>
@@ -1507,6 +1698,25 @@ export type Visit$userArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * Visit.product
+ */
+export type Visit$productArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Product
+   */
+  select?: Prisma.ProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Product
+   */
+  omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  where?: Prisma.ProductWhereInput
 }
 
 /**

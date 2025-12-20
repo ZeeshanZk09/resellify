@@ -48,10 +48,10 @@ export type Favourite = Prisma.FavouriteModel
  */
 export type Product = Prisma.ProductModel
 /**
- * Model ProductImage
+ * Model Upload
  * 
  */
-export type ProductImage = Prisma.ProductImageModel
+export type Upload = Prisma.UploadModel
 /**
  * Model Category
  * 

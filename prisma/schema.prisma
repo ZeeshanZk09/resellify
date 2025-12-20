@@ -90,8 +90,8 @@ model User {
     plusUntil    DateTime? // expiry for plus benefits (free shipping etc.)
 
     // Relations
-    products          Product[] // products created/owned (if any)
     publishedProducts Product[] @relation("ProductPublisher")
+    publishedBrands   Brand[]   @relation("BrandPublisher")
 
     // explicit favorite join (better than implicit many-to-many)
     favourites Favourite[]
@@ -111,6 +111,7 @@ model User {
     waitlists         Waitlist[]
     auditLogs         AuditLog[]
     createdBrands     Brand[]            @relation("BrandCreatedBy")
+    createdProducts   Product[]          @relation("ProductUploader")
 
     createdAt DateTime  @default(now())
     updatedAt DateTime? @updatedAt
@@ -120,6 +121,7 @@ model Session {
     id           String    @id @default(cuid())
     sessionToken String    @unique
     userId       String
+    isExpired    Boolean   @default(false)
     expires      DateTime?
 
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -173,7 +175,6 @@ model Favourite {
 // ---------- Product and related ----------
 model Product {
     id               String        @id @default(cuid())
-    userId           String? // optional owner/supplier ID
     name             String
     description      String? // long description / HTML or markdown
     shortDescription String?
@@ -183,6 +184,7 @@ model Product {
     currency         String?       @default("PKR")
     status           ProductStatus @default(DRAFT)
     visibility       Visibility    @default(PUBLIC)
+    metadata         Json?
     publishedAt      DateTime?
     createdAt        DateTime      @default(now())
     updatedAt        DateTime?     @updatedAt
@@ -208,9 +210,11 @@ model Product {
     translations    Json?
 
     // relations
-    user       User?             @relation(fields: [userId], references: [id])
     categories ProductCategory[]
     tags       ProductTag[]
+
+    createdById String?
+    createdBy   User?   @relation("ProductUploader", fields: [createdById], references: [id])
 
     publishedById String?
     publishedBy   User?   @relation("ProductPublisher", fields: [publishedById], references: [id])
@@ -223,13 +227,14 @@ model Product {
 
     // social proof
     averageRating Float?      @default(0)
-    reviewCount   Int?        @default(0)
+    reviewCount   Int?        @default(0) // reviewCount (by visits and reviews of that product will be counted for each products to check out )
     featured      Boolean     @default(false)
     cartItems     CartItem[]
     orderItems    OrderItem[]
     reviews       Review[]
     stockLogs     StockLog[]
     waitlists     Waitlist[]
+    visits        Visit[]
 
     @@index([name])
     @@index([status, visibility])
@@ -239,7 +244,7 @@ model Product {
 model Upload {
     id         String   @id @default(cuid())
     productId  String?
-    brandId     String? @unique
+    brandId    String?  @unique
     path       String // path or URL
     fileName   String
     mimeType   String?
@@ -253,7 +258,7 @@ model Upload {
     uploadedAt DateTime @default(now())
 
     product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-        brand Brand? @relation( fields: [brandId], references: [id] )
+    brand   Brand?   @relation(fields: [brandId], references: [id])
 
     @@index([productId, order])
     @@index([isPrimary])
@@ -333,8 +338,8 @@ model CartItem {
 
 model Brand {
     id          String  @id @default(cuid())
-    name        String
-    logo        String
+    name        String  @unique
+    logo        String?
     description String?
     metadata    Json?
 
@@ -342,7 +347,9 @@ model Brand {
     createdById String
     createdBy   User   @relation("BrandCreatedBy", fields: [createdById], references: [id])
 
-    upload      Upload?
+    upload        Upload?
+    publishedById String?
+    publishedBy   User?   @relation("BrandPublisher", fields: [publishedById], references: [id])
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -571,6 +578,7 @@ model AuditLog {
 model Visit {
     id        String   @id @default(cuid())
     userId    String?
+    productId String?
     path      String
     referrer  String?
     ip        String?
@@ -580,6 +588,7 @@ model Visit {
     createdAt DateTime @default(now())
     metadata  Json     @default(dbgenerated())
     user      User?    @relation(fields: [userId], references: [id])
+    product   Product? @relation(fields: [productId], references: [id])
 
     @@index([userId])
 }

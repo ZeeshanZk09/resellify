@@ -1,19 +1,32 @@
-'use client';
-import { Eye, EyeOff, Loader, Pencil } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { loginFormSchemaPassword } from '@/shared/lib/schemas';
-import { z } from 'zod';
-import { sendCodeForPasswordReset } from '@/actions/auth/resset-password';
-import { login } from '@/actions/auth/login';
-import { useRouter } from 'next/navigation';
-import SuccessAlert from '../ui/success-alert';
-import ErrorAlert from '../ui/error-alert';
+"use client";
+import { Eye, EyeOff, Loader, Pencil } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginFormSchemaPassword } from "@/shared/lib/schemas";
+import { z } from "zod";
+import { sendCodeForPasswordReset } from "@/actions/auth/resset-password";
+import { login } from "@/actions/auth/login";
+import { useRouter } from "next/navigation";
+import SuccessAlert from "../ui/success-alert";
+import ErrorAlert from "../ui/error-alert";
 type Props = {
   email: string;
 };
@@ -26,13 +39,13 @@ const FactorOneForm = ({ email }: Props) => {
   const form = useForm<z.infer<typeof loginFormSchemaPassword>>({
     resolver: zodResolver(loginFormSchemaPassword),
     defaultValues: {
-      password: '',
+      password: "",
     },
   });
   const handleForgetPassword = async () => {
     setSuccess(null);
     setIsLoading(true);
-    setError('');
+    setError("");
     try {
       const res = await sendCodeForPasswordReset();
       if (res.error) {
@@ -41,10 +54,10 @@ const FactorOneForm = ({ email }: Props) => {
       }
       if (res.success) {
         setSuccess(res.success);
-        router.push('/auth/sign-in/reset-password');
+        router.push("/auth/sign-in/reset-password");
       }
     } catch {
-      setError('Something went wrong');
+      setError("Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -57,27 +70,27 @@ const FactorOneForm = ({ email }: Props) => {
     try {
       const res = await login(values.password);
       if (res.error) {
-        setError(res?.error || 'Something went wrong');
+        setError(res?.error || "Something went wrong");
         return;
       }
       if (res.success) {
-        window.location.href = '/';
+        window.location.href = "/";
       }
     } catch {
-      setError('Something went wrong');
+      setError("Something went wrong");
     } finally {
       setIsLoading(false);
     }
   };
   return (
-    <Card className='w-full max-w-sm '>
-      <CardHeader className='text-center'>
-        <CardTitle className='text-xl'> Enter your password</CardTitle>
+    <Card className="w-full max-w-sm ">
+      <CardHeader className="text-center">
+        <CardTitle className="text-xl"> Enter your password</CardTitle>
         <CardDescription>
           <span>Enter the password associated with your account {email}</span>
           <button
             onClick={() => router.back()}
-            className='cursor-pointer inline-flex p-1 align-middle opacity-70 hover:opacity-100'
+            className="cursor-pointer inline-flex p-1 align-middle opacity-70 hover:opacity-100"
           >
             <Pencil size={16} />
           </button>
@@ -87,38 +100,38 @@ const FactorOneForm = ({ email }: Props) => {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name='password'
+              name="password"
               render={({ field }) => (
                 <FormItem>
-                  <div className='flex items-center'>
+                  <div className="flex items-center">
                     <FormLabel>Password</FormLabel>
                     <Button
-                      variant={'link'}
-                      size={'sm'}
+                      variant={"link"}
+                      size={"sm"}
                       onClick={handleForgetPassword}
-                      type='button'
-                      className='ml-auto text-sm '
+                      type="button"
+                      className="ml-auto text-sm "
                     >
                       Forgot your password?
                     </Button>
                   </div>
                   <FormControl>
-                    <div className='relative'>
+                    <div className="relative">
                       <Input
-                        placeholder='shadcn'
-                        className='pr-10'
-                        type={seePassword ? 'text' : 'password'}
+                        placeholder="shadcn"
+                        className="pr-10"
+                        type={seePassword ? "text" : "password"}
                         {...field}
                       />
                       <Button
                         onClick={() => setSeePassword((prev) => !prev)}
-                        type='button'
-                        className='absolute hover:bg-transparent top-0 right-0'
-                        size={'icon'}
-                        variant={'ghost'}
+                        type="button"
+                        className="absolute hover:bg-transparent top-0 right-0"
+                        size={"icon"}
+                        variant={"ghost"}
                       >
                         {seePassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </Button>
@@ -128,11 +141,15 @@ const FactorOneForm = ({ email }: Props) => {
                 </FormItem>
               )}
             />
-            <Button type='submit' className='w-full' disabled={isLoading}>
-              {isLoading ? <Loader size={17} className='animate-spin' /> : 'Login'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <Loader size={17} className="animate-spin" />
+              ) : (
+                "Login"
+              )}
             </Button>
           </form>
-          <Button variant={'link'} type='button' onClick={() => router.back()}>
+          <Button variant={"link"} type="button" onClick={() => router.back()}>
             Back
           </Button>
         </Form>

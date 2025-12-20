@@ -57,7 +57,7 @@ export const ModelName = {
   Address: 'Address',
   Favourite: 'Favourite',
   Product: 'Product',
-  ProductImage: 'ProductImage',
+  Upload: 'Upload',
   Category: 'Category',
   ProductCategory: 'ProductCategory',
   Tag: 'Tag',
@@ -120,6 +120,7 @@ export const SessionScalarFieldEnum = {
   id: 'id',
   sessionToken: 'sessionToken',
   userId: 'userId',
+  isExpired: 'isExpired',
   expires: 'expires'
 } as const
 
@@ -168,7 +169,6 @@ export type FavouriteScalarFieldEnum = (typeof FavouriteScalarFieldEnum)[keyof t
 
 export const ProductScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
   name: 'name',
   description: 'description',
   shortDescription: 'shortDescription',
@@ -178,6 +178,7 @@ export const ProductScalarFieldEnum = {
   currency: 'currency',
   status: 'status',
   visibility: 'visibility',
+  metadata: 'metadata',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -194,6 +195,7 @@ export const ProductScalarFieldEnum = {
   structuredData: 'structuredData',
   locale: 'locale',
   translations: 'translations',
+  createdById: 'createdById',
   publishedById: 'publishedById',
   averageRating: 'averageRating',
   reviewCount: 'reviewCount',
@@ -203,9 +205,10 @@ export const ProductScalarFieldEnum = {
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
 
 
-export const ProductImageScalarFieldEnum = {
+export const UploadScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
+  brandId: 'brandId',
   path: 'path',
   fileName: 'fileName',
   mimeType: 'mimeType',
@@ -219,7 +222,7 @@ export const ProductImageScalarFieldEnum = {
   uploadedAt: 'uploadedAt'
 } as const
 
-export type ProductImageScalarFieldEnum = (typeof ProductImageScalarFieldEnum)[keyof typeof ProductImageScalarFieldEnum]
+export type UploadScalarFieldEnum = (typeof UploadScalarFieldEnum)[keyof typeof UploadScalarFieldEnum]
 
 
 export const CategoryScalarFieldEnum = {
@@ -288,9 +291,11 @@ export type CartItemScalarFieldEnum = (typeof CartItemScalarFieldEnum)[keyof typ
 export const BrandScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  logo: 'logo',
   description: 'description',
   metadata: 'metadata',
   createdById: 'createdById',
+  publishedById: 'publishedById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -481,6 +486,7 @@ export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typ
 export const VisitScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  productId: 'productId',
   path: 'path',
   referrer: 'referrer',
   ip: 'ip',

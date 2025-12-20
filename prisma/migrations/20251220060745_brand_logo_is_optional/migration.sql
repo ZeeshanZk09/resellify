@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Brand" ALTER COLUMN "logo" DROP NOT NULL;
