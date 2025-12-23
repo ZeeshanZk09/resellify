@@ -514,6 +514,11 @@ export type UploadOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type UploadNullableScalarRelationFilter = {
+  is?: Prisma.UploadWhereInput | null
+  isNot?: Prisma.UploadWhereInput | null
+}
+
 export type UploadCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   productId?: Prisma.SortOrder
@@ -577,11 +582,6 @@ export type UploadSumOrderByAggregateInput = {
   width?: Prisma.SortOrder
   height?: Prisma.SortOrder
   order?: Prisma.SortOrder
-}
-
-export type UploadNullableScalarRelationFilter = {
-  is?: Prisma.UploadWhereInput | null
-  isNot?: Prisma.UploadWhereInput | null
 }
 
 export type UploadCreateNestedManyWithoutProductInput = {

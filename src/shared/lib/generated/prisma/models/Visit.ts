@@ -34,7 +34,7 @@ export type VisitMinAggregateOutputType = {
   userAgent: string | null
   country: string | null
   city: string | null
-  createdAt: Date | null
+  time: Date | null
 }
 
 export type VisitMaxAggregateOutputType = {
@@ -47,7 +47,7 @@ export type VisitMaxAggregateOutputType = {
   userAgent: string | null
   country: string | null
   city: string | null
-  createdAt: Date | null
+  time: Date | null
 }
 
 export type VisitCountAggregateOutputType = {
@@ -60,7 +60,7 @@ export type VisitCountAggregateOutputType = {
   userAgent: number
   country: number
   city: number
-  createdAt: number
+  time: number
   metadata: number
   _all: number
 }
@@ -76,7 +76,7 @@ export type VisitMinAggregateInputType = {
   userAgent?: true
   country?: true
   city?: true
-  createdAt?: true
+  time?: true
 }
 
 export type VisitMaxAggregateInputType = {
@@ -89,7 +89,7 @@ export type VisitMaxAggregateInputType = {
   userAgent?: true
   country?: true
   city?: true
-  createdAt?: true
+  time?: true
 }
 
 export type VisitCountAggregateInputType = {
@@ -102,7 +102,7 @@ export type VisitCountAggregateInputType = {
   userAgent?: true
   country?: true
   city?: true
-  createdAt?: true
+  time?: true
   metadata?: true
   _all?: true
 }
@@ -189,7 +189,7 @@ export type VisitGroupByOutputType = {
   userAgent: string | null
   country: string | null
   city: string | null
-  createdAt: Date
+  time: Date
   metadata: runtime.JsonValue
   _count: VisitCountAggregateOutputType | null
   _min: VisitMinAggregateOutputType | null
@@ -224,7 +224,7 @@ export type VisitWhereInput = {
   userAgent?: Prisma.StringNullableFilter<"Visit"> | string | null
   country?: Prisma.StringNullableFilter<"Visit"> | string | null
   city?: Prisma.StringNullableFilter<"Visit"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Visit"> | Date | string
+  time?: Prisma.DateTimeFilter<"Visit"> | Date | string
   metadata?: Prisma.JsonFilter<"Visit">
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
@@ -240,7 +240,7 @@ export type VisitOrderByWithRelationInput = {
   userAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   country?: Prisma.SortOrderInput | Prisma.SortOrder
   city?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  time?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   product?: Prisma.ProductOrderByWithRelationInput
@@ -259,7 +259,7 @@ export type VisitWhereUniqueInput = Prisma.AtLeast<{
   userAgent?: Prisma.StringNullableFilter<"Visit"> | string | null
   country?: Prisma.StringNullableFilter<"Visit"> | string | null
   city?: Prisma.StringNullableFilter<"Visit"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Visit"> | Date | string
+  time?: Prisma.DateTimeFilter<"Visit"> | Date | string
   metadata?: Prisma.JsonFilter<"Visit">
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
@@ -275,7 +275,7 @@ export type VisitOrderByWithAggregationInput = {
   userAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   country?: Prisma.SortOrderInput | Prisma.SortOrder
   city?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  time?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
   _count?: Prisma.VisitCountOrderByAggregateInput
   _max?: Prisma.VisitMaxOrderByAggregateInput
@@ -295,7 +295,7 @@ export type VisitScalarWhereWithAggregatesInput = {
   userAgent?: Prisma.StringNullableWithAggregatesFilter<"Visit"> | string | null
   country?: Prisma.StringNullableWithAggregatesFilter<"Visit"> | string | null
   city?: Prisma.StringNullableWithAggregatesFilter<"Visit"> | string | null
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Visit"> | Date | string
+  time?: Prisma.DateTimeWithAggregatesFilter<"Visit"> | Date | string
   metadata?: Prisma.JsonWithAggregatesFilter<"Visit">
 }
 
@@ -307,7 +307,7 @@ export type VisitCreateInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   user?: Prisma.UserCreateNestedOneWithoutVisitsInput
   product?: Prisma.ProductCreateNestedOneWithoutVisitsInput
@@ -323,7 +323,7 @@ export type VisitUncheckedCreateInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -335,7 +335,7 @@ export type VisitUpdateInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   user?: Prisma.UserUpdateOneWithoutVisitsNestedInput
   product?: Prisma.ProductUpdateOneWithoutVisitsNestedInput
@@ -351,7 +351,7 @@ export type VisitUncheckedUpdateInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -365,7 +365,7 @@ export type VisitCreateManyInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -377,7 +377,7 @@ export type VisitUpdateManyMutationInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -391,7 +391,7 @@ export type VisitUncheckedUpdateManyInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -415,7 +415,7 @@ export type VisitCountOrderByAggregateInput = {
   userAgent?: Prisma.SortOrder
   country?: Prisma.SortOrder
   city?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  time?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
 }
 
@@ -429,7 +429,7 @@ export type VisitMaxOrderByAggregateInput = {
   userAgent?: Prisma.SortOrder
   country?: Prisma.SortOrder
   city?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  time?: Prisma.SortOrder
 }
 
 export type VisitMinOrderByAggregateInput = {
@@ -442,7 +442,7 @@ export type VisitMinOrderByAggregateInput = {
   userAgent?: Prisma.SortOrder
   country?: Prisma.SortOrder
   city?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
+  time?: Prisma.SortOrder
 }
 
 export type VisitCreateNestedManyWithoutUserInput = {
@@ -537,7 +537,7 @@ export type VisitCreateWithoutUserInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   product?: Prisma.ProductCreateNestedOneWithoutVisitsInput
 }
@@ -551,7 +551,7 @@ export type VisitUncheckedCreateWithoutUserInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -594,7 +594,7 @@ export type VisitScalarWhereInput = {
   userAgent?: Prisma.StringNullableFilter<"Visit"> | string | null
   country?: Prisma.StringNullableFilter<"Visit"> | string | null
   city?: Prisma.StringNullableFilter<"Visit"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Visit"> | Date | string
+  time?: Prisma.DateTimeFilter<"Visit"> | Date | string
   metadata?: Prisma.JsonFilter<"Visit">
 }
 
@@ -606,7 +606,7 @@ export type VisitCreateWithoutProductInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   user?: Prisma.UserCreateNestedOneWithoutVisitsInput
 }
@@ -620,7 +620,7 @@ export type VisitUncheckedCreateWithoutProductInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -659,7 +659,7 @@ export type VisitCreateManyUserInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -671,7 +671,7 @@ export type VisitUpdateWithoutUserInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   product?: Prisma.ProductUpdateOneWithoutVisitsNestedInput
 }
@@ -685,7 +685,7 @@ export type VisitUncheckedUpdateWithoutUserInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -698,7 +698,7 @@ export type VisitUncheckedUpdateManyWithoutUserInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -711,7 +711,7 @@ export type VisitCreateManyProductInput = {
   userAgent?: string | null
   country?: string | null
   city?: string | null
-  createdAt?: Date | string
+  time?: Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -723,7 +723,7 @@ export type VisitUpdateWithoutProductInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   user?: Prisma.UserUpdateOneWithoutVisitsNestedInput
 }
@@ -737,7 +737,7 @@ export type VisitUncheckedUpdateWithoutProductInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -750,7 +750,7 @@ export type VisitUncheckedUpdateManyWithoutProductInput = {
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -766,7 +766,7 @@ export type VisitSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   userAgent?: boolean
   country?: boolean
   city?: boolean
-  createdAt?: boolean
+  time?: boolean
   metadata?: boolean
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
   product?: boolean | Prisma.Visit$productArgs<ExtArgs>
@@ -782,7 +782,7 @@ export type VisitSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   userAgent?: boolean
   country?: boolean
   city?: boolean
-  createdAt?: boolean
+  time?: boolean
   metadata?: boolean
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
   product?: boolean | Prisma.Visit$productArgs<ExtArgs>
@@ -798,7 +798,7 @@ export type VisitSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   userAgent?: boolean
   country?: boolean
   city?: boolean
-  createdAt?: boolean
+  time?: boolean
   metadata?: boolean
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
   product?: boolean | Prisma.Visit$productArgs<ExtArgs>
@@ -814,11 +814,11 @@ export type VisitSelectScalar = {
   userAgent?: boolean
   country?: boolean
   city?: boolean
-  createdAt?: boolean
+  time?: boolean
   metadata?: boolean
 }
 
-export type VisitOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "productId" | "path" | "referrer" | "ip" | "userAgent" | "country" | "city" | "createdAt" | "metadata", ExtArgs["result"]["visit"]>
+export type VisitOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "productId" | "path" | "referrer" | "ip" | "userAgent" | "country" | "city" | "time" | "metadata", ExtArgs["result"]["visit"]>
 export type VisitInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.Visit$userArgs<ExtArgs>
   product?: boolean | Prisma.Visit$productArgs<ExtArgs>
@@ -848,7 +848,7 @@ export type $VisitPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     userAgent: string | null
     country: string | null
     city: string | null
-    createdAt: Date
+    time: Date
     metadata: runtime.JsonValue
   }, ExtArgs["result"]["visit"]>
   composites: {}
@@ -1284,7 +1284,7 @@ export interface VisitFieldRefs {
   readonly userAgent: Prisma.FieldRef<"Visit", 'String'>
   readonly country: Prisma.FieldRef<"Visit", 'String'>
   readonly city: Prisma.FieldRef<"Visit", 'String'>
-  readonly createdAt: Prisma.FieldRef<"Visit", 'DateTime'>
+  readonly time: Prisma.FieldRef<"Visit", 'DateTime'>
   readonly metadata: Prisma.FieldRef<"Visit", 'Json'>
 }
     

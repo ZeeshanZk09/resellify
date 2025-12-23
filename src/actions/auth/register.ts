@@ -39,8 +39,8 @@ export async function registerUser(formData: RegisterInput): Promise<RegisterRes
     });
     cookieStore.set('login_email', email, { httpOnly: true, maxAge: 300 });
     cookieStore.set('login_name', name, { httpOnly: true, maxAge: 300 });
-    await sendVerification(email);
-
+    const res = await sendVerification(email);
+    if (!res) return { error: 'Error sending email' };
     return {
       success: 'User registered successfully. Verification code sent!',
     };

@@ -58,6 +58,7 @@ export type OrderMinAggregateOutputType = {
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  placedAt: Date | null
 }
 
 export type OrderMaxAggregateOutputType = {
@@ -76,6 +77,7 @@ export type OrderMaxAggregateOutputType = {
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  placedAt: Date | null
 }
 
 export type OrderCountAggregateOutputType = {
@@ -94,6 +96,7 @@ export type OrderCountAggregateOutputType = {
   notes: number
   createdAt: number
   updatedAt: number
+  placedAt: number
   _all: number
 }
 
@@ -130,6 +133,7 @@ export type OrderMinAggregateInputType = {
   notes?: true
   createdAt?: true
   updatedAt?: true
+  placedAt?: true
 }
 
 export type OrderMaxAggregateInputType = {
@@ -148,6 +152,7 @@ export type OrderMaxAggregateInputType = {
   notes?: true
   createdAt?: true
   updatedAt?: true
+  placedAt?: true
 }
 
 export type OrderCountAggregateInputType = {
@@ -166,6 +171,7 @@ export type OrderCountAggregateInputType = {
   notes?: true
   createdAt?: true
   updatedAt?: true
+  placedAt?: true
   _all?: true
 }
 
@@ -271,6 +277,7 @@ export type OrderGroupByOutputType = {
   notes: string | null
   createdAt: Date
   updatedAt: Date | null
+  placedAt: Date | null
   _count: OrderCountAggregateOutputType | null
   _avg: OrderAvgAggregateOutputType | null
   _sum: OrderSumAggregateOutputType | null
@@ -312,6 +319,7 @@ export type OrderWhereInput = {
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  placedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   address?: Prisma.XOR<Prisma.AddressScalarRelationFilter, Prisma.AddressWhereInput>
   items?: Prisma.OrderItemListRelationFilter
@@ -336,6 +344,7 @@ export type OrderOrderByWithRelationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  placedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   address?: Prisma.AddressOrderByWithRelationInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
@@ -363,6 +372,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  placedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   address?: Prisma.XOR<Prisma.AddressScalarRelationFilter, Prisma.AddressWhereInput>
   items?: Prisma.OrderItemListRelationFilter
@@ -387,6 +397,7 @@ export type OrderOrderByWithAggregationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  placedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
   _avg?: Prisma.OrderAvgOrderByAggregateInput
   _max?: Prisma.OrderMaxOrderByAggregateInput
@@ -413,6 +424,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   notes?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  placedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateInput = {
@@ -429,6 +441,7 @@ export type OrderCreateInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
@@ -453,6 +466,7 @@ export type OrderUncheckedCreateInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutOrderInput
   logs?: Prisma.OrderLogUncheckedCreateNestedManyWithoutOrderInput
@@ -473,6 +487,7 @@ export type OrderUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
@@ -497,6 +512,7 @@ export type OrderUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutOrderNestedInput
   logs?: Prisma.OrderLogUncheckedUpdateManyWithoutOrderNestedInput
@@ -519,6 +535,7 @@ export type OrderCreateManyInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
 }
 
 export type OrderUpdateManyMutationInput = {
@@ -535,6 +552,7 @@ export type OrderUpdateManyMutationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderUncheckedUpdateManyInput = {
@@ -553,6 +571,7 @@ export type OrderUncheckedUpdateManyInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderListRelationFilter = {
@@ -581,6 +600,7 @@ export type OrderCountOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  placedAt?: Prisma.SortOrder
 }
 
 export type OrderAvgOrderByAggregateInput = {
@@ -607,6 +627,7 @@ export type OrderMaxOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  placedAt?: Prisma.SortOrder
 }
 
 export type OrderMinOrderByAggregateInput = {
@@ -625,6 +646,7 @@ export type OrderMinOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  placedAt?: Prisma.SortOrder
 }
 
 export type OrderSumOrderByAggregateInput = {
@@ -821,6 +843,7 @@ export type OrderCreateWithoutUserInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   payment?: Prisma.PaymentCreateNestedOneWithoutOrderInput
@@ -843,6 +866,7 @@ export type OrderUncheckedCreateWithoutUserInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutOrderInput
   logs?: Prisma.OrderLogUncheckedCreateNestedManyWithoutOrderInput
@@ -894,6 +918,7 @@ export type OrderScalarWhereInput = {
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   updatedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  placedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateWithoutAddressInput = {
@@ -910,6 +935,7 @@ export type OrderCreateWithoutAddressInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
   payment?: Prisma.PaymentCreateNestedOneWithoutOrderInput
@@ -932,6 +958,7 @@ export type OrderUncheckedCreateWithoutAddressInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutOrderInput
   logs?: Prisma.OrderLogUncheckedCreateNestedManyWithoutOrderInput
@@ -978,6 +1005,7 @@ export type OrderCreateWithoutItemsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   payment?: Prisma.PaymentCreateNestedOneWithoutOrderInput
@@ -1001,6 +1029,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutOrderInput
   logs?: Prisma.OrderLogUncheckedCreateNestedManyWithoutOrderInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutOrderInput
@@ -1036,6 +1065,7 @@ export type OrderUpdateWithoutItemsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   payment?: Prisma.PaymentUpdateOneWithoutOrderNestedInput
@@ -1059,6 +1089,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutOrderNestedInput
   logs?: Prisma.OrderLogUncheckedUpdateManyWithoutOrderNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutOrderNestedInput
@@ -1078,6 +1109,7 @@ export type OrderCreateWithoutPaymentInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
@@ -1101,6 +1133,7 @@ export type OrderUncheckedCreateWithoutPaymentInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   logs?: Prisma.OrderLogUncheckedCreateNestedManyWithoutOrderInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutOrderInput
@@ -1136,6 +1169,7 @@ export type OrderUpdateWithoutPaymentInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
@@ -1159,6 +1193,7 @@ export type OrderUncheckedUpdateWithoutPaymentInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   logs?: Prisma.OrderLogUncheckedUpdateManyWithoutOrderNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutOrderNestedInput
@@ -1178,6 +1213,7 @@ export type OrderCreateWithoutLogsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
@@ -1201,6 +1237,7 @@ export type OrderUncheckedCreateWithoutLogsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutOrderInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutOrderInput
@@ -1236,6 +1273,7 @@ export type OrderUpdateWithoutLogsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
@@ -1259,6 +1297,7 @@ export type OrderUncheckedUpdateWithoutLogsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutOrderNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutOrderNestedInput
@@ -1278,6 +1317,7 @@ export type OrderCreateWithoutCouponRedemptionsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
   address: Prisma.AddressCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
@@ -1301,6 +1341,7 @@ export type OrderUncheckedCreateWithoutCouponRedemptionsInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
   payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutOrderInput
   logs?: Prisma.OrderLogUncheckedCreateNestedManyWithoutOrderInput
@@ -1336,6 +1377,7 @@ export type OrderUpdateWithoutCouponRedemptionsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
@@ -1359,6 +1401,7 @@ export type OrderUncheckedUpdateWithoutCouponRedemptionsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutOrderNestedInput
   logs?: Prisma.OrderLogUncheckedUpdateManyWithoutOrderNestedInput
@@ -1379,6 +1422,7 @@ export type OrderCreateManyUserInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
 }
 
 export type OrderUpdateWithoutUserInput = {
@@ -1395,6 +1439,7 @@ export type OrderUpdateWithoutUserInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   payment?: Prisma.PaymentUpdateOneWithoutOrderNestedInput
@@ -1417,6 +1462,7 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutOrderNestedInput
   logs?: Prisma.OrderLogUncheckedUpdateManyWithoutOrderNestedInput
@@ -1438,6 +1484,7 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderCreateManyAddressInput = {
@@ -1455,6 +1502,7 @@ export type OrderCreateManyAddressInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
+  placedAt?: Date | string | null
 }
 
 export type OrderUpdateWithoutAddressInput = {
@@ -1471,6 +1519,7 @@ export type OrderUpdateWithoutAddressInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
   payment?: Prisma.PaymentUpdateOneWithoutOrderNestedInput
@@ -1493,6 +1542,7 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
   payment?: Prisma.PaymentUncheckedUpdateOneWithoutOrderNestedInput
   logs?: Prisma.OrderLogUncheckedUpdateManyWithoutOrderNestedInput
@@ -1514,6 +1564,7 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  placedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -1581,6 +1632,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  placedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
@@ -1606,6 +1658,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  placedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
@@ -1626,6 +1679,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  placedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
@@ -1646,9 +1700,10 @@ export type OrderSelectScalar = {
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  placedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "addressId" | "orderNumber" | "status" | "paymentMethod" | "paymentStatus" | "subTotal" | "shippingFee" | "discountAmount" | "taxAmount" | "totalAmount" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "addressId" | "orderNumber" | "status" | "paymentMethod" | "paymentStatus" | "subTotal" | "shippingFee" | "discountAmount" | "taxAmount" | "totalAmount" | "notes" | "createdAt" | "updatedAt" | "placedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
@@ -1693,6 +1748,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     notes: string | null
     createdAt: Date
     updatedAt: Date | null
+    placedAt: Date | null
   }, ExtArgs["result"]["order"]>
   composites: {}
 }
@@ -2137,6 +2193,7 @@ export interface OrderFieldRefs {
   readonly notes: Prisma.FieldRef<"Order", 'String'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly placedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
     
 

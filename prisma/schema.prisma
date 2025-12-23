@@ -83,15 +83,6 @@ enum OptionType {
     BOOLEAN // yes/no like "Adjustable"
 }
 
-enum OrderStatus {
-    PENDING
-    CONFIRMED
-    PLACED // tum ne markaz pr jaa ke order place kia (physical)
-    SHIPPED
-    DELIVERED
-    CANCELLED
-}
-
 enum DiscountType {
     PERCENT
     FLAT
@@ -213,9 +204,11 @@ model Favourite {
 
 model Product {
     id               String        @id @default(cuid())
-    name             String
+    title            String
     description      String? // long description / HTML or markdown
     shortDescription String?
+    basePrice        Float // base price (default shown if variant price missing)
+    salePrice        Float? // optional sale price on product level
     slug             String        @unique
     sku              String?       @unique
     price            Decimal?
@@ -264,29 +257,38 @@ model Product {
     couponProducts CouponProduct[]
 
     // social proof
-    averageRating Float?      @default(0)
-    reviewCount   Int?        @default(0) // reviewCount (by visits and reviews of that product will be counted for each products to check out )
-    featured      Boolean     @default(false)
-    cartItems     CartItem[]
-    orderItems    OrderItem[]
-    reviews       Review[]
-    stockLogs     StockLog[]
-    waitlists     Waitlist[]
-    visits        Visit[]
+    averageRating   Float?           @default(0)
+    reviewCount     Int?             @default(0) // reviewCount (by visits and reviews of that product will be counted for each products to check out )
+    featured        Boolean          @default(false)
+    cartItems       CartItem[]
+    orderItems      OrderItem[]
+    reviews         Review[]
+    stockLogs       StockLog[]
+    waitlists       Waitlist[]
+    visits          Visit[]
+    productVariants ProductVariant[]
+    productSpecs    ProductSpec[]
 
-    @@index([name])
+    @@index([title])
     @@index([status, visibility])
 }
 
 // categories & tags (you already had these; keep as-is)
 model Category {
-    id          String            @id @default(cuid())
-    name        String
-    slug        String            @unique
-    description String?
-    products    ProductCategory[]
-    createdAt   DateTime          @default(now())
-    updatedAt   DateTime?         @updatedAt
+    id                 String              @id @default(cuid())
+    name               String
+    slug               String              @unique
+    description        String?
+    parentId           String? // parent category id for hierarchy
+    parent             Category?           @relation("CategoryToChildren", fields: [parentId], references: [id])
+    children           Category[]          @relation("CategoryToChildren") // sub-categories
+    products           ProductCategory[]
+    categoryOptionSets CategoryOptionSet[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+    coupons   Coupon[]
+    offers    Offer[]
 }
 
 model ProductCategory {
@@ -299,6 +301,86 @@ model ProductCategory {
 
     @@unique([productId, categoryId])
     @@index([categoryId])
+}
+
+// Option sets and values (for filters & variants)
+model OptionSet {
+    id         String              @id @default(cuid()) // option set id (e.g., "Color", "Fabric")
+    name       String // display name
+    type       OptionType // how to treat options (COLOR, SIZE, etc.)
+    options    Option[] // list of option values
+    categories CategoryOptionSet[] // which categories use this set
+}
+
+model Option {
+    id             String          @id @default(cuid()) // option id
+    optionSetId    String // parent optionSet
+    optionSet      OptionSet       @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
+    name           String // display label (e.g., "Red", "Cotton")
+    value          String? // machine value (e.g., "#ff0000" or code)
+    position       Int? // optional ordering for UI
+    variantOptions VariantOption[]
+}
+
+model CategoryOptionSet {
+    id          String    @id @default(cuid())
+    categoryId  String
+    optionSetId String
+    category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    optionSet   OptionSet @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
+
+    @@unique([categoryId, optionSetId])
+}
+
+model ProductVariant {
+    id         String          @id @default(cuid()) // variant id
+    productId  String // parent product
+    product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+    sku        String? // SKU for variant
+    title      String? // e.g., "Red / Large"
+    price      Float? // variant-specific price (overrides product.basePrice if present)
+    salePrice  Float? // variant sale price (overrides product.salePrice)
+    stock      Int             @default(0) // stock quantity
+    isDefault  Boolean         @default(false) // default shown variant
+    images     String[]        @default([]) // variant specific images
+    weightGram Int? // optional for shipping calc
+    options    VariantOption[] // which option values this variant has
+    createdAt  DateTime        @default(now())
+    updatedAt  DateTime?       @updatedAt
+    orderItems OrderItem[]
+
+    @@index([sku])
+    @@index([productId])
+}
+
+model VariantOption {
+    id        String         @id @default(cuid()) // link id
+    variantId String // variant
+    optionId  String // chosen option value
+    option    Option         @relation(fields: [optionId], references: [id], onDelete: Cascade)
+    variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+    @@unique([variantId, optionId]) // same option shouldn't repeat for same variant
+    @@index([variantId])
+}
+
+// Specs (for product detail & comparison)
+model SpecGroup {
+    id       String        @id @default(cuid()) // spec group id
+    title    String // e.g., "Technical Specs"
+    keys     String[] // e.g., ["Battery", "RAM", "Processor"]
+    products ProductSpec[] // linked product specs
+}
+
+model ProductSpec {
+    id          String    @id @default(cuid()) // link id
+    productId   String
+    specGroupId String
+    values      String[] // aligned with SpecGroup.keys order
+    product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+    specGroup   SpecGroup @relation(fields: [specGroupId], references: [id], onDelete: Cascade)
+
+    @@index([productId])
 }
 
 model Tag {
@@ -371,22 +453,22 @@ model Brand {
 
 // ---------- Orders & payments ----------
 model Order {
-    id             String        @id @default(cuid())
-    userId         String
-    addressId      String // shipping address snapshot ref
-    orderNumber    String        @unique // e.g. ORD-20251216-0001
-    status         OrderStatus   @default(CREATED)
-    paymentMethod  PaymentMethod
-    paymentStatus  PaymentStatus @default(PENDING)
-    subTotal       Decimal
-    shippingFee    Decimal       @default(0)
-    discountAmount Decimal       @default(0)
-    taxAmount      Decimal       @default(0)
-    totalAmount    Decimal
-    notes          String?
-    createdAt      DateTime      @default(now())
-    updatedAt      DateTime?     @updatedAt
-
+    id                String             @id @default(cuid())
+    userId            String
+    addressId         String // shipping address snapshot ref
+    orderNumber       String             @unique // e.g. ORD-20251216-0001
+    status            OrderStatus        @default(CREATED)
+    paymentMethod     PaymentMethod
+    paymentStatus     PaymentStatus      @default(PENDING)
+    subTotal          Decimal
+    shippingFee       Decimal            @default(0)
+    discountAmount    Decimal            @default(0)
+    taxAmount         Decimal            @default(0)
+    totalAmount       Decimal
+    notes             String?
+    createdAt         DateTime           @default(now())
+    updatedAt         DateTime?          @updatedAt
+    placedAt          DateTime? // when marked PLACED
     user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
     address           Address            @relation(fields: [addressId], references: [id])
     items             OrderItem[]
@@ -402,15 +484,17 @@ model OrderItem {
     id        String   @id @default(cuid())
     orderId   String
     productId String
+    variantId String? // optional: if product has variants
     sku       String?
-    name      String // snapshot of product name
+    title     String // snapshot of product name
     price     Decimal // snapshot unit price
     quantity  Int
     lineTotal Decimal // price * quantity (after item discount if any)
     createdAt DateTime @default(now())
 
-    order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-    product Product @relation(fields: [productId], references: [id])
+    order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    product Product         @relation(fields: [productId], references: [id])
+    variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
 
     @@index([orderId])
     @@index([productId])
@@ -475,25 +559,38 @@ model Upload {
 }
 
 // ---------- Coupons & Offers ----------
+// ---------- Coupons ----------
 model Coupon {
-    id             String     @id @default(cuid())
-    code           String     @unique
-    description    String?
-    type           CouponType
-    value          Decimal // percent (0-100) for PERCENT or amount for FIXED
-    isActive       Boolean    @default(true)
-    startsAt       DateTime?
-    endsAt         DateTime?
-    usageLimit     Int? // total uses across users
-    perUserLimit   Int? // uses per user
-    firstOrderOnly Boolean    @default(false)
-    minOrderValue  Decimal?
-    createdAt      DateTime   @default(now())
-    updatedAt      DateTime?  @updatedAt
+    id          String     @id @default(cuid())
+    code        String     @unique
+    description String?
+    type        CouponType
+    value       Decimal // percent (0-100) for PERCENT or amount for FIXED
 
-    // optional relation to specific products (if not present, coupon is global)
-    products    CouponProduct[]
-    redemptions CouponRedemption[]
+    // 🔐 safety & business rules
+    maxDiscount Decimal? // MAX discount allowed (LOSS PREVENTION)
+    stackable   Boolean  @default(false) // can combine with other offers/coupons
+    priority    Int      @default(0) // higher = applied first
+
+    isActive Boolean   @default(true)
+    startsAt DateTime?
+    endsAt   DateTime?
+
+    usageLimit     Int? // total uses across all users
+    perUserLimit   Int? // uses per user
+    firstOrderOnly Boolean  @default(false)
+    minOrderValue  Decimal?
+
+    // 🎯 optional category-based coupon
+    categoryId String?
+    category   Category? @relation(fields: [categoryId], references: [id])
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    products      CouponProduct[]
+    redemptions   CouponRedemption[]
+    productOffers ProductOffer[]
 
     @@index([code])
 }
@@ -526,29 +623,43 @@ model CouponRedemption {
 }
 
 // Product-level direct offers/promotions
+// ---------- Offers ----------
 model Offer {
-    id           String     @id @default(cuid())
-    title        String
-    description  String?
-    type         CouponType
-    value        Decimal
+    id          String     @id @default(cuid())
+    title       String
+    description String?
+    type        CouponType
+    value       Decimal
+
+    // 🔐 safety & business rules
+    maxDiscount Decimal?
+    stackable   Boolean  @default(false)
+    priority    Int      @default(0)
+
     startsAt     DateTime?
     endsAt       DateTime?
-    isActive     Boolean    @default(true)
-    appliesToAll Boolean    @default(false) // if true apply to all products
-    createdAt    DateTime   @default(now())
-    updatedAt    DateTime?  @updatedAt
+    isActive     Boolean   @default(true)
+    appliesToAll Boolean   @default(false)
+
+    // 🎯 optional category-based offer
+    categoryId String?
+    category   Category? @relation(fields: [categoryId], references: [id])
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
 
     productOffers ProductOffer[]
 }
 
 model ProductOffer {
-    id        String @id @default(cuid())
+    id        String  @id @default(cuid())
     productId String
-    offerId   String
+    offerId   String?
+    couponId  String?
 
     product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-    offer   Offer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+    offer   Offer?  @relation(fields: [offerId], references: [id], onDelete: Cascade)
+    coupons Coupon? @relation(fields: [couponId], references: [id], onDelete: Cascade)
 
     @@unique([productId, offerId])
     @@index([offerId])

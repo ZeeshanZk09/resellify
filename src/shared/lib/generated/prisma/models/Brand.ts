@@ -374,11 +374,6 @@ export type BrandOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type BrandNullableScalarRelationFilter = {
-  is?: Prisma.BrandWhereInput | null
-  isNot?: Prisma.BrandWhereInput | null
-}
-
 export type BrandCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
@@ -411,6 +406,11 @@ export type BrandMinOrderByAggregateInput = {
   publishedById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BrandNullableScalarRelationFilter = {
+  is?: Prisma.BrandWhereInput | null
+  isNot?: Prisma.BrandWhereInput | null
 }
 
 export type BrandCreateNestedManyWithoutPublishedByInput = {

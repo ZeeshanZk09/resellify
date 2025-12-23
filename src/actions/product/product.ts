@@ -1,8 +1,7 @@
-"use server";
-import { ProductSpec } from "@prisma/client";
-import { z } from "zod";
+'use server';
+import { z } from 'zod';
 
-import db from "@/shared/lib/prisma";
+import db from '@/shared/lib/prisma';
 import {
   TAddProductFormValues,
   TCartListItemDB,
@@ -10,7 +9,9 @@ import {
   TProductListItem,
   TProductPageInfo,
   TSpecification,
-} from "@/shared/types/product";
+} from '@/shared/types/product';
+import { ProductCreateInput } from '@/shared/lib/generated/prisma/models';
+import { ProductSpec } from '@/shared/lib/generated/prisma/client';
 // id               String        @id @default(cuid())
 // name             String
 // description      String? // long description / HTML or markdown
@@ -107,44 +108,28 @@ const ValidateAddProduct = z.object({
   lowStockThreshold: z.number().optional(),
   images: z.array(z.string()).optional(),
   metadata: z.string().optional(),
-  
 });
 
-const convertStringToFloat = (str: string) => {
-  str.replace(/,/, ".");
-  return str ? parseFloat(str) : 0.0;
+const convertStringToFloat = (str: string | number) => {
+  (str as string).replace(/,/, '.');
+  return str ? parseFloat(str as string) : 0.0;
 };
 
-export const addProduct = async (data: TAddProductFormValues) => {
-  if (!ValidateAddProduct.safeParse(data).success)
-    return { error: "Invalid Data!" };
+export const addProduct = async (data: ProductCreateInput) => {
+  if (!ValidateAddProduct.safeParse(data).success) return { error: 'Invalid Data!' };
 
   try {
-    const price = convertStringToFloat(data.price);
-    const salePrice = data.salePrice
-      ? convertStringToFloat(data.salePrice)
-      : null;
+    const price = convertStringToFloat(data.basePrice);
+    const salePrice = data.salePrice ? convertStringToFloat(data.salePrice) : null;
 
-    const result = db.category.update({
-      where: {
-        id: data.categoryID,
-      },
+    const result = await db.product.create({
       data: {
-        products: {
-          create: {
-            name: data.name,
-            desc: data.desc,
-            brandID: data.brandID,
-            specialFeatures: data.specialFeatures,
-            isAvailable: data.isAvailable,
-            price: price,
-            salePrice: salePrice,
-            images: [...data.images],
-            specs: data.specifications,
-          },
-        },
+        ...data,
+        basePrice: price,
+        salePrice,
       },
     });
+
     if (!result) return { error: "Can't Insert Data" };
     return { res: result };
   } catch (error) {
@@ -154,14 +139,15 @@ export const addProduct = async (data: TAddProductFormValues) => {
 
 export const getAllProducts = async () => {
   try {
-    const result: TProductListItem[] | null = await db.product.findMany({
+    const result = await db.product.findMany({
       select: {
         id: true,
-        name: true,
-        category: {
+        title: true,
+        categories: {
           select: {
             id: true,
-            name: true,
+            category: true,
+            product: true,
           },
         },
       },
@@ -175,43 +161,37 @@ export const getAllProducts = async () => {
 };
 
 export const getOneProduct = async (productID: string) => {
-  if (!productID || productID === "") return { error: "Invalid Product ID!" };
+  if (!productID || productID === '') return { error: 'Invalid Product ID!' };
 
   try {
     const result = await db.product.findFirst({
       where: {
         id: productID,
+        visibility: 'PUBLIC',
+        status: 'PUBLISHED',
       },
-      select: {
-        id: true,
-        name: true,
-        desc: true,
+      include: {
+        productOffers: true,
+        productSpecs: true,
+        productVariants: true,
+        couponProducts: true,
+        reviews: true,
         images: true,
-        price: true,
-        salePrice: true,
-        specs: true,
-        specialFeatures: true,
-        isAvailable: true,
-        optionSets: true,
-        category: {
-          select: {
-            id: true,
-            parentID: true,
-          },
-        },
+        tags: true,
+        favouritedBy: true,
+        orderItems: true,
       },
     });
-    if (!result) return { error: "Invalid Data!" };
+    if (!result) return { error: 'Invalid Data!' };
 
-    const specifications = await generateSpecTable(result.specs);
-    if (!specifications || specifications.length === 0)
-      return { error: "Invalid Date" };
+    const specifications = await generateSpecTable(result.productSpecs);
+    if (!specifications || specifications.length === 0) return { error: 'Invalid Date' };
 
     const pathArray: TPath[] | null = await getPathByCategoryID(
       result.category.id,
       result.category.parentID
     );
-    if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
+    if (!pathArray || pathArray.length === 0) return { error: 'Invalid Date' };
 
     //eslint-disable-next-line
     const { specs, ...others } = result;
@@ -228,8 +208,7 @@ export const getOneProduct = async (productID: string) => {
 };
 
 export const getCartProducts = async (productIDs: string[]) => {
-  if (!productIDs || productIDs.length === 0)
-    return { error: "Invalid Product List" };
+  if (!productIDs || productIDs.length === 0) return { error: 'Invalid Product List' };
 
   try {
     const result: TCartListItemDB[] | null = await db.product.findMany({
@@ -253,7 +232,7 @@ export const getCartProducts = async (productIDs: string[]) => {
 };
 
 export const deleteProduct = async (productID: string) => {
-  if (!productID || productID === "") return { error: "Invalid Data!" };
+  if (!productID || productID === '') return { error: 'Invalid Data!' };
   try {
     const result = await db.product.delete({
       where: {
@@ -270,11 +249,14 @@ export const deleteProduct = async (productID: string) => {
 
 const generateSpecTable = async (rawSpec: ProductSpec[]) => {
   try {
-    const specGroupIDs = rawSpec.map((spec) => spec.specGroupID);
+    const specGroupIDs = rawSpec.map((spec) => spec.specGroupId);
 
     const result = await db.specGroup.findMany({
       where: {
         id: { in: specGroupIDs },
+      },
+      include: {
+        products: true,
       },
     });
     if (!result || result.length === 0) return null;
@@ -282,17 +264,17 @@ const generateSpecTable = async (rawSpec: ProductSpec[]) => {
     const specifications: TSpecification[] = [];
 
     rawSpec.forEach((spec) => {
-      const groupSpecIndex = result.findIndex((g) => g.id === spec.specGroupID);
+      const groupSpecIndex = result.findIndex((g) => g.id === spec.specGroupId);
       const tempSpecs: { name: string; value: string }[] = [];
       spec.specValues.forEach((s, index) => {
         tempSpecs.push({
-          name: result[groupSpecIndex].specs[index] || "",
-          value: s || "",
+          name: result[groupSpecIndex].specs[index] || '',
+          value: s || '',
         });
       });
 
       specifications.push({
-        groupName: result[groupSpecIndex].title || "",
+        groupName: result[groupSpecIndex].title || '',
         specs: tempSpecs,
       });
     });
@@ -304,13 +286,10 @@ const generateSpecTable = async (rawSpec: ProductSpec[]) => {
   }
 };
 
-const getPathByCategoryID = async (
-  categoryID: string,
-  parentID: string | null
-) => {
+const getPathByCategoryID = async (categoryID: string, parentID: string | null) => {
   try {
-    if (!categoryID || categoryID === "") return null;
-    if (!parentID || parentID === "") return null;
+    if (!categoryID || categoryID === '') return null;
+    if (!parentID || parentID === '') return null;
     const result: TPath[] = await db.category.findMany({
       where: {
         OR: [{ id: categoryID }, { id: parentID }, { parentID: null }],

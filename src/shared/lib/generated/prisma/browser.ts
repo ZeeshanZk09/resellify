@@ -48,11 +48,6 @@ export type Favourite = Prisma.FavouriteModel
  */
 export type Product = Prisma.ProductModel
 /**
- * Model Upload
- * 
- */
-export type Upload = Prisma.UploadModel
-/**
  * Model Category
  * 
  */
@@ -62,6 +57,41 @@ export type Category = Prisma.CategoryModel
  * 
  */
 export type ProductCategory = Prisma.ProductCategoryModel
+/**
+ * Model OptionSet
+ * 
+ */
+export type OptionSet = Prisma.OptionSetModel
+/**
+ * Model Option
+ * 
+ */
+export type Option = Prisma.OptionModel
+/**
+ * Model CategoryOptionSet
+ * 
+ */
+export type CategoryOptionSet = Prisma.CategoryOptionSetModel
+/**
+ * Model ProductVariant
+ * 
+ */
+export type ProductVariant = Prisma.ProductVariantModel
+/**
+ * Model VariantOption
+ * 
+ */
+export type VariantOption = Prisma.VariantOptionModel
+/**
+ * Model SpecGroup
+ * 
+ */
+export type SpecGroup = Prisma.SpecGroupModel
+/**
+ * Model ProductSpec
+ * 
+ */
+export type ProductSpec = Prisma.ProductSpecModel
 /**
  * Model Tag
  * 
@@ -107,6 +137,11 @@ export type Payment = Prisma.PaymentModel
  * 
  */
 export type OrderLog = Prisma.OrderLogModel
+/**
+ * Model Upload
+ * 
+ */
+export type Upload = Prisma.UploadModel
 /**
  * Model Coupon
  * 

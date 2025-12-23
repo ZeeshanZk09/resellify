@@ -2,19 +2,19 @@
 
 import { useEffect, useState, useTransition } from 'react';
 
-import { getAllCategoriesJSON } from '@/actions/category/category';
 import { SK_Box } from '@/shared/components/ui-v2/skeleton';
-import { TGroupJSON } from '@/shared/types/categories';
 
 import CategoryListItem from './catListItem';
+import { Category } from '@/shared/lib/generated/prisma/browser';
+import { getAllCategories } from '@/actions/category/category';
 
 export const HomeCategoryList = () => {
-  const [categories, setCategories] = useState<TGroupJSON[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
     const getCategories = async () => {
-      const result = await getAllCategoriesJSON();
+      const result = await getAllCategories();
       console.log(result);
       if (result.res) {
         setCategories(result.res);

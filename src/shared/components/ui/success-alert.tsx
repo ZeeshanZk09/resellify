@@ -8,7 +8,7 @@ type Props = {
 const SuccessAlert = ({ success }: Props) => {
   if (!success) return null;
   return (
-    <div className='bg-background dark:bg-green-800 rounded-lg p-3 items-center mt-4 flex gap-4 '>
+    <div className='bg-background dark:text-white dark:bg-green-800 rounded-lg p-3 items-center mt-4 flex gap-4 '>
       <CircleCheckBig className='text-green-500 ' />
       <div className='text-left'>
         <h4 className='text-xs font-medium'>success</h4>

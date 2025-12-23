@@ -86,3 +86,33 @@ export const Role = {
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const OptionType = {
+  TEXT: 'TEXT',
+  COLOR: 'COLOR',
+  NUMBER: 'NUMBER',
+  SIZE: 'SIZE',
+  MEASURE: 'MEASURE',
+  RANGE: 'RANGE',
+  BOOLEAN: 'BOOLEAN'
+} as const
+
+export type OptionType = (typeof OptionType)[keyof typeof OptionType]
+
+
+export const DiscountType = {
+  PERCENT: 'PERCENT',
+  FLAT: 'FLAT'
+} as const
+
+export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType]
+
+
+export const OfferTarget = {
+  ALL_PRODUCTS: 'ALL_PRODUCTS',
+  CATEGORY: 'CATEGORY',
+  PRODUCT: 'PRODUCT'
+} as const
+
+export type OfferTarget = (typeof OfferTarget)[keyof typeof OfferTarget]

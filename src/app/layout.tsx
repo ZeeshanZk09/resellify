@@ -85,7 +85,7 @@ export default async function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning>
       <body
-        className={`[&::-webkit-scrollbar]:w-1
+        className={`min-h-screen [&::-webkit-scrollbar]:w-1
   [&::-webkit-scrollbar-track]:bg-gray-100
   [&::-webkit-scrollbar-thumb]:bg-gray-300 ${inter.className} antialiased`}
         suppressHydrationWarning

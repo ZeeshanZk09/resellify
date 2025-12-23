@@ -20,7 +20,7 @@ export default function SearchInput() {
     if (!query.trim()) return; // Prevent empty search
 
     // Navigate to a search results page with query params
-    router.push(`/search?query=${encodeURIComponent(query)}`);
+    router.push(`/shop?query=${encodeURIComponent(query)}`);
   };
 
   return (

@@ -52,6 +52,9 @@ const UserButton = () => {
           <DropdownMenuItem onClick={() => router.push('/orders')} className='px-3.5 py-2'>
             <List /> My Orders
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/orders')} className='px-3.5 py-2'>
+            <ShoppingBag /> My Bag
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => router.push('/')}
             className='block sm:hidden px-3.5 py-2'
