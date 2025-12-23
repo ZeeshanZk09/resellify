@@ -1,5 +1,17 @@
+import prisma from '../prisma';
 async function generateCategorySlug(name: string) {
-  const slug = name.toLowerCase().replace(/\s+/g, "-");
+  let slug = name.toLowerCase().replace(/\s+/g, '-');
+
+  const existingSlug = await prisma.category.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (existingSlug) {
+    slug += '-' + crypto.randomUUID();
+  }
+
   return slug;
 }
 

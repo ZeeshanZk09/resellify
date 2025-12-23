@@ -14,8 +14,9 @@ datasource db {
 }
 
 // ---------------------------------------------------
+//                   Enums 
+// ---------------------------------------------------
 
-// ---------- Enums ----------
 enum ProductStatus {
     DRAFT
     PUBLISHED
@@ -71,7 +72,41 @@ enum Role {
     SUPPORT
 }
 
-// ---------- Core models ----------
+// Enums
+enum OptionType {
+    TEXT // simple text options (e.g., "Cotton", "Polyester")
+    COLOR // color options (render as swatch, value can be hex)
+    NUMBER // numeric option (e.g., diopter for glasses)
+    SIZE // size labels (S, M, L, 1-2yrs, 3-5yrs)
+    MEASURE // measured sizes (e.g., waist in inches, length in cm)
+    RANGE // range-based (e.g., 30-32)
+    BOOLEAN // yes/no like "Adjustable"
+}
+
+enum OrderStatus {
+    PENDING
+    CONFIRMED
+    PLACED // tum ne markaz pr jaa ke order place kia (physical)
+    SHIPPED
+    DELIVERED
+    CANCELLED
+}
+
+enum DiscountType {
+    PERCENT
+    FLAT
+}
+
+enum OfferTarget {
+    ALL_PRODUCTS
+    CATEGORY
+    PRODUCT
+}
+
+// ---------------------------------------------------
+//                   User Management
+// ---------------------------------------------------
+
 model User {
     id            String    @id @default(cuid())
     name          String
@@ -159,6 +194,10 @@ model Address {
     @@index([userId])
 }
 
+// ---------------------------------------------------
+//                   Products/store management
+// ---------------------------------------------------
+
 model Favourite {
     id        String   @id @default(cuid())
     userId    String
@@ -172,7 +211,6 @@ model Favourite {
     @@index([productId])
 }
 
-// ---------- Product and related ----------
 model Product {
     id               String        @id @default(cuid())
     name             String
@@ -238,30 +276,6 @@ model Product {
 
     @@index([name])
     @@index([status, visibility])
-}
-
-// images and metadata
-model Upload {
-    id         String   @id @default(cuid())
-    productId  String?
-    brandId    String?  @unique
-    path       String // path or URL
-    fileName   String
-    mimeType   String?
-    size       Int?
-    width      Int?
-    height     Int?
-    altText    String?
-    caption    String?
-    order      Int      @default(0)
-    isPrimary  Boolean  @default(false)
-    uploadedAt DateTime @default(now())
-
-    product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-    brand   Brand?   @relation(fields: [brandId], references: [id])
-
-    @@index([productId, order])
-    @@index([isPrimary])
 }
 
 // categories & tags (you already had these; keep as-is)
@@ -434,6 +448,32 @@ model OrderLog {
     actor User? @relation(fields: [actorId], references: [id])
 }
 
+// ---------------------------------------------------
+//                   Utility Tables
+// ---------------------------------------------------
+model Upload {
+    id         String   @id @default(cuid())
+    productId  String?
+    brandId    String?  @unique
+    path       String // path or URL
+    fileName   String
+    mimeType   String?
+    size       Int?
+    width      Int?
+    height     Int?
+    altText    String?
+    caption    String?
+    order      Int      @default(0)
+    isPrimary  Boolean  @default(false)
+    uploadedAt DateTime @default(now())
+
+    product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+    brand   Brand?   @relation(fields: [brandId], references: [id])
+
+    @@index([productId, order])
+    @@index([isPrimary])
+}
+
 // ---------- Coupons & Offers ----------
 model Coupon {
     id             String     @id @default(cuid())
@@ -585,7 +625,7 @@ model Visit {
     userAgent String?
     country   String?
     city      String?
-    createdAt DateTime @default(now())
+    time      DateTime @default(now())
     metadata  Json     @default(dbgenerated())
     user      User?    @relation(fields: [userId], references: [id])
     product   Product? @relation(fields: [productId], references: [id])
