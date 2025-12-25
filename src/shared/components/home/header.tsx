@@ -7,7 +7,7 @@ import SearchInput from '../SearchInput';
 
 const Header = () => {
   return (
-    <header className=' top-0 sticky z-20 bg-card'>
+    <header className='top-0 sticky z-20 bg-card'>
       <nav className='p-5 max-w-7xl mx-auto flex  justify-between items-center'>
         <Link href={'/'}>
           <h1 className='logo small' aria-label='Resellify - brand'>

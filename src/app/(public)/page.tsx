@@ -13,7 +13,7 @@ export default async function Home() {
   return (
     <div className='w-full bg-mint-500 flex flex-col justify-between max-w-7xl px-5 mx-auto'>
       <div className='storeContainer flex-col'>
-        <div className='flex w-full mt-20'>
+        <div className='flex w-full mt-2'>
           <HomeCategoryList />
           <HomeSlider />
         </div>

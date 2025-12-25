@@ -71,7 +71,7 @@ export const HomeSlider = () => {
   }
 
   return (
-    <div className='w-full lg:ml-[272px] h-[240px] sm:h-[500px] rounded-xl overflow-hidden relative hover:[&>.btnContainer]:opacity-100'>
+    <div className='w-full lg:ml-[272px] h-[450px] sm:h-[500px] rounded-xl overflow-hidden relative hover:[&>.btnContainer]:opacity-100 '>
       <div className='btnContainer absolute z-[2] left-7 top-0 bottom-0 flex justify-center items-center opacity-0 transition-all duration-500'>
         <button
           onClick={() => handleSliding(activeSlideNum - 1)}
@@ -88,7 +88,7 @@ export const HomeSlider = () => {
           <ArrowIcon width={10} className='fill-none stroke-black' />
         </button>
       </div>
-      <div className='h-full rounded-xl overflow-hidden translate-z-0 top-0 left-0 select-none'>
+      <div className='h-full rounded-xl overflow-hidden translate-z-0 top-0 left-0 select-none '>
         {SlidesData.map((slide, index) => (
           <div
             onTouchStart={touchStart}
@@ -99,7 +99,7 @@ export const HomeSlider = () => {
             onMouseUp={handleTouchEnd}
             key={index}
             className={cn(
-              'inline-block absolute w-full h-full opacity-0 invisible animate-oldSlide transition-all duration-1000 overflow-hidden rounded-[12px]',
+              'inline-block absolute w-full h-full opacity-0 invisible animate-oldSlide transition-all duration-1000 overflow-hidden rounded-[12px] ',
               index === activeSlideNum ? 'opacity-100 visible animate-newSlide' : ''
             )}
           >
@@ -112,27 +112,26 @@ export const HomeSlider = () => {
               priority
               draggable={false}
             />
+            <div className='absolute inset-0 bg-linear-to-t from-black via-black/80 to-transparent' />
             {slide.msg && (
               <div
                 className={cn(
-                  'flex invisible opacity-0 flex-col w-full absolute pt-0 sm:pt-[10%] items-center top-10 bottom-0 lg:w-[50%] text-gray-100 transition-all duration-1000',
+                  'flex invisible opacity-0 flex-col w-full absolute pt-0 sm:pt-[10%] items-center left-0 bottom-20 lg:w-[50%] text-gray-100 transition-all duration-1000',
                   index === activeSlideNum && 'opacity-100 visible animate-newSlide'
                 )}
               >
-                <h2 className='sm:text-3xl text-lg font-light'>{slide.msg.title}</h2>
-                {slide.msg.desc && (
-                  <span
-                    className={cn(
-                      'text-gray-200  text-sm transition-[margin] duration-[1600ms]',
-                      index === activeSlideNum ? 'mt-8' : 'mt-14'
-                    )}
-                  >
-                    {slide.msg.desc}
-                  </span>
-                )}
+                <h2 className='sm:text-3xl text-lg font-light'>
+                  {/* {slide.msg.title !== 'Clothes' ? (
+                    slide.msg.title
+                  ) : (
+                    <span className='text-black'>{slide.msg.title}</span>
+                  )} */}
+                  {slide.msg.title}
+                </h2>
+
                 <Link
                   href={slide.url}
-                  className='mt-6 sm:mt-20 text-gray-100 rounded-md text-sm sm:text:base sm:px-6 sm:py-3 px-4 py-2 bg-black/80 transition-all duration-300 hover:font-medium hover:text-gray-900 hover:bg-gray-100'
+                  className='border mt-6 sm:mt-20 text-gray-100 rounded-md text-sm sm:text:base sm:px-6 sm:py-3 px-4 py-2 bg-black/80 transition-all duration-300 hover:font-medium hover:text-gray-900 hover:bg-gray-100'
                 >
                   {slide.msg.buttonText}
                 </Link>

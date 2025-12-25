@@ -6,7 +6,7 @@ export default async function Shop({ searchParams }: { searchParams: { search?: 
   const search = searchParams?.search ?? '';
 
   // Server-side fetch
-  const products = await getAllProducts();
+  const { res: products } = await getAllProducts();
 
   if (!products) {
     return (
@@ -18,7 +18,7 @@ export default async function Shop({ searchParams }: { searchParams: { search?: 
 
   // Server-side filtering
   const filteredProducts = search
-    ? products.filter((product) => product.name.toLowerCase().includes(search.toLowerCase()))
+    ? products.filter((product) => product.title.toLowerCase().includes(search.toLowerCase()))
     : products;
 
   return (
@@ -33,9 +33,61 @@ export default async function Shop({ searchParams }: { searchParams: { search?: 
         </a>
 
         <div className='grid grid-cols-2 sm:flex flex-wrap gap-6 xl:gap-12 mx-auto mb-32'>
-          {filteredProducts.map((product) => (
-            // <ProductCard key={product.id} imgUrl={} />
-          ))}
+          {filteredProducts.map(
+            ({
+              averageRating,
+              waitlists,
+              visibility,
+              updatedAt,
+              twitterCard,
+              translations,
+              title,
+              tags,
+              structuredData,
+              status,
+              slug,
+              sku,
+              shortDescription,
+              salePrice,
+              reviews,
+              reviewCount,
+              publishedAt,
+              productVariants,
+              productSpecs,
+              productOffers,
+              price,
+              orderItems,
+              ogTitle,
+              ogImageId,
+              ogDescription,
+              metadata,
+              metaTitle,
+              metaKeywords,
+              metaDescription,
+              locale,
+              images,
+              inventory,
+              id,
+              featured,
+              favouritedBy,
+              description,
+              currency,
+              couponProducts,
+              categories,
+              canonicalUrl,
+              basePrice,
+            }) => (
+              <ProductCard
+                images={images}
+                key={id}
+                dealPrice={salePrice}
+                name={title}
+                price={price || basePrice}
+                specs={productSpecs}
+                url={canonicalUrl!}
+              />
+            )
+          )}
         </div>
       </div>
     </div>

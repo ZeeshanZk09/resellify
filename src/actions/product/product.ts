@@ -140,12 +140,19 @@ export const addProduct = async (data: ProductCreateInput) => {
 export const getAllProducts = async () => {
   try {
     const result = await db.product.findMany({
-      select: {
-        id: true,
-        title: true,
+      include: {
+        waitlists: true,
+        tags: true,
+        reviews: true,
+        productVariants: true,
+        productOffers: true,
+        productSpecs: true,
+        orderItems: true,
+        images: true,
+        favouritedBy: true,
+        couponProducts: true,
         categories: {
-          select: {
-            id: true,
+          include: {
             category: true,
             product: true,
           },

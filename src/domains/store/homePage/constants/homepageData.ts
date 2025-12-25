@@ -3,31 +3,29 @@ import { TSlide, TBlogCard } from '@/shared/types/common';
 export const SlidesData: TSlide[] = [
   {
     imgUrl: '/images/images/PS5.webp',
-    url: '/product/65e6f80a9d4ab819d11581a2',
-    alt: '/playstation5',
+    url: '/shop',
+    alt: 'shop',
     msg: {
-      title: 'PLAY STATION 5',
+      title: 'PLAY STATIONS',
       buttonText: 'Shop now!',
     },
   },
   {
-    imgUrl: '/images/images/wacom.jpg',
-    url: '/product/65e6f7469d4ab819d11581a1',
-    alt: 'WACOM CINITIQ PRO',
+    imgUrl: '/images/images/clothesAd.jpg',
+    url: '/shop',
+    alt: 'Clothes',
     msg: {
-      title: 'WACOM CINITIQ PRO',
+      title: 'Clothes',
       buttonText: 'Shop Now',
-      desc: 'Best for designers',
     },
   },
   {
     imgUrl: '/images/images/appleWatch.jpg',
-    url: '/product/65e6f5339d4ab819d115819c',
+    url: '/shop',
     alt: 'APPLE WATCH',
     msg: {
-      title: 'APPLE WATCH',
+      title: 'WATCHES',
       buttonText: 'Show All',
-      desc: '',
     },
   },
   {
@@ -35,9 +33,8 @@ export const SlidesData: TSlide[] = [
     url: '/list/audio/headphones/apple',
     alt: '',
     msg: {
-      title: 'AIRPODS PRO',
+      title: 'AIRPODS',
       buttonText: 'Shop now!',
-      desc: 'Just for today!',
     },
   },
 ];

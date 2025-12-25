@@ -1,13 +1,14 @@
-import { NameValue, OptionSetType, PageType } from "@prisma/client";
-import { Visit } from "../lib/generated/prisma/client";
+import { NameValue, OptionSetType, PageType } from '@prisma/client';
+import { ProductSpec, Upload, Visit } from '../lib/generated/prisma/client';
+import { Decimal } from '@prisma/client/runtime/client';
 
 export type TProductCard = {
   name: string;
   isAvailable?: boolean;
-  specs: string[];
-  price: number;
-  dealPrice?: number;
-  imgUrl: [string, string];
+  specs: ProductSpec[];
+  price: number | Decimal;
+  dealPrice?: number | null;
+  images: Upload[];
   url: string;
   staticWidth?: boolean;
 };
@@ -71,4 +72,4 @@ export type TSingleSpec = {
   value: string;
 };
 
-export type TAddPageVisit = Visit
+export type TAddPageVisit = Visit;
