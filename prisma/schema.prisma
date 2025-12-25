@@ -568,9 +568,10 @@ model Coupon {
     value       Decimal // percent (0-100) for PERCENT or amount for FIXED
 
     // 🔐 safety & business rules
-    maxDiscount Decimal? // MAX discount allowed (LOSS PREVENTION)
-    stackable   Boolean  @default(false) // can combine with other offers/coupons
-    priority    Int      @default(0) // higher = applied first
+    maxDiscount  Decimal? // MAX discount allowed (LOSS PREVENTION)
+    discountType DiscountType
+    stackable    Boolean      @default(false) // can combine with other offers/coupons
+    priority     Int          @default(0) // higher = applied first
 
     isActive Boolean   @default(true)
     startsAt DateTime?
@@ -582,7 +583,7 @@ model Coupon {
     minOrderValue  Decimal?
 
     // 🎯 optional category-based coupon
-    categoryId String?
+    categoryId String?   @unique
     category   Category? @relation(fields: [categoryId], references: [id])
 
     createdAt DateTime  @default(now())
@@ -625,16 +626,18 @@ model CouponRedemption {
 // Product-level direct offers/promotions
 // ---------- Offers ----------
 model Offer {
-    id          String     @id @default(cuid())
+    id          String      @id @default(cuid())
     title       String
     description String?
     type        CouponType
+    offType     OfferTarget
     value       Decimal
 
     // 🔐 safety & business rules
-    maxDiscount Decimal?
-    stackable   Boolean  @default(false)
-    priority    Int      @default(0)
+    maxDiscount  Decimal?
+    discountType DiscountType @default(PERCENT)
+    stackable    Boolean      @default(false)
+    priority     Int          @default(0)
 
     startsAt     DateTime?
     endsAt       DateTime?

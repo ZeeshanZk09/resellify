@@ -51,6 +51,7 @@ export type CouponMinAggregateOutputType = {
   type: $Enums.CouponType | null
   value: runtime.Decimal | null
   maxDiscount: runtime.Decimal | null
+  discountType: $Enums.DiscountType | null
   stackable: boolean | null
   priority: number | null
   isActive: boolean | null
@@ -72,6 +73,7 @@ export type CouponMaxAggregateOutputType = {
   type: $Enums.CouponType | null
   value: runtime.Decimal | null
   maxDiscount: runtime.Decimal | null
+  discountType: $Enums.DiscountType | null
   stackable: boolean | null
   priority: number | null
   isActive: boolean | null
@@ -93,6 +95,7 @@ export type CouponCountAggregateOutputType = {
   type: number
   value: number
   maxDiscount: number
+  discountType: number
   stackable: number
   priority: number
   isActive: number
@@ -134,6 +137,7 @@ export type CouponMinAggregateInputType = {
   type?: true
   value?: true
   maxDiscount?: true
+  discountType?: true
   stackable?: true
   priority?: true
   isActive?: true
@@ -155,6 +159,7 @@ export type CouponMaxAggregateInputType = {
   type?: true
   value?: true
   maxDiscount?: true
+  discountType?: true
   stackable?: true
   priority?: true
   isActive?: true
@@ -176,6 +181,7 @@ export type CouponCountAggregateInputType = {
   type?: true
   value?: true
   maxDiscount?: true
+  discountType?: true
   stackable?: true
   priority?: true
   isActive?: true
@@ -284,6 +290,7 @@ export type CouponGroupByOutputType = {
   type: $Enums.CouponType
   value: runtime.Decimal
   maxDiscount: runtime.Decimal | null
+  discountType: $Enums.DiscountType
   stackable: boolean
   priority: number
   isActive: boolean
@@ -328,6 +335,7 @@ export type CouponWhereInput = {
   type?: Prisma.EnumCouponTypeFilter<"Coupon"> | $Enums.CouponType
   value?: Prisma.DecimalFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFilter<"Coupon"> | $Enums.DiscountType
   stackable?: Prisma.BoolFilter<"Coupon"> | boolean
   priority?: Prisma.IntFilter<"Coupon"> | number
   isActive?: Prisma.BoolFilter<"Coupon"> | boolean
@@ -353,6 +361,7 @@ export type CouponOrderByWithRelationInput = {
   type?: Prisma.SortOrder
   value?: Prisma.SortOrder
   maxDiscount?: Prisma.SortOrderInput | Prisma.SortOrder
+  discountType?: Prisma.SortOrder
   stackable?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -374,6 +383,7 @@ export type CouponOrderByWithRelationInput = {
 export type CouponWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   code?: string
+  categoryId?: string
   AND?: Prisma.CouponWhereInput | Prisma.CouponWhereInput[]
   OR?: Prisma.CouponWhereInput[]
   NOT?: Prisma.CouponWhereInput | Prisma.CouponWhereInput[]
@@ -381,6 +391,7 @@ export type CouponWhereUniqueInput = Prisma.AtLeast<{
   type?: Prisma.EnumCouponTypeFilter<"Coupon"> | $Enums.CouponType
   value?: Prisma.DecimalFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFilter<"Coupon"> | $Enums.DiscountType
   stackable?: Prisma.BoolFilter<"Coupon"> | boolean
   priority?: Prisma.IntFilter<"Coupon"> | number
   isActive?: Prisma.BoolFilter<"Coupon"> | boolean
@@ -390,14 +401,13 @@ export type CouponWhereUniqueInput = Prisma.AtLeast<{
   perUserLimit?: Prisma.IntNullableFilter<"Coupon"> | number | null
   firstOrderOnly?: Prisma.BoolFilter<"Coupon"> | boolean
   minOrderValue?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  categoryId?: Prisma.StringNullableFilter<"Coupon"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   category?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
   products?: Prisma.CouponProductListRelationFilter
   redemptions?: Prisma.CouponRedemptionListRelationFilter
   productOffers?: Prisma.ProductOfferListRelationFilter
-}, "id" | "code">
+}, "id" | "code" | "categoryId">
 
 export type CouponOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -406,6 +416,7 @@ export type CouponOrderByWithAggregationInput = {
   type?: Prisma.SortOrder
   value?: Prisma.SortOrder
   maxDiscount?: Prisma.SortOrderInput | Prisma.SortOrder
+  discountType?: Prisma.SortOrder
   stackable?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -435,6 +446,7 @@ export type CouponScalarWhereWithAggregatesInput = {
   type?: Prisma.EnumCouponTypeWithAggregatesFilter<"Coupon"> | $Enums.CouponType
   value?: Prisma.DecimalWithAggregatesFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.DecimalNullableWithAggregatesFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeWithAggregatesFilter<"Coupon"> | $Enums.DiscountType
   stackable?: Prisma.BoolWithAggregatesFilter<"Coupon"> | boolean
   priority?: Prisma.IntWithAggregatesFilter<"Coupon"> | number
   isActive?: Prisma.BoolWithAggregatesFilter<"Coupon"> | boolean
@@ -456,6 +468,7 @@ export type CouponCreateInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -480,6 +493,7 @@ export type CouponUncheckedCreateInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -504,6 +518,7 @@ export type CouponUpdateInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -528,6 +543,7 @@ export type CouponUncheckedUpdateInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -552,6 +568,7 @@ export type CouponCreateManyInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -573,6 +590,7 @@ export type CouponUpdateManyMutationInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -593,6 +611,7 @@ export type CouponUncheckedUpdateManyInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -624,6 +643,7 @@ export type CouponCountOrderByAggregateInput = {
   type?: Prisma.SortOrder
   value?: Prisma.SortOrder
   maxDiscount?: Prisma.SortOrder
+  discountType?: Prisma.SortOrder
   stackable?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -654,6 +674,7 @@ export type CouponMaxOrderByAggregateInput = {
   type?: Prisma.SortOrder
   value?: Prisma.SortOrder
   maxDiscount?: Prisma.SortOrder
+  discountType?: Prisma.SortOrder
   stackable?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -675,6 +696,7 @@ export type CouponMinOrderByAggregateInput = {
   type?: Prisma.SortOrder
   value?: Prisma.SortOrder
   maxDiscount?: Prisma.SortOrder
+  discountType?: Prisma.SortOrder
   stackable?: Prisma.SortOrder
   priority?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -754,6 +776,10 @@ export type EnumCouponTypeFieldUpdateOperationsInput = {
   set?: $Enums.CouponType
 }
 
+export type EnumDiscountTypeFieldUpdateOperationsInput = {
+  set?: $Enums.DiscountType
+}
+
 export type CouponCreateNestedOneWithoutProductsInput = {
   create?: Prisma.XOR<Prisma.CouponCreateWithoutProductsInput, Prisma.CouponUncheckedCreateWithoutProductsInput>
   connectOrCreate?: Prisma.CouponCreateOrConnectWithoutProductsInput
@@ -805,6 +831,7 @@ export type CouponCreateWithoutCategoryInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -828,6 +855,7 @@ export type CouponUncheckedCreateWithoutCategoryInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -880,6 +908,7 @@ export type CouponScalarWhereInput = {
   type?: Prisma.EnumCouponTypeFilter<"Coupon"> | $Enums.CouponType
   value?: Prisma.DecimalFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFilter<"Coupon"> | $Enums.DiscountType
   stackable?: Prisma.BoolFilter<"Coupon"> | boolean
   priority?: Prisma.IntFilter<"Coupon"> | number
   isActive?: Prisma.BoolFilter<"Coupon"> | boolean
@@ -901,6 +930,7 @@ export type CouponCreateWithoutProductsInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -924,6 +954,7 @@ export type CouponUncheckedCreateWithoutProductsInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -963,6 +994,7 @@ export type CouponUpdateWithoutProductsInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -986,6 +1018,7 @@ export type CouponUncheckedUpdateWithoutProductsInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1009,6 +1042,7 @@ export type CouponCreateWithoutRedemptionsInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -1032,6 +1066,7 @@ export type CouponUncheckedCreateWithoutRedemptionsInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -1071,6 +1106,7 @@ export type CouponUpdateWithoutRedemptionsInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1094,6 +1130,7 @@ export type CouponUncheckedUpdateWithoutRedemptionsInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1117,6 +1154,7 @@ export type CouponCreateWithoutProductOffersInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -1140,6 +1178,7 @@ export type CouponUncheckedCreateWithoutProductOffersInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -1179,6 +1218,7 @@ export type CouponUpdateWithoutProductOffersInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1202,6 +1242,7 @@ export type CouponUncheckedUpdateWithoutProductOffersInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1225,6 +1266,7 @@ export type CouponCreateManyCategoryInput = {
   type: $Enums.CouponType
   value: runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType: $Enums.DiscountType
   stackable?: boolean
   priority?: number
   isActive?: boolean
@@ -1245,6 +1287,7 @@ export type CouponUpdateWithoutCategoryInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1268,6 +1311,7 @@ export type CouponUncheckedUpdateWithoutCategoryInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1291,6 +1335,7 @@ export type CouponUncheckedUpdateManyWithoutCategoryInput = {
   type?: Prisma.EnumCouponTypeFieldUpdateOperationsInput | $Enums.CouponType
   value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   maxDiscount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  discountType?: Prisma.EnumDiscountTypeFieldUpdateOperationsInput | $Enums.DiscountType
   stackable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   priority?: Prisma.IntFieldUpdateOperationsInput | number
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1360,6 +1405,7 @@ export type CouponSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   type?: boolean
   value?: boolean
   maxDiscount?: boolean
+  discountType?: boolean
   stackable?: boolean
   priority?: boolean
   isActive?: boolean
@@ -1386,6 +1432,7 @@ export type CouponSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   type?: boolean
   value?: boolean
   maxDiscount?: boolean
+  discountType?: boolean
   stackable?: boolean
   priority?: boolean
   isActive?: boolean
@@ -1408,6 +1455,7 @@ export type CouponSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   type?: boolean
   value?: boolean
   maxDiscount?: boolean
+  discountType?: boolean
   stackable?: boolean
   priority?: boolean
   isActive?: boolean
@@ -1430,6 +1478,7 @@ export type CouponSelectScalar = {
   type?: boolean
   value?: boolean
   maxDiscount?: boolean
+  discountType?: boolean
   stackable?: boolean
   priority?: boolean
   isActive?: boolean
@@ -1444,7 +1493,7 @@ export type CouponSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "description" | "type" | "value" | "maxDiscount" | "stackable" | "priority" | "isActive" | "startsAt" | "endsAt" | "usageLimit" | "perUserLimit" | "firstOrderOnly" | "minOrderValue" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["coupon"]>
+export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "description" | "type" | "value" | "maxDiscount" | "discountType" | "stackable" | "priority" | "isActive" | "startsAt" | "endsAt" | "usageLimit" | "perUserLimit" | "firstOrderOnly" | "minOrderValue" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["coupon"]>
 export type CouponInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.Coupon$categoryArgs<ExtArgs>
   products?: boolean | Prisma.Coupon$productsArgs<ExtArgs>
@@ -1474,6 +1523,7 @@ export type $CouponPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     type: $Enums.CouponType
     value: runtime.Decimal
     maxDiscount: runtime.Decimal | null
+    discountType: $Enums.DiscountType
     stackable: boolean
     priority: number
     isActive: boolean
@@ -1919,6 +1969,7 @@ export interface CouponFieldRefs {
   readonly type: Prisma.FieldRef<"Coupon", 'CouponType'>
   readonly value: Prisma.FieldRef<"Coupon", 'Decimal'>
   readonly maxDiscount: Prisma.FieldRef<"Coupon", 'Decimal'>
+  readonly discountType: Prisma.FieldRef<"Coupon", 'DiscountType'>
   readonly stackable: Prisma.FieldRef<"Coupon", 'Boolean'>
   readonly priority: Prisma.FieldRef<"Coupon", 'Int'>
   readonly isActive: Prisma.FieldRef<"Coupon", 'Boolean'>

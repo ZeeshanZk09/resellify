@@ -3425,6 +3425,7 @@ export const CouponScalarFieldEnum = {
   type: 'type',
   value: 'value',
   maxDiscount: 'maxDiscount',
+  discountType: 'discountType',
   stackable: 'stackable',
   priority: 'priority',
   isActive: 'isActive',
@@ -3467,8 +3468,10 @@ export const OfferScalarFieldEnum = {
   title: 'title',
   description: 'description',
   type: 'type',
+  offType: 'offType',
   value: 'value',
   maxDiscount: 'maxDiscount',
+  discountType: 'discountType',
   stackable: 'stackable',
   priority: 'priority',
   startsAt: 'startsAt',
@@ -3827,6 +3830,34 @@ export type EnumCouponTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
  * Reference to a field of type 'CouponType[]'
  */
 export type ListEnumCouponTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CouponType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DiscountType'
+ */
+export type EnumDiscountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiscountType'>
+    
+
+
+/**
+ * Reference to a field of type 'DiscountType[]'
+ */
+export type ListEnumDiscountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiscountType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'OfferTarget'
+ */
+export type EnumOfferTargetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OfferTarget'>
+    
+
+
+/**
+ * Reference to a field of type 'OfferTarget[]'
+ */
+export type ListEnumOfferTargetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OfferTarget[]'>
     
 
 /**

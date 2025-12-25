@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-import { getOptionSetByCatID, getSpecGroupByCatID } from "@/actions/category/categoryOptions";
+import {
+  getOptionSetByCatID,
+  getSpecGroupByCatID,
+} from "@/actions/category/categoryOptions";
 import { TOptionSet, TSpecGroup } from "@/shared/types/common";
 import { cn } from "@/shared/utils/styling";
 
@@ -65,7 +68,9 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
   return (
     <div className="relative flex h-[500px] flex-col bg-white z-10 text-sm">
       <div className="flex items-center justify-between text-gray-800">
-        <h2 className="flex-grow text-base h-full pt-1.5 border-b border-gray-300">{categoryName}</h2>
+        <h2 className="flex-grow text-base h-full pt-1.5 border-b border-gray-300">
+          {categoryName}
+        </h2>
         <div className="flex text-sm">
           <h3
             className={cn(
@@ -95,17 +100,26 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
       {isOption ? (
         // ------------------ OPTIONS SECTION ------------------
         <div className="flex flex-col h-full overflow-hidden">
-          <AddOption categoryOptionId={categoryID} reloadRequest={handleReloadOptions} />
+          <AddOption
+            categoryOptionId={categoryID}
+            reloadRequest={handleReloadOptions}
+          />
           <div className="flex flex-col gap-4 h-full overflow-y-scroll p-3">
             {optionSetList.length ? (
               <>
                 {optionSetList.map((optionSet) => (
-                  <OptionSet key={optionSet.id} data={optionSet} reloadRequest={handleReloadOptions} />
+                  <OptionSet
+                    key={optionSet.id}
+                    data={optionSet}
+                    reloadRequest={handleReloadOptions}
+                  />
                 ))}
               </>
             ) : (
               <div className="mt-10 flex flex-col items-center justify-center">
-                <span className="text-center mb-[30px] w-[300px]">There is no Options for this category</span>
+                <span className="text-center mb-[30px] w-[300px]">
+                  There is no Options for this category
+                </span>
               </div>
             )}
           </div>
@@ -113,17 +127,26 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
       ) : (
         // ------------------ SPECIFICATION SECTION ------------------
         <div className="flex flex-col h-full overflow-hidden">
-          <AddSpecGroup categorySpecGroupID={categoryID} reloadRequest={handleReloadSpecs} />
+          <AddSpecGroup
+            categorySpecGroupID={categoryID}
+            reloadRequest={handleReloadSpecs}
+          />
           <div className="flex flex-col gap-4 h-full overflow-y-scroll p-3">
             {specGroupList.length > 0 ? (
               <>
                 {specGroupList.map((specGroup) => (
-                  <SpecGroup key={specGroup.id} data={specGroup} reloadRequest={handleReloadSpecs} />
+                  <SpecGroup
+                    key={specGroup.id}
+                    data={specGroup}
+                    reloadRequest={handleReloadSpecs}
+                  />
                 ))}
               </>
             ) : (
               <div className="mt-10 flex flex-col items-center justify-center">
-                <span className="text-center mb-[30px] w-[300px]">There is no Specification for this category</span>
+                <span className="text-center mb-[30px] w-[300px]">
+                  There is no Specification for this category
+                </span>
               </div>
             )}
           </div>

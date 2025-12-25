@@ -1,11 +1,12 @@
 import { TProductCard } from "@/shared/types/common";
 
-import { TDealCard } from "../types";
-
-export const TodayDeals: TDealCard[] = [
+export const TodayDeals = [
   {
     name: "Apple Airpods MAX",
-    imgUrl: ["/images/products/airpodsMax1.jpg", "/images/products/airpodsMax2.jpg"],
+    imgUrl: [
+      "/images/products/airpodsMax1.jpg",
+      "/images/products/airpodsMax2.jpg",
+    ],
     price: 579.0,
     dealPrice: 519.0,
     specs: ["Wireless", "Noise Cancelling", "Built-In Microphone"],
@@ -14,7 +15,10 @@ export const TodayDeals: TDealCard[] = [
   },
   {
     name: "Apple Magic Mouse",
-    imgUrl: ["/images/products/appleMouse1.jpg", "/images/products/appleMouse2.jpg"],
+    imgUrl: [
+      "/images/products/appleMouse1.jpg",
+      "/images/products/appleMouse2.jpg",
+    ],
     price: 79.99,
     dealPrice: 55.49,
     specs: ["Bluetooth", "White"],
@@ -50,7 +54,7 @@ export const TodayDeals: TDealCard[] = [
   },
 ];
 
-export const TopProducts: TProductCard[] = [
+export const TopProducts = [
   {
     name: "Apple Airpods Pro",
     imgUrl: ["/images/products/airpods1.jpg", "/images/products/airpods2.jpg"],
@@ -60,7 +64,10 @@ export const TopProducts: TProductCard[] = [
   },
   {
     name: "Apple Watch Ultra 2",
-    imgUrl: ["/images/products/appleWatch1.jpg", "/images/products/appleWatch2.jpg"],
+    imgUrl: [
+      "/images/products/appleWatch1.jpg",
+      "/images/products/appleWatch2.jpg",
+    ],
     price: 799.0,
     specs: ["GPS + Cellular", "Titanium", "49mm"],
     url: "/product/65e6f5339d4ab819d115819c",
@@ -75,14 +82,20 @@ export const TopProducts: TProductCard[] = [
   },
   {
     name: "PS5 Controller",
-    imgUrl: ["/images/products/ps5Controller1.jpg", "/images/products/ps5Controller2.jpg"],
+    imgUrl: [
+      "/images/products/ps5Controller1.jpg",
+      "/images/products/ps5Controller2.jpg",
+    ],
     price: 69,
     specs: ["Bluetooth", "Version 2"],
     url: "/product/65e6f5f89d4ab819d115819f",
   },
   {
     name: "Sony Alpha 7RV",
-    imgUrl: ["/images/products/sonyAlpha7_1.jpg", "/images/products/sonyAlpha7_2.jpg"],
+    imgUrl: [
+      "/images/products/sonyAlpha7_1.jpg",
+      "/images/products/sonyAlpha7_2.jpg",
+    ],
     price: 4499,
     specs: ["Full Frame", "Body", "40MP"],
     dealPrice: 3699,

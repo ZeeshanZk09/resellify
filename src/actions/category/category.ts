@@ -1,10 +1,10 @@
-'use server';
-import { z } from 'zod';
-import { Category } from '@/shared/lib/generated/prisma/client';
-import db from '@/shared/lib/prisma';
-import { TCategory } from '@/shared/types/categories';
-import { generateCategorySlug } from '@/shared/lib/utils/category';
-import { authAdmin, authUser } from '@/shared/lib/utils/auth';
+"use server";
+import { z } from "zod";
+import { Category } from "@/shared/lib/generated/prisma/client";
+import db from "@/shared/lib/prisma";
+import { TCategory } from "@/shared/types/categories";
+import { generateCategorySlug } from "@/shared/lib/utils/category";
+import { authAdmin, authUser } from "@/shared/lib/utils/auth";
 
 //eslint-disable-next-line
 const GetAllCategories = z.object({
@@ -41,14 +41,14 @@ export const getAllCategories = async () => {
   try {
     const result: TGetAllCategories[] = await db.category.findMany({
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     if (!result) return { error: "Can't read categories" };
-    return { res: result };
+    return { res: result as Category[] };
   } catch {
-    return { error: 'Cant read Category Groups' };
+    return { error: "Cant read Category Groups" };
   }
 };
 // export const getAllCategoriesJSON = async () => {
@@ -65,7 +65,7 @@ export const getAllCategories = async () => {
 // };
 
 export const addCategory = async (data: TAddCategory) => {
-  if (!AddCategory.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!AddCategory.safeParse(data).success) return { error: "Invalid Data!" };
   try {
     const session = await authAdmin();
     if ((session as { error: string }).error) return session;
@@ -79,7 +79,7 @@ export const addCategory = async (data: TAddCategory) => {
         updatedAt: data.updatedAt ?? null,
       },
     });
-    if (!result) return { error: 'cant add to database' };
+    if (!result) return { error: "cant add to database" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
@@ -87,7 +87,8 @@ export const addCategory = async (data: TAddCategory) => {
 };
 
 export const updateCategory = async (data: TUpdateCategory) => {
-  if (!UpdateCategory.safeParse(data).success) return { error: 'Data is no valid' };
+  if (!UpdateCategory.safeParse(data).success)
+    return { error: "Data is no valid" };
 
   const { id, ...values } = data;
 
@@ -124,7 +125,7 @@ export const deleteCategory = async (id: string) => {
     });
 
     if (!result) return { error: "Can't delete it!" };
-    return { res: result || null, message: 'Category deleted successfully' };
+    return { res: result || null, message: "Category deleted successfully" };
   } catch {
     return { error: "Can't delete it!" };
   }

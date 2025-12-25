@@ -1,7 +1,7 @@
-'use client';
-import { useState } from 'react';
+"use client";
+import { useEffect, useState } from "react";
 
-import { Button } from '../ui/button';
+import { Button } from "../ui/button";
 
 import {
   DropdownMenu,
@@ -9,81 +9,109 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Heart, List, LogOut, Settings, ShoppingBag } from 'lucide-react';
-import ThemeSwitch from '../theme-switch';
-import ManageAccount from './manage-account';
-import { signOut } from 'next-auth/react';
-import { useAuth } from '../auth-provider';
-import { useRouter } from 'next/navigation';
+} from "../ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Heart, List, LogOut, Settings, ShoppingBag } from "lucide-react";
+import ThemeSwitch from "../theme-switch";
+import ManageAccount from "./manage-account";
+import { signOut } from "next-auth/react";
+import { useAuth } from "../auth-provider";
+import { useRouter } from "next/navigation";
 
-const UserButton = () => {
+export default function UserButton() {
   const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [openMangeAccount, setOpenManageAccount] = useState(false);
   const router = useRouter();
+  useEffect(() => {
+    if (user?.role === "ADMIN") {
+      setIsAdmin(true);
+    }
+  }, [user]);
+  console.log("isAdmin in userBUtton: ", user);
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size={'icon'} variant={'ghost'} className='rounded-full size-9'>
-            <Avatar className='size-9'>
+          <Button
+            size={"icon"}
+            variant={"ghost"}
+            className="rounded-full size-9"
+          >
+            <Avatar className="size-9">
               <AvatarImage src={user?.image || undefined} />
-              <AvatarFallback className='uppercase'>
+              <AvatarFallback className="uppercase">
                 {(user?.name as string)?.slice(0, 2)}
               </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='overflow-hidden min-w-xs sm:min-w-sm'>
-          <div className='flex gap-4 px-3 py-3'>
-            <Avatar className='h-10 w-10'>
-              <AvatarImage src={user?.image || ''} />
-              <AvatarFallback className='uppercase'>
+        <DropdownMenuContent
+          align="end"
+          className="overflow-hidden min-w-xs sm:min-w-sm"
+        >
+          <div className="flex gap-4 px-3 py-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user?.image || ""} />
+              <AvatarFallback className="uppercase">
                 {(user?.name as string)?.slice(0, 2)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h4 className='text-sm '>{user?.name}</h4>
-              <p className='text-xs mt-1 line-clamp-1 max-w-full overflow-hidden'>{user?.email}</p>
+              <h4 className="text-sm ">{user?.name}</h4>
+              <p className="text-xs mt-1 line-clamp-1 max-w-full overflow-hidden">
+                {user?.email}
+              </p>
             </div>
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push('/orders')} className='px-3.5 py-2'>
+          <DropdownMenuItem
+            onClick={() => router.push("/orders")}
+            className="px-3.5 py-2"
+          >
             <List /> My Orders
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push('/orders')} className='px-3.5 py-2'>
-            <ShoppingBag /> My Bag
-          </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => router.push('/')}
-            className='block sm:hidden px-3.5 py-2'
+            onClick={() => router.push("/orders")}
+            className="px-3.5 py-2"
           >
             <ShoppingBag /> My Bag
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push('/favourites')} className='px-3.5 py-2'>
+          <DropdownMenuItem
+            onClick={() => router.push("/")}
+            className="block sm:hidden px-3.5 py-2"
+          >
+            <ShoppingBag /> My Bag
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => router.push("/favourites")}
+            className="px-3.5 py-2"
+          >
             <Heart /> Favourites
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setOpenManageAccount(true)} className='px-3.5 py-2'>
+          <DropdownMenuItem
+            onClick={() => setOpenManageAccount(true)}
+            className="px-3.5 py-2"
+          >
             <Settings /> Manage Account
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => signOut()}
-            className='px-3.5 py-2 hover:text-destructive'
+            className="px-3.5 py-2 hover:text-destructive"
           >
             <LogOut /> Sign out
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <div className='flex justify-between py-1 px-3'>
-            <h4 className='text-sm'>Theme</h4>
-            <ThemeSwitch className='gap-2' />
+          <div className="flex justify-between py-1 px-3">
+            <h4 className="text-sm">Theme</h4>
+            <ThemeSwitch className="gap-2" />
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-      {openMangeAccount && <ManageAccount open={openMangeAccount} setOpen={setOpenManageAccount} />}
+      {openMangeAccount && (
+        <ManageAccount open={openMangeAccount} setOpen={setOpenManageAccount} />
+      )}
     </>
   );
-};
-
-export default UserButton;
+}
