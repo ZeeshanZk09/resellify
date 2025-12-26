@@ -5,11 +5,7 @@ import { getStoreDashboard } from '@/actions/admin/dashboard';
 import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 export default async function StoreAnalytics() {
   const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
-  let dashboardData;
-  const data = await getStoreDashboard();
-  if (data !== false) {
-    dashboardData = data;
-  }
+  const { data: dashboardData } = await getStoreDashboard();
 
   let dashboardCardsData = [
     { title: 'Total Products', value: dashboardData?.totalProducts, icon: ShoppingBasketIcon },
@@ -23,24 +19,24 @@ export default async function StoreAnalytics() {
   ];
 
   return (
-    <div className=' text-slate-500 mb-28'>
-      <h1 className='text-2xl'>
-        Store <span className='text-slate-800 font-medium'>Dashboard</span>
+    <div className=' text-foreground/80 mb-28'>
+      <h1 className='text-2xl mb-10'>
+        Store <span className='text-foreground font-medium'>Dashboard</span>
       </h1>
 
       <div className='flex flex-wrap gap-5 my-10 mt-4'>
         {dashboardCardsData?.map((card, index) => (
           <div
             key={index}
-            className='flex items-center gap-11 border border-slate-200 p-3 px-6 rounded-lg'
+            className='w-full sm:w-fit flex items-stretch sm:items-center gap-11 border border-foreground/20 p-3 px-6 rounded-lg'
           >
             <div className='flex flex-col gap-3 text-xs'>
               <p>{card.title}</p>
-              <b className='text-2xl font-medium text-slate-700'>{card.value}</b>
+              <b className='text-2xl font-medium text-foreground/60'>{card.value}</b>
             </div>
             <card.icon
               size={50}
-              className=' w-11 h-11 p-2.5 text-slate-400 bg-slate-100 rounded-full'
+              className=' w-11 h-11 p-2.5 text-card bg-card-foreground rounded-full'
             />
           </div>
         ))}

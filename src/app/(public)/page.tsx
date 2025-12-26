@@ -26,7 +26,7 @@ export default async function Home() {
         <WideCardRow cards={offers as any} />
         <TodayDealCards TodayDeals={todaysDeals as any} />
         <CollectionCards CollectionsData={collections} />
-        <TopSellingProductsList TopProducts={topSellingProducts} />
+        <TopSellingProductsList TopProducts={topSellingProducts as any} />
 
         <CompanyLogoList COMPANIES_LOGOS={brands} />
       </div>

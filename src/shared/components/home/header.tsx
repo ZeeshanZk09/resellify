@@ -8,20 +8,21 @@ import SearchInput from '../SearchInput';
 const Header = () => {
   return (
     <header className='top-0 sticky z-20 bg-card'>
-      <nav className='p-5 max-w-7xl mx-auto flex  justify-between items-center'>
+      <nav className='p-5 max-w-7xl mx-auto flex justify-between items-center'>
         <Link href={'/'}>
-          <h1 className='logo small' aria-label='Resellify - brand'>
+          <h1 className='logo small w-full' aria-label='Resellify - brand'>
             <span className='mark' aria-hidden>
-              R
+              Go
             </span>
-            <span className='word'>Resellify</span>
+            <span className='word'>Shop</span>
           </h1>
-          {/* <picture>
+          {/*  */}
+          {/* <picture> 
             <source srcSet="/images/logo.svg" type="image/svg+xml" />
             <img src="/images/logo.png" width="180" alt="Resellify" />
           </picture> */}
         </Link>
-        <div className='w-full flex items-center gap-5 justify-end'>
+        <div className='w-1/2 flex items-center gap-5 justify-end'>
           <SearchInput />
           <div className='hidden sm:flex gap-2'>
             <Link href={'/shop'} className='min-w-20 flex items-center gap-2 text-sm'>

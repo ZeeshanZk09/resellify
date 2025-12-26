@@ -7,17 +7,17 @@ const AdminNavbar = ({ name }: { name: string }) => {
       <Link href='/' className='relative text-lg sm:text-4xl font-semibold text-slate-700'>
         <h1 className='logo small' aria-label='Resellify - brand'>
           <span className='mark' aria-hidden>
-            R
+            Go
           </span>
-          <span className='word'>Resellify</span>
+          <span className='word'>Shop</span>
         </h1>
 
-        <p className='absolute text-[10px] font-semibold -top-1 -right-13 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500'>
+        <p className='absolute text-[10px] font-semibold -top-2 -right-13 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500'>
           Admin
         </p>
       </Link>
       <div className='flex items-center gap-3'>
-        <p>Hi, {name || 'Admin'}</p>
+        <p className='hidden sm:block'>Hi, {name || 'Admin'}</p>
         <UserButton />
       </div>
     </div>

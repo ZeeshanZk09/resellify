@@ -209,23 +209,25 @@ body.dark .logo .word {
 
 .logo .word {
   display: inline-block;
+  font-style: italic;
   font-size: 44px;
   font-weight: 800;
   font-family: var(--font-family);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   line-height: 1;
-  /* gradient fill for text */
+
   background: linear-gradient(
-    90deg,
+    to bottom right,
     var(--green-dark) 0%,
     var(--green-dark) 40%,
     var(--green-light) 100%
   );
+
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* subtle dark stroke for sharpness */
-  -webkit-text-stroke: 0.6px rgba(3, 20, 10, 0.12);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.02), 0 2px 0 rgba(0, 0, 0, 0.02);
+
+  text-shadow: 0 0 0.6px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.15);
+
   transform: translateY(-1px);
 }
 

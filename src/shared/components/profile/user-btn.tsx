@@ -96,7 +96,10 @@ export default function UserButton() {
           {isAdmin && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/admin')} className='px-3.5 py-2'>
+              <DropdownMenuItem
+                onClick={() => router.push('/admin')}
+                className='px-3.5 py-2 cursor-pointer'
+              >
                 <Shield /> Admin
               </DropdownMenuItem>
             </>
@@ -107,23 +110,26 @@ export default function UserButton() {
             <DropdownMenuItem
               key={item.id}
               onClick={item.func}
-              className={`px-3.5 py-2 ${item.className || ''}`}
+              className={`px-3.5 py-2 cursor-pointer ${item.className || ''}`}
             >
               <item.icon /> {item.label}
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setOpenManageAccount(true)} className='px-3.5 py-2'>
+          <DropdownMenuItem
+            onClick={() => setOpenManageAccount(true)}
+            className='px-3.5 py-2 cursor-pointer'
+          >
             <Settings /> Manage Account
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={async () => await signOut()}
-            className='px-3.5 py-2 hover:text-destructive'
+            className='px-3.5 py-2 hover:text-destructive cursor-pointer'
           >
             <LogOut /> Sign out
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <div className='flex justify-between py-1 px-3'>
+          <div className='flex justify-between py-1 px-3 cursor-pointer'>
             <h4 className='text-sm'>Theme</h4>
             <ThemeSwitch className='gap-2' />
           </div>

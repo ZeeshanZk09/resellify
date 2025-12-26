@@ -64,10 +64,18 @@ export async function getStoreDashboard() {
   try {
     const session = await authUser();
 
-    if (!session) return false;
+    if (!session)
+      return {
+        success: false,
+        message: 'Unauthorized',
+      };
 
     const isAdmin = await authAdmin();
-    if (!isAdmin) return false;
+    if (!isAdmin)
+      return {
+        success: false,
+        message: 'Unauthorized',
+      };
 
     const orders = await Prisma.order.findMany({
       where: {},
@@ -118,7 +126,11 @@ export async function getStoreDashboard() {
       totalRatings: ratings.length,
     };
 
-    return dashboard;
+    return {
+      success: true,
+      message: 'Dashboard data fetched',
+      data: dashboard,
+    };
   } catch (err: any) {
     console.error('[API] error', err);
 
@@ -130,8 +142,14 @@ export async function getStoreDashboard() {
       err?.code === 'ENOTFOUND';
 
     if (isNetworkErr) {
-      return false;
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : 'Something went wrong',
+      };
     }
-    return false;
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'Something went wrong',
+    };
   }
 }
