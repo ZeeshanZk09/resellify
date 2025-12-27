@@ -281,48 +281,6 @@ export type VariantOptionMinOrderByAggregateInput = {
   optionId?: Prisma.SortOrder
 }
 
-export type VariantOptionCreateNestedManyWithoutOptionInput = {
-  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
-  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
-  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-}
-
-export type VariantOptionUncheckedCreateNestedManyWithoutOptionInput = {
-  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
-  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
-  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-}
-
-export type VariantOptionUpdateManyWithoutOptionNestedInput = {
-  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
-  upsert?: Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput[]
-  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
-  set?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  disconnect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  delete?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  update?: Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput[]
-  updateMany?: Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput | Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput[]
-  deleteMany?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
-}
-
-export type VariantOptionUncheckedUpdateManyWithoutOptionNestedInput = {
-  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
-  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
-  upsert?: Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput[]
-  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
-  set?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  disconnect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  delete?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
-  update?: Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput[]
-  updateMany?: Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput | Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput[]
-  deleteMany?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
-}
-
 export type VariantOptionCreateNestedManyWithoutVariantInput = {
   create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutVariantInput, Prisma.VariantOptionUncheckedCreateWithoutVariantInput> | Prisma.VariantOptionCreateWithoutVariantInput[] | Prisma.VariantOptionUncheckedCreateWithoutVariantInput[]
   connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutVariantInput | Prisma.VariantOptionCreateOrConnectWithoutVariantInput[]
@@ -365,49 +323,46 @@ export type VariantOptionUncheckedUpdateManyWithoutVariantNestedInput = {
   deleteMany?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
 }
 
-export type VariantOptionCreateWithoutOptionInput = {
-  id?: string
-  variant: Prisma.ProductVariantCreateNestedOneWithoutOptionsInput
+export type VariantOptionCreateNestedManyWithoutOptionInput = {
+  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
+  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
+  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
+  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
 }
 
-export type VariantOptionUncheckedCreateWithoutOptionInput = {
-  id?: string
-  variantId: string
+export type VariantOptionUncheckedCreateNestedManyWithoutOptionInput = {
+  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
+  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
+  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
+  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
 }
 
-export type VariantOptionCreateOrConnectWithoutOptionInput = {
-  where: Prisma.VariantOptionWhereUniqueInput
-  create: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput>
+export type VariantOptionUpdateManyWithoutOptionNestedInput = {
+  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
+  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
+  upsert?: Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput[]
+  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
+  set?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  disconnect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  delete?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  update?: Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput[]
+  updateMany?: Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput | Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput[]
+  deleteMany?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
 }
 
-export type VariantOptionCreateManyOptionInputEnvelope = {
-  data: Prisma.VariantOptionCreateManyOptionInput | Prisma.VariantOptionCreateManyOptionInput[]
-  skipDuplicates?: boolean
-}
-
-export type VariantOptionUpsertWithWhereUniqueWithoutOptionInput = {
-  where: Prisma.VariantOptionWhereUniqueInput
-  update: Prisma.XOR<Prisma.VariantOptionUpdateWithoutOptionInput, Prisma.VariantOptionUncheckedUpdateWithoutOptionInput>
-  create: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput>
-}
-
-export type VariantOptionUpdateWithWhereUniqueWithoutOptionInput = {
-  where: Prisma.VariantOptionWhereUniqueInput
-  data: Prisma.XOR<Prisma.VariantOptionUpdateWithoutOptionInput, Prisma.VariantOptionUncheckedUpdateWithoutOptionInput>
-}
-
-export type VariantOptionUpdateManyWithWhereWithoutOptionInput = {
-  where: Prisma.VariantOptionScalarWhereInput
-  data: Prisma.XOR<Prisma.VariantOptionUpdateManyMutationInput, Prisma.VariantOptionUncheckedUpdateManyWithoutOptionInput>
-}
-
-export type VariantOptionScalarWhereInput = {
-  AND?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
-  OR?: Prisma.VariantOptionScalarWhereInput[]
-  NOT?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
-  id?: Prisma.StringFilter<"VariantOption"> | string
-  variantId?: Prisma.StringFilter<"VariantOption"> | string
-  optionId?: Prisma.StringFilter<"VariantOption"> | string
+export type VariantOptionUncheckedUpdateManyWithoutOptionNestedInput = {
+  create?: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput> | Prisma.VariantOptionCreateWithoutOptionInput[] | Prisma.VariantOptionUncheckedCreateWithoutOptionInput[]
+  connectOrCreate?: Prisma.VariantOptionCreateOrConnectWithoutOptionInput | Prisma.VariantOptionCreateOrConnectWithoutOptionInput[]
+  upsert?: Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpsertWithWhereUniqueWithoutOptionInput[]
+  createMany?: Prisma.VariantOptionCreateManyOptionInputEnvelope
+  set?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  disconnect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  delete?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  connect?: Prisma.VariantOptionWhereUniqueInput | Prisma.VariantOptionWhereUniqueInput[]
+  update?: Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput | Prisma.VariantOptionUpdateWithWhereUniqueWithoutOptionInput[]
+  updateMany?: Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput | Prisma.VariantOptionUpdateManyWithWhereWithoutOptionInput[]
+  deleteMany?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
 }
 
 export type VariantOptionCreateWithoutVariantInput = {
@@ -446,24 +401,49 @@ export type VariantOptionUpdateManyWithWhereWithoutVariantInput = {
   data: Prisma.XOR<Prisma.VariantOptionUpdateManyMutationInput, Prisma.VariantOptionUncheckedUpdateManyWithoutVariantInput>
 }
 
-export type VariantOptionCreateManyOptionInput = {
+export type VariantOptionScalarWhereInput = {
+  AND?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
+  OR?: Prisma.VariantOptionScalarWhereInput[]
+  NOT?: Prisma.VariantOptionScalarWhereInput | Prisma.VariantOptionScalarWhereInput[]
+  id?: Prisma.StringFilter<"VariantOption"> | string
+  variantId?: Prisma.StringFilter<"VariantOption"> | string
+  optionId?: Prisma.StringFilter<"VariantOption"> | string
+}
+
+export type VariantOptionCreateWithoutOptionInput = {
+  id?: string
+  variant: Prisma.ProductVariantCreateNestedOneWithoutOptionsInput
+}
+
+export type VariantOptionUncheckedCreateWithoutOptionInput = {
   id?: string
   variantId: string
 }
 
-export type VariantOptionUpdateWithoutOptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  variant?: Prisma.ProductVariantUpdateOneRequiredWithoutOptionsNestedInput
+export type VariantOptionCreateOrConnectWithoutOptionInput = {
+  where: Prisma.VariantOptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput>
 }
 
-export type VariantOptionUncheckedUpdateWithoutOptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  variantId?: Prisma.StringFieldUpdateOperationsInput | string
+export type VariantOptionCreateManyOptionInputEnvelope = {
+  data: Prisma.VariantOptionCreateManyOptionInput | Prisma.VariantOptionCreateManyOptionInput[]
+  skipDuplicates?: boolean
 }
 
-export type VariantOptionUncheckedUpdateManyWithoutOptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  variantId?: Prisma.StringFieldUpdateOperationsInput | string
+export type VariantOptionUpsertWithWhereUniqueWithoutOptionInput = {
+  where: Prisma.VariantOptionWhereUniqueInput
+  update: Prisma.XOR<Prisma.VariantOptionUpdateWithoutOptionInput, Prisma.VariantOptionUncheckedUpdateWithoutOptionInput>
+  create: Prisma.XOR<Prisma.VariantOptionCreateWithoutOptionInput, Prisma.VariantOptionUncheckedCreateWithoutOptionInput>
+}
+
+export type VariantOptionUpdateWithWhereUniqueWithoutOptionInput = {
+  where: Prisma.VariantOptionWhereUniqueInput
+  data: Prisma.XOR<Prisma.VariantOptionUpdateWithoutOptionInput, Prisma.VariantOptionUncheckedUpdateWithoutOptionInput>
+}
+
+export type VariantOptionUpdateManyWithWhereWithoutOptionInput = {
+  where: Prisma.VariantOptionScalarWhereInput
+  data: Prisma.XOR<Prisma.VariantOptionUpdateManyMutationInput, Prisma.VariantOptionUncheckedUpdateManyWithoutOptionInput>
 }
 
 export type VariantOptionCreateManyVariantInput = {
@@ -484,6 +464,26 @@ export type VariantOptionUncheckedUpdateWithoutVariantInput = {
 export type VariantOptionUncheckedUpdateManyWithoutVariantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type VariantOptionCreateManyOptionInput = {
+  id?: string
+  variantId: string
+}
+
+export type VariantOptionUpdateWithoutOptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  variant?: Prisma.ProductVariantUpdateOneRequiredWithoutOptionsNestedInput
+}
+
+export type VariantOptionUncheckedUpdateWithoutOptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  variantId?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type VariantOptionUncheckedUpdateManyWithoutOptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  variantId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 

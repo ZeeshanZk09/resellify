@@ -17,26 +17,6 @@ datasource db {
 //                   Enums 
 // ---------------------------------------------------
 
-enum ProductStatus {
-    DRAFT
-    PUBLISHED
-    ARCHIVED
-    SCHEDULED
-}
-
-enum Visibility {
-    PUBLIC
-    PRIVATE
-    UNLISTED
-}
-
-enum TwitterCard {
-    SUMMARY
-    SUMMARY_LARGE_IMAGE
-    APP
-    PLAYER
-}
-
 enum OrderStatus {
     CREATED // placed by user (for COD) or after payment pending confirmation
     PENDING // waiting for admin confirmation / validation (e.g. you call user)
@@ -72,7 +52,26 @@ enum Role {
     SUPPORT
 }
 
-// Enums
+enum ProductStatus {
+    DRAFT
+    PUBLISHED
+    ARCHIVED
+    SCHEDULED
+}
+
+enum Visibility {
+    PUBLIC
+    PRIVATE
+    UNLISTED
+}
+
+enum TwitterCard {
+    SUMMARY
+    SUMMARY_LARGE_IMAGE
+    APP
+    PLAYER
+}
+
 enum OptionType {
     TEXT // simple text options (e.g., "Cotton", "Polyester")
     COLOR // color options (render as swatch, value can be hex)
@@ -185,10 +184,6 @@ model Address {
     @@index([userId])
 }
 
-// ---------------------------------------------------
-//                   Products/store management
-// ---------------------------------------------------
-
 model Favourite {
     id        String   @id @default(cuid())
     userId    String
@@ -202,6 +197,30 @@ model Favourite {
     @@index([productId])
 }
 
+// ---------------------------------------------------
+//                   Products/store management
+// ---------------------------------------------------
+
+// categories & tags (you already had these; keep as-is)
+// To create
+model Category {
+    id                 String              @id @default(cuid())
+    name               String
+    slug               String              @unique
+    description        String?
+    parentId           String? // parent category id for hierarchy
+    parent             Category?           @relation("CategoryToChildren", fields: [parentId], references: [id])
+    children           Category[]          @relation("CategoryToChildren") // sub-categories
+    products           ProductCategory[]
+    categoryOptionSets CategoryOptionSet[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+    coupons   Coupon[]
+    offers    Offer[]
+}
+
+// To create
 model Product {
     id               String        @id @default(cuid())
     title            String
@@ -210,11 +229,11 @@ model Product {
     basePrice        Float // base price (default shown if variant price missing)
     salePrice        Float? // optional sale price on product level
     slug             String        @unique
-    sku              String?       @unique
+    sku              String        @unique
     price            Decimal?
     currency         String?       @default("PKR")
     status           ProductStatus @default(DRAFT)
-    visibility       Visibility    @default(PUBLIC)
+    visibility       Visibility    @default(UNLISTED)
     metadata         Json?
     publishedAt      DateTime?
     createdAt        DateTime      @default(now())
@@ -273,65 +292,24 @@ model Product {
     @@index([status, visibility])
 }
 
-// categories & tags (you already had these; keep as-is)
-model Category {
-    id                 String              @id @default(cuid())
-    name               String
-    slug               String              @unique
-    description        String?
-    parentId           String? // parent category id for hierarchy
-    parent             Category?           @relation("CategoryToChildren", fields: [parentId], references: [id])
-    children           Category[]          @relation("CategoryToChildren") // sub-categories
-    products           ProductCategory[]
-    categoryOptionSets CategoryOptionSet[]
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime? @updatedAt
-    coupons   Coupon[]
-    offers    Offer[]
+// Specs (for product detail & comparison)
+// To create
+model SpecGroup {
+    id       String        @id @default(cuid()) // spec group id
+    title    String // e.g., "Technical Specs"
+    keys     String[] // e.g., ["Battery", "RAM", "Processor"]
+    products ProductSpec[] // linked product specs
 }
 
-model ProductCategory {
-    id         String @id @default(cuid())
-    productId  String
-    categoryId String
-
-    product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-    category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-    @@unique([productId, categoryId])
-    @@index([categoryId])
+// To create
+model Tag {
+    id       String       @id @default(cuid())
+    name     String
+    slug     String       @unique
+    products ProductTag[]
 }
 
-// Option sets and values (for filters & variants)
-model OptionSet {
-    id         String              @id @default(cuid()) // option set id (e.g., "Color", "Fabric")
-    name       String // display name
-    type       OptionType // how to treat options (COLOR, SIZE, etc.)
-    options    Option[] // list of option values
-    categories CategoryOptionSet[] // which categories use this set
-}
-
-model Option {
-    id             String          @id @default(cuid()) // option id
-    optionSetId    String // parent optionSet
-    optionSet      OptionSet       @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
-    name           String // display label (e.g., "Red", "Cotton")
-    value          String? // machine value (e.g., "#ff0000" or code)
-    position       Int? // optional ordering for UI
-    variantOptions VariantOption[]
-}
-
-model CategoryOptionSet {
-    id          String    @id @default(cuid())
-    categoryId  String
-    optionSetId String
-    category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    optionSet   OptionSet @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
-
-    @@unique([categoryId, optionSetId])
-}
-
+// To create
 model ProductVariant {
     id         String          @id @default(cuid()) // variant id
     productId  String // parent product
@@ -353,25 +331,50 @@ model ProductVariant {
     @@index([productId])
 }
 
-model VariantOption {
-    id        String         @id @default(cuid()) // link id
-    variantId String // variant
-    optionId  String // chosen option value
-    option    Option         @relation(fields: [optionId], references: [id], onDelete: Cascade)
-    variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-    @@unique([variantId, optionId]) // same option shouldn't repeat for same variant
-    @@index([variantId])
+// Option sets and values (for filters & variants)
+model OptionSet {
+    id         String              @id @default(cuid()) // option set id (e.g., "Color", "Fabric")
+    name       String // display name
+    type       OptionType // how to treat options (COLOR, SIZE, etc.)
+    options    Option[] // list of option values
+    categories CategoryOptionSet[] // which categories use this set
 }
 
-// Specs (for product detail & comparison)
-model SpecGroup {
-    id       String        @id @default(cuid()) // spec group id
-    title    String // e.g., "Technical Specs"
-    keys     String[] // e.g., ["Battery", "RAM", "Processor"]
-    products ProductSpec[] // linked product specs
+model Option {
+    id             String          @id @default(cuid()) // option id
+    optionSetId    String // parent optionSet
+    optionSet      OptionSet       @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
+    name           String // display label (e.g., "Red", "Cotton")
+    value          String? // machine value (e.g., "#ff0000" or code)
+    position       Int? // optional ordering for UI
+    variantOptions VariantOption[]
 }
 
+// for filtering (fetching)
+model ProductCategory {
+    id         String @id @default(cuid())
+    productId  String
+    categoryId String
+
+    product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+    @@unique([productId, categoryId])
+    @@index([categoryId])
+}
+
+// for filtering (fetching)
+model CategoryOptionSet {
+    id          String    @id @default(cuid())
+    categoryId  String
+    optionSetId String
+    category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    optionSet   OptionSet @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
+
+    @@unique([categoryId, optionSetId])
+}
+
+// for filtering (fetching)
 model ProductSpec {
     id          String    @id @default(cuid()) // link id
     productId   String
@@ -383,13 +386,19 @@ model ProductSpec {
     @@index([productId])
 }
 
-model Tag {
-    id       String       @id @default(cuid())
-    name     String
-    slug     String       @unique
-    products ProductTag[]
+// for filtering (fetching)
+model VariantOption {
+    id        String         @id @default(cuid()) // link id
+    variantId String // variant
+    optionId  String // chosen option value
+    option    Option         @relation(fields: [optionId], references: [id], onDelete: Cascade)
+    variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+    @@unique([variantId, optionId]) // same option shouldn't repeat for same variant
+    @@index([variantId])
 }
 
+// for filtering (fetching)
 model ProductTag {
     id        String @id @default(cuid())
     productId String
@@ -439,7 +448,7 @@ model Brand {
     description String?
     metadata    Json?
 
-    // FK
+    // FKCategoryOfferTypeCategoryOfferType
     createdById String
     createdBy   User   @relation("BrandCreatedBy", fields: [createdById], references: [id])
 
@@ -656,13 +665,13 @@ model Offer {
 
 model ProductOffer {
     id        String  @id @default(cuid())
-    productId String
+    productId String?
     offerId   String?
     couponId  String?
 
-    product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-    offer   Offer?  @relation(fields: [offerId], references: [id], onDelete: Cascade)
-    coupons Coupon? @relation(fields: [couponId], references: [id], onDelete: Cascade)
+    product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+    offer   Offer?   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+    coupons Coupon?  @relation(fields: [couponId], references: [id], onDelete: Cascade)
 
     @@unique([productId, offerId])
     @@index([offerId])

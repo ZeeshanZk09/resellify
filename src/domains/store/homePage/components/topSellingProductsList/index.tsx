@@ -7,7 +7,7 @@ import { TopSellingProductType } from '@/actions/landing-dashboard/dashboard';
 export const TopSellingProductsList = ({
   TopProducts,
 }: {
-  TopProducts: TopSellingProductType[];
+  TopProducts: TopSellingProductType[] | undefined;
 }) => {
   return (
     <div className='w-full mt-14'>
@@ -17,23 +17,31 @@ export const TopSellingProductsList = ({
       </div>
       <div
         className={`flex justify-between gap-3 pb-7 2xl:pb-0 ${
-          TopProducts.length > 0 &&
+          TopProducts?.length &&
+          TopProducts?.length > 4 &&
           'overflow-x-scroll [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-foreground/20 [&::-webkit-scrollbar-thumb]:bg-foreground/20'
         }`}
       >
-        {TopProducts.length > 0 &&
-          TopProducts?.map((product, index) => (
-            <ProductCard
-              name={product?.title}
-              images={product.imgUrl}
-              price={product.price}
-              specs={product.specs}
-              url={product.url}
-              dealPrice={product.dealPrice}
-              key={index}
-              staticWidth
-            />
-          ))}
+        {TopProducts?.map((product, index) => (
+          <ProductCard
+            name={product?.title}
+            images={product.images}
+            basePrice={+product?.basePrice!}
+            specs={
+              product?.productSpecs.map((spec) => ({
+                id: spec.id,
+                values: spec.values,
+                productId: spec.productId,
+                specGroupId: spec.specGroupId,
+              })) ??
+              ([] as { id: string; values: string[]; productId: string; specGroupId: string }[])
+            }
+            url={`/shop/${product.slug}`}
+            dealPrice={product.salePrice}
+            key={index}
+            staticWidth
+          />
+        ))}
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ type TProps = {
 };
 
 const CollectionCard = ({ collection }: TProps) => {
+  console.log('collection in CollectionCard: ', collection);
   return (
     <div className='min-w-sm h-[250px] flex space-x-2 relative rounded-xl bg-card overflow-hidden mb-5'>
       <div className='flex-grow-2 ml-[30px]'>
@@ -23,7 +24,7 @@ const CollectionCard = ({ collection }: TProps) => {
           </Link>
         ))}
       </div>
-      {collection.products[0].product.images[0].path && (
+      {collection?.products[0]?.product?.images[0]?.path && (
         <div className='absolute top-2 right-3.5 w-[140px] h-[180px] z-[1]'>
           <Image
             src={collection.products[0].product.images[0].path}

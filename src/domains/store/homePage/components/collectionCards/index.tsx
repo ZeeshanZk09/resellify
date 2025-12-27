@@ -15,7 +15,7 @@ export const CollectionCards = ({
       </div>
       <div
         className={`flex justify-between gap-3.5 ${
-          CollectionsData?.length! > 0 &&
+          CollectionsData?.length! > 4 &&
           'overflow-x-scroll [&::-webkit-scrollbar]:h-1  [&::-webkit-scrollbar-track]:bg-foreground/20  [&::-webkit-scrollbar-thumb]:bg-foreground/20'
         }`}
       >

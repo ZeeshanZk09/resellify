@@ -6,7 +6,7 @@ export type TProductCard = {
   name: string;
   isAvailable?: boolean;
   specs: ProductSpec[];
-  price: number | Decimal;
+  basePrice: number | Decimal;
   dealPrice?: number | null;
   images: Upload[];
   url: string;

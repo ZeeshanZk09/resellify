@@ -9,35 +9,6 @@
 * 🟢 You can import this file directly.
 */
 
-export const ProductStatus = {
-  DRAFT: 'DRAFT',
-  PUBLISHED: 'PUBLISHED',
-  ARCHIVED: 'ARCHIVED',
-  SCHEDULED: 'SCHEDULED'
-} as const
-
-export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus]
-
-
-export const Visibility = {
-  PUBLIC: 'PUBLIC',
-  PRIVATE: 'PRIVATE',
-  UNLISTED: 'UNLISTED'
-} as const
-
-export type Visibility = (typeof Visibility)[keyof typeof Visibility]
-
-
-export const TwitterCard = {
-  SUMMARY: 'SUMMARY',
-  SUMMARY_LARGE_IMAGE: 'SUMMARY_LARGE_IMAGE',
-  APP: 'APP',
-  PLAYER: 'PLAYER'
-} as const
-
-export type TwitterCard = (typeof TwitterCard)[keyof typeof TwitterCard]
-
-
 export const OrderStatus = {
   CREATED: 'CREATED',
   PENDING: 'PENDING',
@@ -86,6 +57,35 @@ export const Role = {
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const ProductStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED',
+  SCHEDULED: 'SCHEDULED'
+} as const
+
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus]
+
+
+export const Visibility = {
+  PUBLIC: 'PUBLIC',
+  PRIVATE: 'PRIVATE',
+  UNLISTED: 'UNLISTED'
+} as const
+
+export type Visibility = (typeof Visibility)[keyof typeof Visibility]
+
+
+export const TwitterCard = {
+  SUMMARY: 'SUMMARY',
+  SUMMARY_LARGE_IMAGE: 'SUMMARY_LARGE_IMAGE',
+  APP: 'APP',
+  PLAYER: 'PLAYER'
+} as const
+
+export type TwitterCard = (typeof TwitterCard)[keyof typeof TwitterCard]
 
 
 export const OptionType = {

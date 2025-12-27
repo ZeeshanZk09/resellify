@@ -56,17 +56,17 @@ export const ModelName = {
   VerificationToken: 'VerificationToken',
   Address: 'Address',
   Favourite: 'Favourite',
-  Product: 'Product',
   Category: 'Category',
-  ProductCategory: 'ProductCategory',
+  Product: 'Product',
+  SpecGroup: 'SpecGroup',
+  Tag: 'Tag',
+  ProductVariant: 'ProductVariant',
   OptionSet: 'OptionSet',
   Option: 'Option',
+  ProductCategory: 'ProductCategory',
   CategoryOptionSet: 'CategoryOptionSet',
-  ProductVariant: 'ProductVariant',
-  VariantOption: 'VariantOption',
-  SpecGroup: 'SpecGroup',
   ProductSpec: 'ProductSpec',
-  Tag: 'Tag',
+  VariantOption: 'VariantOption',
   ProductTag: 'ProductTag',
   Cart: 'Cart',
   CartItem: 'CartItem',
@@ -174,6 +174,19 @@ export const FavouriteScalarFieldEnum = {
 export type FavouriteScalarFieldEnum = (typeof FavouriteScalarFieldEnum)[keyof typeof FavouriteScalarFieldEnum]
 
 
+export const CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  parentId: 'parentId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -214,26 +227,40 @@ export const ProductScalarFieldEnum = {
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
 
 
-export const CategoryScalarFieldEnum = {
+export const SpecGroupScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  keys: 'keys'
+} as const
+
+export type SpecGroupScalarFieldEnum = (typeof SpecGroupScalarFieldEnum)[keyof typeof SpecGroupScalarFieldEnum]
+
+
+export const TagScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  slug: 'slug',
-  description: 'description',
-  parentId: 'parentId',
+  slug: 'slug'
+} as const
+
+export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
+
+
+export const ProductVariantScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  sku: 'sku',
+  title: 'title',
+  price: 'price',
+  salePrice: 'salePrice',
+  stock: 'stock',
+  isDefault: 'isDefault',
+  images: 'images',
+  weightGram: 'weightGram',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
-
-
-export const ProductCategoryScalarFieldEnum = {
-  id: 'id',
-  productId: 'productId',
-  categoryId: 'categoryId'
-} as const
-
-export type ProductCategoryScalarFieldEnum = (typeof ProductCategoryScalarFieldEnum)[keyof typeof ProductCategoryScalarFieldEnum]
+export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
 
 
 export const OptionSetScalarFieldEnum = {
@@ -256,6 +283,15 @@ export const OptionScalarFieldEnum = {
 export type OptionScalarFieldEnum = (typeof OptionScalarFieldEnum)[keyof typeof OptionScalarFieldEnum]
 
 
+export const ProductCategoryScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  categoryId: 'categoryId'
+} as const
+
+export type ProductCategoryScalarFieldEnum = (typeof ProductCategoryScalarFieldEnum)[keyof typeof ProductCategoryScalarFieldEnum]
+
+
 export const CategoryOptionSetScalarFieldEnum = {
   id: 'id',
   categoryId: 'categoryId',
@@ -263,42 +299,6 @@ export const CategoryOptionSetScalarFieldEnum = {
 } as const
 
 export type CategoryOptionSetScalarFieldEnum = (typeof CategoryOptionSetScalarFieldEnum)[keyof typeof CategoryOptionSetScalarFieldEnum]
-
-
-export const ProductVariantScalarFieldEnum = {
-  id: 'id',
-  productId: 'productId',
-  sku: 'sku',
-  title: 'title',
-  price: 'price',
-  salePrice: 'salePrice',
-  stock: 'stock',
-  isDefault: 'isDefault',
-  images: 'images',
-  weightGram: 'weightGram',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
-
-
-export const VariantOptionScalarFieldEnum = {
-  id: 'id',
-  variantId: 'variantId',
-  optionId: 'optionId'
-} as const
-
-export type VariantOptionScalarFieldEnum = (typeof VariantOptionScalarFieldEnum)[keyof typeof VariantOptionScalarFieldEnum]
-
-
-export const SpecGroupScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  keys: 'keys'
-} as const
-
-export type SpecGroupScalarFieldEnum = (typeof SpecGroupScalarFieldEnum)[keyof typeof SpecGroupScalarFieldEnum]
 
 
 export const ProductSpecScalarFieldEnum = {
@@ -311,13 +311,13 @@ export const ProductSpecScalarFieldEnum = {
 export type ProductSpecScalarFieldEnum = (typeof ProductSpecScalarFieldEnum)[keyof typeof ProductSpecScalarFieldEnum]
 
 
-export const TagScalarFieldEnum = {
+export const VariantOptionScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  slug: 'slug'
+  variantId: 'variantId',
+  optionId: 'optionId'
 } as const
 
-export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
+export type VariantOptionScalarFieldEnum = (typeof VariantOptionScalarFieldEnum)[keyof typeof VariantOptionScalarFieldEnum]
 
 
 export const ProductTagScalarFieldEnum = {

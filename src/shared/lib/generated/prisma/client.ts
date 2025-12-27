@@ -65,20 +65,30 @@ export type Address = Prisma.AddressModel
  */
 export type Favourite = Prisma.FavouriteModel
 /**
- * Model Product
- * 
- */
-export type Product = Prisma.ProductModel
-/**
  * Model Category
  * 
  */
 export type Category = Prisma.CategoryModel
 /**
- * Model ProductCategory
+ * Model Product
  * 
  */
-export type ProductCategory = Prisma.ProductCategoryModel
+export type Product = Prisma.ProductModel
+/**
+ * Model SpecGroup
+ * 
+ */
+export type SpecGroup = Prisma.SpecGroupModel
+/**
+ * Model Tag
+ * 
+ */
+export type Tag = Prisma.TagModel
+/**
+ * Model ProductVariant
+ * 
+ */
+export type ProductVariant = Prisma.ProductVariantModel
 /**
  * Model OptionSet
  * 
@@ -90,35 +100,25 @@ export type OptionSet = Prisma.OptionSetModel
  */
 export type Option = Prisma.OptionModel
 /**
+ * Model ProductCategory
+ * 
+ */
+export type ProductCategory = Prisma.ProductCategoryModel
+/**
  * Model CategoryOptionSet
  * 
  */
 export type CategoryOptionSet = Prisma.CategoryOptionSetModel
-/**
- * Model ProductVariant
- * 
- */
-export type ProductVariant = Prisma.ProductVariantModel
-/**
- * Model VariantOption
- * 
- */
-export type VariantOption = Prisma.VariantOptionModel
-/**
- * Model SpecGroup
- * 
- */
-export type SpecGroup = Prisma.SpecGroupModel
 /**
  * Model ProductSpec
  * 
  */
 export type ProductSpec = Prisma.ProductSpecModel
 /**
- * Model Tag
+ * Model VariantOption
  * 
  */
-export type Tag = Prisma.TagModel
+export type VariantOption = Prisma.VariantOptionModel
 /**
  * Model ProductTag
  * 

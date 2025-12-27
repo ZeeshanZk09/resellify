@@ -1,60 +1,97 @@
 'use client';
 
+import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   HomeIcon,
   LayoutListIcon,
-  ShieldCheckIcon,
+  Menu,
   SquarePenIcon,
   SquarePlusIcon,
-  StoreIcon,
   TicketPercentIcon,
   User,
 } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from '../ui/button';
 
-const AdminSidebar = () => {
+export default function AdminSidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const sidebarLinks = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Users', href: '/admin/users', icon: User },
     { name: 'Coupons', href: '/admin/coupons', icon: TicketPercentIcon },
-    { name: 'Add Product', href: '/store/add-product', icon: SquarePlusIcon },
-    { name: 'Manage Product', href: '/store/manage-product', icon: SquarePenIcon },
-    { name: 'Orders', href: '/store/orders', icon: LayoutListIcon },
+    { name: 'Add Product', href: '/admin/add-product', icon: SquarePlusIcon },
+    { name: 'Manage Product', href: '/admin/manage-product', icon: SquarePenIcon },
+    { name: 'Orders', href: '/admin/orders', icon: LayoutListIcon },
   ];
 
   return (
-    <div className='inline-flex h-full flex-col gap-5 border-r border-slate-200 sm:min-w-60'>
-      {/* <div className='flex flex-col gap-3 justify-center items-center pt-8 max-sm:hidden'>
-        <ImageKit
-          className='w-14 h-14 rounded-full'
-          src={user?.imageUrl || assets.gs_logo}
-          alt={`${user?.firstName}_logo` || 'Admin_logo'}
-        />
-        <p className='text-slate-700'>Hi, {user?.fullName || 'Admin'}</p>
-      </div> */}
-
-      <div className='max-sm:mt-6'>
-        {sidebarLinks.map((link, index) => (
-          <Link
-            key={index}
-            href={link.href}
-            className={`relative flex items-center gap-3 text-slate-500 hover:bg-slate-50 p-2.5 transition ${
-              pathname === link.href && 'bg-slate-100 sm:text-slate-600'
-            }`}
-          >
-            <link.icon size={18} className='sm:ml-5' />
-            <p className='max-sm:hidden'>{link.name}</p>
-            {pathname === link.href && (
-              <span className='absolute bg-green-500 right-0 top-1.5 bottom-1.5 w-1 sm:w-1.5 rounded-l'></span>
-            )}
-          </Link>
-        ))}
+    <aside
+      aria-label='Admin sidebar'
+      className={`relative left-0 top-14 min-h-screen flex flex-col bg-card shadow-sm transition-all duration-300 ${
+        open ? 'w-64' : 'w-16'
+      }`}
+    >
+      {/* Top header: uses flex to position title and menu button */}
+      <div className='flex items-center justify-end px-3 py-3 border-b'>
+        {/* Menu / Toggle button aligned with flex (no absolute positioning) */}
+        <Button
+          onClick={() => setOpen((p) => !p)}
+          aria-expanded={open}
+          aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
+          size='icon'
+          variant='outline'
+          className='p-2'
+        >
+          <Menu className='w-5 h-5' />
+        </Button>
       </div>
-    </div>
-  );
-};
 
-export default AdminSidebar;
+      {/* Links container */}
+      <nav className='flex-1 overflow-y-auto'>
+        <ul className='flex flex-col gap-2 p-3'>
+          {sidebarLinks.map((link) => {
+            const isActive = pathname === link.href;
+            const Icon = link.icon;
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors font-medium 
+                    ${
+                      isActive
+                        ? 'bg-green-50 text-green-700 shadow ring-2 ring-green-100'
+                        : 'text-foreground hover:bg-accent hover:text-foreground'
+                    }`}
+                >
+                  <span
+                    className={`flex items-center justify-center w-6 h-6 transition-colors duration-150 ${
+                      isActive ? 'text-green-600' : 'text-foreground/60 group-hover:text-green-600'
+                    }`}
+                  >
+                    <Icon size={18} />
+                  </span>
+
+                  {/* Label hides when collapsed */}
+                  <span className={`${!open ? 'hidden' : 'block truncate'}`}>{link.name}</span>
+
+                  {/* Active indicator */}
+                  {isActive && open && (
+                    <span className='ml-auto h-5 w-1.5 bg-green-500 rounded-l' />
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* Optional footer area (collapse hint) */}
+      <div className='px-3 py-3 border-t'>
+        <small className={`text-xs ${!open ? 'hidden' : 'block'}`}>v1.0.0</small>
+      </div>
+    </aside>
+  );
+}

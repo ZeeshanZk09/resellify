@@ -16,6 +16,17 @@ export default async function Home() {
   const { topSellingProducts, todaysDeals, offers, error, details, collections, brands } =
     await getHome();
 
+  console.log(
+    'HOME: ',
+    topSellingProducts,
+    todaysDeals,
+    offers,
+    error,
+    details,
+    collections,
+    brands
+  );
+
   return (
     <div className='w-full bg-mint-500 flex flex-col justify-between max-w-7xl px-5 mx-auto'>
       <div className='storeContainer flex-col'>
@@ -23,10 +34,10 @@ export default async function Home() {
           <HomeCategoryList />
           <HomeSlider />
         </div>
-        <WideCardRow cards={offers as any} />
-        <TodayDealCards TodayDeals={todaysDeals as any} />
+        <WideCardRow cards={offers} />
+        <TodayDealCards TodayDeals={todaysDeals} />
         <CollectionCards CollectionsData={collections} />
-        <TopSellingProductsList TopProducts={topSellingProducts as any} />
+        <TopSellingProductsList TopProducts={topSellingProducts} />
 
         <CompanyLogoList COMPANIES_LOGOS={brands} />
       </div>

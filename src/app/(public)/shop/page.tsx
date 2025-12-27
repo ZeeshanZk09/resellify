@@ -82,7 +82,7 @@ export default async function Shop({ searchParams }: { searchParams: { search?: 
                 key={id}
                 dealPrice={salePrice}
                 name={title}
-                price={price || basePrice}
+                basePrice={price || basePrice}
                 specs={productSpecs}
                 url={canonicalUrl!}
               />

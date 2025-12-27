@@ -2,22 +2,50 @@
 import prisma from '@/shared/lib/prisma';
 import type { Prisma } from '@/shared/lib/generated/prisma/client';
 
-// Type definitions for dashboard return value
+// --- Dashboard Types (updated for actual getHome() return structure) ---
+
+// CategoryOfferType: Structure for each category in "offers", where offers are grouped by category
 export type CategoryOfferType = {
   category: {
     id: string;
     name: string;
     slug: string;
+    description?: string | null;
   };
   maxDiscount: number;
   offers: Array<
-    Prisma.OfferGetPayload<{
+    Prisma.ProductOfferGetPayload<{
       include: {
-        category: {
-          select: {
-            id: true;
-            name: true;
-            slug: true;
+        product: {
+          include: {
+            images: true;
+            categories: {
+              include: {
+                category: {
+                  select: {
+                    children: true;
+                    slug: true;
+                    name: true;
+                    id: true;
+                    products: true;
+                  };
+                };
+              };
+            };
+          };
+        };
+        coupons: true;
+        offer: {
+          include: {
+            category: {
+              select: {
+                children: true;
+                slug: true;
+                name: true;
+                id: true;
+                products: true;
+              };
+            };
           };
         };
       };
@@ -25,15 +53,51 @@ export type CategoryOfferType = {
   >;
 };
 
+// TodaysDealType: Each product in "todaysDeals"
 export type TodaysDealType = Prisma.ProductGetPayload<{
   include: {
+    productVariants: {
+      include: {
+        options: {
+          include: {
+            option: {
+              select: {
+                id: true;
+                name: true;
+                position: true;
+                value: true;
+                optionSet: {
+                  select: {
+                    id: true;
+                    name: true;
+                    type: true;
+                    options: true;
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
     images: {
-      where: { isPrimary: true };
-      take: 1;
+      take: 4;
     };
     productOffers: {
       include: {
-        offer: true;
+        offer: {
+          include: {
+            category: {
+              select: {
+                children: true;
+                slug: true;
+                name: true;
+                id: true;
+                products: true;
+              };
+            };
+          };
+        };
       };
     };
   };
@@ -44,6 +108,7 @@ export type TodaysDealType = Prisma.ProductGetPayload<{
   endsAt: Date | null;
 };
 
+// CollectionType: Each collection/category in "collections"
 export type CollectionType = Prisma.CategoryGetPayload<{
   include: {
     products: {
@@ -66,28 +131,42 @@ export type CollectionType = Prisma.CategoryGetPayload<{
   };
 }>;
 
-export type TopSellingProductType = Prisma.ProductGetPayload<{
-  include: {
-    images: {
-      where: { isPrimary: true };
-      take: 1;
-    };
-    orderItems: {
-      select: {
-        quantity: true;
+// TopSellingProductType: Each product in "topSellingProducts"
+export type TopSellingProductType = Omit<
+  Prisma.ProductGetPayload<{
+    include: {
+      productSpecs: true;
+      productVariants: {
+        include: {
+          options: {
+            include: {
+              option: true;
+            };
+          };
+        };
+      };
+      images: {
+        take: 4;
+      };
+      orderItems: {
+        select: {
+          quantity: true;
+        };
+      };
+      _count: {
+        select: {
+          orderItems: true;
+        };
       };
     };
-    _count: {
-      select: {
-        orderItems: true;
-      };
-    };
-  };
-}> & {
+  }>,
+  'images'
+> & {
   totalSold: number;
   images: Array<Prisma.UploadGetPayload<{}>>;
 };
 
+// BrandType: Each brand in "brands"
 export type BrandType = Prisma.BrandGetPayload<{
   include: {
     upload: {
@@ -100,6 +179,46 @@ export type BrandType = Prisma.BrandGetPayload<{
   };
 }>;
 
+export type CategoryOffer = {
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+  };
+  maxDiscount: number;
+  offers: Array<
+    Prisma.ProductOfferGetPayload<{
+      include: {
+        product: {
+          include: {
+            images: {
+              take: 4;
+            };
+            categories: {
+              include: {
+                category: {
+                  select: {
+                    children: true;
+                    slug: true;
+                    name: true;
+                    id: true;
+                    description: true;
+                    products: true;
+                  };
+                };
+              };
+            };
+          };
+        };
+        coupons: true;
+        offer: true;
+      };
+    }>
+  >;
+};
+
+// DashboardHomeData: return type for getHome()
 export type DashboardHomeData = {
   offers: CategoryOfferType[];
   todaysDeals: TodaysDealType[];
@@ -108,40 +227,84 @@ export type DashboardHomeData = {
   brands: BrandType[];
 };
 
-// purpose:
-// 1. Offers (to target all categories)
-//      a. Smart Watches
-//           Save Up to 99Rs
-//           Show DealsSave Up to 99Rs
-//      b. Laptops
-//            Save Up to 99Rs
-//            Show DealsSave Up to 99Rs
-//      c. DJI Products
-//           Save Up to 199Rs
-//           Show DealsSave Up to 199Rs
-// 2. Today's Deals (Per product sale)
-//      a.Save 60.00 RSsave amount
-//           Apple Airpods MAX
-//           was 579.00 RS
-//           519.00 RS
-//           1d 23:51:22
-//      b. Save 24.50 RSsave amount
-//           Apple Magic Mouse
-//           was 79.99 RS
-//           55.49 RS
-// 3. Collections
-//      a. Smart Watches
-//           ...subcategories
-//      b. Laptops
-//           ...subcategories
-//      c. DJI Products
-//           ...subcategories
-// 4. Top Selling Products
-//      a. ...products
-//      b. ...products
-//      c. ...products
-// 5. Brands
-//      a. ...brands
+// purpose...
+// (omitted for brevity)
+
+async function categoryOffers(): Promise<
+  Prisma.ProductOfferGetPayload<{
+    include: {
+      product: {
+        include: {
+          images: true;
+          categories: {
+            include: {
+              category: {
+                select: {
+                  children: true;
+                  slug: true;
+                  description: true;
+                  name: true;
+                  id: true;
+                  products: true;
+                };
+              };
+            };
+          };
+        };
+      };
+      coupons: true;
+      offer: true;
+    };
+  }>[]
+> {
+  try {
+    const now = new Date();
+
+    const categoryOffers = await prisma.productOffer.findMany({
+      where: {
+        product: {
+          status: 'PUBLISHED',
+          visibility: 'PUBLIC',
+        },
+        offer: {
+          isActive: true,
+          AND: [
+            { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+            { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+            { categoryId: { not: null } },
+          ],
+        },
+      },
+      include: {
+        product: {
+          include: {
+            images: true,
+            categories: {
+              include: {
+                category: {
+                  select: {
+                    children: true,
+                    slug: true,
+                    name: true,
+                    id: true,
+                    products: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        coupons: true,
+        offer: true,
+      },
+      orderBy: [{ product: { publishedAt: 'desc' } }, { offer: { priority: 'desc' } }],
+    });
+    return categoryOffers;
+  } catch (error) {
+    // In case of error, return empty array (keep non-any, never undefined)
+    return [];
+  }
+}
 
 async function getHome() {
   try {
@@ -149,75 +312,61 @@ async function getHome() {
 
     // 1. Offers (to target all categories)
     // Get active offers grouped by category with max discount
-    const categoryOffers = await prisma.offer.findMany({
-      where: {
-        isActive: true,
-        AND: [
-          { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
-          { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
-          { categoryId: { not: null } },
-        ],
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-      },
-      orderBy: {
-        priority: 'desc',
-      },
-    });
 
     // Group offers by category and calculate max discount
 
-    type CategoryOffer = {
-      category: {
-        id: string;
-        name: string;
-        slug: string;
-      };
-      maxDiscount: number;
-      offers: typeof categoryOffers;
-    };
+    // Helper for grouping by category
 
-    const offersByCategory = categoryOffers.reduce(
+    const offers = await categoryOffers();
+
+    // Grouping logic
+    const offersByCategory: Record<string, CategoryOffer> = offers.reduce(
       (acc: Record<string, CategoryOffer>, offer) => {
-        if (!offer.category) return acc;
-        const categoryName = offer.category.name;
-        if (!acc[categoryName]) {
-          acc[categoryName] = {
-            category: offer.category,
-            maxDiscount: 0,
-            offers: [],
-          };
-        }
-        const discount = offer.maxDiscount
-          ? Number(offer.maxDiscount)
-          : offer.type === 'PERCENT'
-          ? Number(offer.value)
-          : 0;
-        if (discount > acc[categoryName].maxDiscount) {
-          acc[categoryName].maxDiscount = discount;
-        }
-        acc[categoryName].offers.push(offer);
+        if (!offer?.product?.categories || offer.product.categories.length === 0) return acc;
+
+        offer.product.categories.forEach((catRel) => {
+          const cat = catRel.category;
+          if (!cat) return;
+          const categoryKey = cat.id; // Use category ID as unique key
+
+          if (!acc[categoryKey]) {
+            acc[categoryKey] = {
+              category: {
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug,
+                description: cat.description ?? null,
+              },
+              maxDiscount: 0,
+              offers: [],
+            };
+          }
+
+          // Calculate discount for this offer
+          let discount = 0;
+          const offerObj = offer.offer;
+          if (offerObj) {
+            if (offerObj.maxDiscount != null) {
+              discount = Number(offerObj.maxDiscount);
+            } else if (offerObj.type === 'PERCENT') {
+              discount = Number(offerObj.value);
+            }
+          }
+
+          if (discount > acc[categoryKey].maxDiscount) {
+            acc[categoryKey].maxDiscount = discount;
+          }
+
+          acc[categoryKey].offers.push(offer);
+        });
+
         return acc;
       },
-      {} as Record<
-        string,
-        {
-          category: { id: string; name: string; slug: string };
-          maxDiscount: number;
-          offers: typeof categoryOffers;
-        }
-      >
+      {}
     );
 
     // 2. Today's Deals (Products with salePrice)
-    const todaysDeals = await prisma.product.findMany({
+    const todaysDealsRaw = await prisma.product.findMany({
       where: {
         status: 'PUBLISHED',
         visibility: 'PUBLIC',
@@ -228,19 +377,46 @@ async function getHome() {
         ],
       },
       include: {
+        productVariants: {
+          include: {
+            options: {
+              include: {
+                option: {
+                  select: {
+                    id: true,
+                    name: true,
+                    position: true,
+                    value: true,
+                    optionSet: {
+                      select: {
+                        id: true,
+                        name: true,
+                        type: true,
+                        options: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         images: {
-          where: { isPrimary: true },
-          take: 1,
+          take: 4,
         },
         productOffers: {
           include: {
             offer: {
-              where: {
-                isActive: true,
-                AND: [
-                  { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
-                  { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
-                ],
+              include: {
+                category: {
+                  select: {
+                    children: true,
+                    slug: true,
+                    name: true,
+                    id: true,
+                    products: true,
+                  },
+                },
               },
             },
           },
@@ -252,15 +428,13 @@ async function getHome() {
       },
     });
 
-    // Calculate discount amounts and time remaining for deals
-    const dealsWithDiscount = todaysDeals.map((product) => {
+    // Calculate extra info for deals
+    const todaysDeals = todaysDealsRaw.map((product) => {
       const basePrice = product.basePrice;
-      const salePrice = product.salePrice || basePrice;
+      const salePrice = product.salePrice ?? basePrice;
       const discountAmount = basePrice - salePrice;
-
-      // Get offer end time if available
       const activeOffer = product.productOffers.find((po) => po.offer);
-      const endsAt = activeOffer?.offer?.endsAt;
+      const endsAt = activeOffer?.offer?.endsAt ?? null;
 
       return {
         ...product,
@@ -303,15 +477,28 @@ async function getHome() {
 
     // 4. Top Selling Products
     // Based on order items count
-    const topSellingProducts = await prisma.product.findMany({
+    const topSellingProductsRaw = await prisma.product.findMany({
       where: {
         status: 'PUBLISHED',
         visibility: 'PUBLIC',
       },
       include: {
+        productSpecs: true,
+        productVariants: {
+          include: {
+            options: {
+              include: {
+                option: {
+                  include: {
+                    optionSet: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         images: {
-          where: { isPrimary: true },
-          take: 1,
+          take: 4,
         },
         orderItems: {
           select: {
@@ -332,6 +519,13 @@ async function getHome() {
       take: 10,
     });
 
+    // Add totalSold and normalize images for TopSellingProductType
+    const topSellingProducts: TopSellingProductType[] = topSellingProductsRaw.map((product) => ({
+      ...product,
+      totalSold: product._count.orderItems,
+      images: product.images,
+    }));
+
     // 5. Brands
     const brands = await prisma.brand.findMany({
       include: {
@@ -351,13 +545,9 @@ async function getHome() {
 
     return {
       offers: Object.values(offersByCategory),
-      todaysDeals: dealsWithDiscount,
+      todaysDeals,
       collections,
-      topSellingProducts: topSellingProducts.map((product) => ({
-        ...product,
-        totalSold: product._count.orderItems,
-        images: product.images,
-      })),
+      topSellingProducts,
       brands,
     };
   } catch (error) {
