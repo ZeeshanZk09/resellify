@@ -1,14 +1,16 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-import { ClockIcon } from '@/shared/components/icons/svgIcons';
+import { ClockIcon } from "@/shared/components/icons/svgIcons";
+import { Visibility } from "@/shared/lib/generated/prisma/enums";
 
 // const DEFAULT_DEAL_DURATION_MS = 60 * 60 * 10000; // 1 hour
 
 type TProps = {
+  visibility: Visibility;
   productDescription: string;
   productName: string;
   newPrice: number;
@@ -22,7 +24,7 @@ type TProps = {
   locale?: string; // default 'en-US'
 };
 
-const formatCurrency = (value: number, locale = 'en-US') =>
+const formatCurrency = (value: number, locale = "en-US") =>
   value.toLocaleString(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -38,9 +40,10 @@ const formatMsToDHMS = (ms: number) => {
   return { days, hours, minutes, seconds };
 };
 
-const pad = (n: number) => String(n).padStart(2, '0');
+const pad = (n: number) => String(n).padStart(2, "0");
 
 const TodayDealCard = ({
+  visibility,
   productDescription,
   productName,
   newPrice,
@@ -52,8 +55,8 @@ const TodayDealCard = ({
     value: string;
   }[],
   url,
-  currencySymbol = 'RS',
-  locale = 'en-US',
+  currencySymbol = "RS",
+  locale = "en-US",
 }: TProps) => {
   // Use a timestamp instead of Date object to avoid re-renders
   const [timeLeftMs, setTimeLeftMs] = useState<number>(0);
@@ -63,7 +66,8 @@ const TodayDealCard = ({
     let endTimestamp: number;
 
     if (dealEndTime) {
-      const d = dealEndTime instanceof Date ? dealEndTime : new Date(dealEndTime);
+      const d =
+        dealEndTime instanceof Date ? dealEndTime : new Date(dealEndTime);
       endTimestamp = d.getTime();
     }
 
@@ -100,17 +104,17 @@ const TodayDealCard = ({
   const saveAmount = Math.max(0, oldPrice - newPrice);
 
   //   console.log('image in toadys deal card: ', image);
-  console.log('product-specs: ', spec);
+  console.log("product-specs: ", spec);
 
   return (
     <article
-      className='min-w-64 min-h-[400px] relative p-3 bg-card rounded-xl group transition-shadow hover:shadow-lg'
-      aria-labelledby='deal-title'
+      className="min-w-64 min-h-[400px] relative p-3 bg-card rounded-xl group transition-shadow hover:shadow-lg"
+      aria-labelledby="deal-title"
     >
       <Link
         href={url}
-        className='imgWrapper block w-full h-[220px] relative overflow-hidden border border-foreground/12 rounded-lg'
-        aria-hidden='true'
+        className="imgWrapper block w-full h-[220px] relative overflow-hidden border border-foreground/12 rounded-lg"
+        aria-hidden="true"
       >
         {/* primary image */}
         {Array.isArray(image) && image.length > 0 && image[0] && image[1] && (
@@ -119,16 +123,16 @@ const TodayDealCard = ({
               alt={productName}
               src={image[0]}
               fill
-              sizes='(max-width:240px) 240px, 400px'
-              className='object-contain transition-transform duration-300 ease-out'
+              sizes="(max-width:240px) 240px, 400px"
+              className="object-contain transition-transform duration-300 ease-out"
               priority={false}
             />
             <Image
               alt={`${productName} - alternate`}
               src={image[1]}
               fill
-              sizes='(max-width:240px) 240px, 400px'
-              className='object-contain absolute inset-0 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-105'
+              sizes="(max-width:240px) 240px, 400px"
+              className="object-contain absolute inset-0 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-105"
               priority={false}
             />
           </>
@@ -136,59 +140,74 @@ const TodayDealCard = ({
       </Link>
 
       {/* Save badge */}
-      <div className='absolute top-4 left-4 rounded-md px-2 py-1 bg-red-600 text-sm text-white shadow-sm'>
-        <span aria-hidden>Save</span>{' '}
-        <span className='font-semibold'>
+      <div className="absolute top-4 left-4 rounded-md px-2 py-1 bg-red-600 text-sm text-white shadow-sm">
+        <span aria-hidden>Save</span>{" "}
+        <span className="font-semibold">
           {formatCurrency(saveAmount, locale)} {currencySymbol}
         </span>
-        <span className='sr-only'> save amount</span>
+        <span className="sr-only"> save amount</span>
       </div>
 
-      <Link href={url} className='block mt-4'>
-        <h3 id='deal-title' className='ml-1 text-foreground/95 text-md font-semibold leading-tight'>
+      <Link href={url} className="block mt-4">
+        <h3
+          id="deal-title"
+          className="ml-1 text-foreground/95 text-md font-semibold leading-tight"
+        >
           {productName}
         </h3>
       </Link>
 
-      <div className='mt-2 ml-1 min-h-[56px]'>
+      <div className="mt-2 ml-1 min-h-[56px]">
         {!!spec.length ? (
           spec.map((item, index) => {
             return (
-              <p key={index} className='text-sm text-foreground/70 leading-5'>
-                {item.name}: {item.value ? item.value : 'N/A'}
+              <p key={index} className="text-sm text-foreground/70 leading-5">
+                {item.name}: {item.value ? item.value : "N/A"}
               </p>
             );
           })
         ) : (
-          <p className='text-xs text-foreground/70 leading-5 line-clamp-2 text-ellipsis overflow-hidden max-w-xs'>
-            <span className='font-semibold text-foreground/95'>Description:</span>{' '}
-            {productDescription ?? 'N/A'}
+          <p className="text-xs text-foreground/70 leading-5 line-clamp-2 text-ellipsis overflow-hidden max-w-xs">
+            <span className="font-semibold text-foreground/95">
+              Description:
+            </span>{" "}
+            {productDescription ?? "N/A"}
           </p>
         )}
       </div>
 
-      <div className='flex justify-between items-center mt-3 mx-1'>
+      <p
+        className={
+          visibility === "PUBLIC"
+            ? "bg-green-100 text-green-500 px-2 py-1 rounded-md w-fit"
+            : "bg-red-100 text-red-500 px-2 py-1 rounded-md w-fit"
+        }
+      >
+        {visibility === "PUBLIC" ? "In Stock" : "Out of Stock"}
+      </p>
+
+      <div className="flex justify-between items-center mt-3 mx-1">
         <div>
           {oldPrice > 0 && (
-            <div className='text-sm text-foreground/70'>
-              was{' '}
+            <div className="text-sm text-foreground/70">
+              was{" "}
               <del>
                 {formatCurrency(oldPrice, locale)} {currencySymbol}
               </del>
             </div>
           )}
-          <div className='text-xl font-medium text-foreground/95'>
+          <div className="text-xl font-medium text-foreground/95">
             {formatCurrency(newPrice, locale)} {currencySymbol}
           </div>
         </div>
 
         {!isNaN(days) && !isNaN(minutes) && !isNaN(seconds) && (
-          <div className='flex flex-col items-center gap-2 text-sm'>
-            <ClockIcon width={16} className='fill-red-600' />
+          <div className="flex flex-col items-center gap-2 text-sm">
+            <ClockIcon width={16} className="fill-red-600" />
             <div
-              role='status'
-              aria-live='polite'
-              className='w-28 h-8 rounded-md border border-red-500 flex items-center justify-center font-medium text-sm'
+              role="status"
+              aria-live="polite"
+              className="w-28 h-8 rounded-md border border-red-500 flex items-center justify-center font-medium text-sm"
             >
               {timeLeftMs <= 0 ? (
                 <span>Expired</span>

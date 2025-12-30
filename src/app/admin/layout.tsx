@@ -7,6 +7,7 @@ import { ReactNode } from 'react';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await auth();
+  console.log('session in admin route:', session)
   if (!session || session.user.role !== 'ADMIN') {
     redirect('/dashboard');
   }

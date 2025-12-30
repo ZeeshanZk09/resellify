@@ -1,10 +1,15 @@
-import { NameValue, OptionSetType, PageType } from '@prisma/client';
-import { ProductSpec, Upload, Visit } from '../lib/generated/prisma/client';
-import { Decimal } from '@prisma/client/runtime/client';
+import { NameValue, OptionSetType, PageType } from "@prisma/client";
+import {
+  ProductSpec,
+  Upload,
+  Visibility,
+  Visit,
+} from "../lib/generated/prisma/client";
+import { Decimal } from "@prisma/client/runtime/client";
 
 export type TProductCard = {
   name: string;
-  isAvailable?: boolean;
+  visibility: Visibility;
   specs: ProductSpec[];
   basePrice: number | Decimal;
   dealPrice?: number | null;
@@ -15,7 +20,7 @@ export type TProductCard = {
 
 export type TSlide = {
   imgUrl: string;
-  url: string;
+  url?: string;
   alt: string;
   msg?: {
     title: string;
