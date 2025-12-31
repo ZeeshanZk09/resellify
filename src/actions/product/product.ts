@@ -1,5 +1,5 @@
-'use server';
-import prisma from '@/shared/lib/prisma';
+"use server";
+import prisma from "@/shared/lib/prisma";
 import {
   TAddProductFormValues,
   TCartListItemDB,
@@ -7,17 +7,17 @@ import {
   TProductListItem,
   TProductPageInfo,
   TSpecification,
-} from '@/shared/types/product';
+} from "@/shared/types/product";
 import {
   generateProductMetadata,
   generateProductStructuredData,
   validateRequiredFields,
-} from '@/shared/lib/utils/product';
-import { uploadImage } from './product-image';
-import { auth } from '@/auth';
+} from "@/shared/lib/utils/product";
+import { uploadImage } from "./product-image";
+import { auth } from "@/auth";
 
 const convertStringToFloat = (str: string | number) => {
-  (str as string).replace(/,/, '.');
+  (str as string).replace(/,/, ".");
   return str ? parseFloat(str as string) : 0.0;
 };
 type VariantInput = {
@@ -270,10 +270,10 @@ import type {
   Tag,
   SpecGroup,
   VariantOption,
-} from '@/shared/lib/generated/prisma/client';
-import { InputJsonValue } from '@prisma/client/runtime/client';
-import { NullableJsonNullValueInput } from '@/shared/lib/generated/prisma/internal/prismaNamespace';
-type AddProductInput = {
+} from "@/shared/lib/generated/prisma/client";
+import { InputJsonValue } from "@prisma/client/runtime/client";
+import { NullableJsonNullValueInput } from "@/shared/lib/generated/prisma/internal/prismaNamespace";
+export type AddProductInput = {
   title: string;
   slug: string;
   sku: string;
@@ -282,14 +282,14 @@ type AddProductInput = {
   description?: string | null;
   shortDescription?: string | null;
   currency?: string;
-  status?: Product['status'];
-  visibility?: Product['visibility'];
+  status?: Product["status"];
+  visibility?: Product["visibility"];
   inventory?: number;
   lowStockThreshold?: number;
   images: File[] | File;
   optionSets?: {
     name: string;
-    type: OptionSet['type'];
+    type: OptionSet["type"];
     options: {
       name: string;
       value?: string | null;
@@ -311,7 +311,7 @@ type AddProductInput = {
     groupTitle: string;
     keys: string[];
     values: string[];
-  };
+  }[];
   tags?: {
     name: string;
     slug: string;
@@ -326,13 +326,18 @@ type AddProductInput = {
 
 export async function addProduct(input: AddProductInput) {
   try {
-    console.log('[addProduct] Called with input:', input);
+    console.log("[addProduct] Called with input:", input);
+
+    // minimun 3 spec is required
+    // if(input.specs?. < 3) {
+    //   return { error: 'Minimum 3 specs are required' };
+    // }
 
     const session = await auth();
-    console.log('[addProduct] Session:', session);
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-      console.warn('[addProduct] Unauthorized access attempt:', session);
-      return { error: 'Unauthorized' };
+    console.log("[addProduct] Session:", session);
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      console.warn("[addProduct] Unauthorized access attempt:", session);
+      return { error: "Unauthorized" };
     }
 
     // Validate required fields
@@ -344,35 +349,40 @@ export async function addProduct(input: AddProductInput) {
       categoryName: input.category.name,
       categorySlug: input.category.slug,
     });
-    console.log('[addProduct] Validation Result:', validationError);
+    console.log("[addProduct] Validation Result:", validationError);
 
     if (validationError) return validationError;
 
     // Check for duplicate slug/sku
-    console.log('[addProduct] Checking for duplicate slug or SKU...');
+    console.log("[addProduct] Checking for duplicate slug or SKU...");
     const existing = await prisma.product.findFirst({
       where: {
         OR: [{ slug: input.slug }, { sku: input.sku }],
       },
     });
-    console.log('[addProduct] Duplicate product found:', existing);
+    console.log("[addProduct] Duplicate product found:", existing);
 
     if (existing) {
-      console.warn('[addProduct] Product with this slug or SKU already exists.');
-      return { error: 'Product with this slug or SKU already exists' };
+      console.warn(
+        "[addProduct] Product with this slug or SKU already exists."
+      );
+      return { error: "Product with this slug or SKU already exists" };
     }
 
     // Start transaction
-    console.log('[addProduct] Starting database transaction...');
+    console.log("[addProduct] Starting database transaction...");
     const result = await prisma.$transaction(async (tx) => {
       // 1. Find or create category
-      console.log('[addProduct] Looking for category:', input.category.slug);
+      console.log("[addProduct] Looking for category:", input.category.slug);
       let category = await tx.category.findUnique({
         where: { slug: input.category.slug },
       });
 
       if (!category) {
-        console.log('[addProduct] Category not found, creating new category:', input.category.slug);
+        console.log(
+          "[addProduct] Category not found, creating new category:",
+          input.category.slug
+        );
         category = await tx.category.create({
           data: {
             name: input.category.name,
@@ -382,22 +392,30 @@ export async function addProduct(input: AddProductInput) {
           },
         });
       }
-      console.log('[addProduct] Category resolved:', category);
+      console.log("[addProduct] Category resolved:", category);
 
       // 2. Create/find OptionSets and Options
-      const optionSetMap = new Map<string, { id: string; optionIds: Map<string, string> }>();
+      const optionSetMap = new Map<
+        string,
+        { id: string; optionIds: Map<string, string> }
+      >();
 
       if (input.optionSets && input.optionSets.length > 0) {
-        console.log('[addProduct] Processing option sets:', input.optionSets);
+        console.log("[addProduct] Processing option sets:", input.optionSets);
         for (const optSet of input.optionSets) {
           let optionSet = await tx.optionSet.findFirst({
             where: { name: optSet.name },
             include: { options: true },
           });
           if (optionSet) {
-            console.log(`[addProduct] OptionSet "${optSet.name}" found:`, optionSet);
+            console.log(
+              `[addProduct] OptionSet "${optSet.name}" found:`,
+              optionSet
+            );
           } else {
-            console.log(`[addProduct] OptionSet "${optSet.name}" not found, creating new...`);
+            console.log(
+              `[addProduct] OptionSet "${optSet.name}" not found, creating new...`
+            );
             optionSet = await tx.optionSet.create({
               data: {
                 name: optSet.name,
@@ -412,7 +430,10 @@ export async function addProduct(input: AddProductInput) {
               },
               include: { options: true },
             });
-            console.log(`[addProduct] Created OptionSet "${optSet.name}":`, optionSet);
+            console.log(
+              `[addProduct] Created OptionSet "${optSet.name}":`,
+              optionSet
+            );
           }
 
           const optionIds = new Map<string, string>();
@@ -446,7 +467,7 @@ export async function addProduct(input: AddProductInput) {
       }
 
       // 4. Create Product
-      console.log('[addProduct] Creating product...');
+      console.log("[addProduct] Creating product...");
       const product = await tx.product.create({
         data: {
           title: input.title,
@@ -456,21 +477,21 @@ export async function addProduct(input: AddProductInput) {
           salePrice: input.salePrice,
           slug: input.slug,
           sku: input.sku,
-          currency: input.currency || 'PKR',
-          status: input.status || 'DRAFT',
-          visibility: input.visibility || 'UNLISTED',
+          currency: input.currency || "PKR",
+          status: input.status || "DRAFT",
+          visibility: input.visibility || "UNLISTED",
           inventory: input.inventory || 0,
           lowStockThreshold: input.lowStockThreshold || 5,
           createdById: session.user.id,
           publishedById: session.user.id,
-          publishedAt: input.status === 'PUBLISHED' ? new Date() : undefined,
+          publishedAt: input.status === "PUBLISHED" ? new Date() : undefined,
         },
       });
-      console.log('[addProduct] Product created:', product);
+      console.log("[addProduct] Product created:", product);
 
       // 5. Create ProductVariants
       if (input.variants && input.variants.length > 0) {
-        console.log('[addProduct] Creating product variants:', input.variants);
+        console.log("[addProduct] Creating product variants:", input.variants);
         for (const variant of input.variants) {
           const createdVariant = await tx.productVariant.create({
             data: {
@@ -484,11 +505,14 @@ export async function addProduct(input: AddProductInput) {
               weightGram: variant.weightGram ?? undefined,
             },
           });
-          console.log('[addProduct] Created variant:', createdVariant);
+          console.log("[addProduct] Created variant:", createdVariant);
 
           // 6. Create VariantOptions (link variant to options)
           if (variant.options && variant.options.length > 0) {
-            console.log(`[addProduct] Linking variant to options:`, variant.options);
+            console.log(
+              `[addProduct] Linking variant to options:`,
+              variant.options
+            );
             for (const optionName of variant.options) {
               // Find which optionSet contains this option
               for (const [osName, optSetData] of optionSetMap) {
@@ -512,38 +536,54 @@ export async function addProduct(input: AddProductInput) {
       }
 
       // 7. Create SpecGroup and ProductSpec
-      if (input.specs) {
-        console.log('[addProduct] Processing specs:', input.specs);
-        let specGroup = await tx.specGroup.findFirst({
-          where: { title: input.specs.groupTitle },
-        });
+      if (input.specs && input.specs.length > 0) {
+        console.log("[addProduct] Creating product specs:", input.specs);
 
-        if (!specGroup) {
-          console.log(
-            '[addProduct] Spec group not found, creating new spec group:',
-            input.specs.groupTitle
-          );
-          specGroup = await tx.specGroup.create({
+        for (const spec of input.specs) {
+          // Create SpecGroup
+          const specGroup = await tx.specGroup.create({
             data: {
-              title: input.specs.groupTitle,
-              keys: input.specs.keys,
+              title: spec.groupTitle,
+              keys: spec.keys,
+              // Agar SpecGroup model mein values field nahi hai,
+              // to values ko alag se ProductSpec mein store karna hoga
             },
           });
-        }
-        console.log('[addProduct] SpecGroup resolved:', specGroup);
+          console.log("[addProduct] Created specGroup:", specGroup);
 
-        await tx.productSpec.create({
-          data: {
-            productId: product.id,
-            specGroupId: specGroup.id,
-            values: input.specs.values,
-          },
-        });
-        console.log('[addProduct] productSpec created for group:', specGroup.id);
+          // Create ProductSpec records for each key-value pair
+          if (
+            spec.keys &&
+            spec.values &&
+            spec.keys.length === spec.values.length
+          ) {
+            for (let i = 0; i < spec.keys.length; i++) {
+              const key = spec.keys[i];
+              const value = spec.values;
+
+              await tx.productSpec.create({
+                data: {
+                  specGroupId: specGroup.id,
+                  productId: product.id, // Assume `product` is created earlier
+                  values: value
+                  // Agar position ya order store karna ho to:
+                  // position: i
+                },
+              });
+              console.log(
+                `[addProduct] Created productSpec for group "${spec.groupTitle}": ${key} = ${value}`
+              );
+            }
+          } else {
+            console.warn(
+              `[addProduct] Keys and values count mismatch for spec group: ${spec.groupTitle}`
+            );
+          }
+        }
       }
 
       // 8. Create ProductCategory link
-      console.log('[addProduct] Creating ProductCategory link...');
+      console.log("[addProduct] Creating ProductCategory link...");
       await tx.productCategory.create({
         data: {
           productId: product.id,
@@ -553,14 +593,17 @@ export async function addProduct(input: AddProductInput) {
 
       // 9. Create Tags and ProductTag links
       if (input.tags && input.tags.length > 0) {
-        console.log('[addProduct] Processing tags:', input.tags);
+        console.log("[addProduct] Processing tags:", input.tags);
         for (const tagInput of input.tags) {
           let tag = await tx.tag.findUnique({
             where: { slug: tagInput.slug },
           });
 
           if (!tag) {
-            console.log('[addProduct] Tag not found, creating tag:', tagInput.slug);
+            console.log(
+              "[addProduct] Tag not found, creating tag:",
+              tagInput.slug
+            );
             tag = await tx.tag.create({
               data: {
                 name: tagInput.name,
@@ -568,7 +611,7 @@ export async function addProduct(input: AddProductInput) {
               },
             });
           }
-          console.log('[addProduct] Tag resolved:', tag);
+          console.log("[addProduct] Tag resolved:", tag);
 
           await tx.productTag.create({
             data: {
@@ -582,24 +625,32 @@ export async function addProduct(input: AddProductInput) {
         }
       }
 
-      console.log('[addProduct] Transaction finished successfully.');
+      console.log("[addProduct] Transaction finished successfully.");
       return product;
     });
 
     // 10. Upload images (outside transaction)
-    console.log('[addProduct] Uploading images for product:', result.id);
-    const uploadResult = await uploadImage({ type: 'PRODUCT', productId: result.id }, input.images);
-    console.log('[addProduct] Image upload result:', uploadResult);
+    console.log("[addProduct] Uploading images for product:", result.id);
+    const uploadResult = await uploadImage(
+      { type: "PRODUCT", productId: result.id },
+      input.images
+    );
+    console.log("[addProduct] Image upload result:", uploadResult);
 
     if (uploadResult.error) {
-      console.warn('[addProduct] Product created but image upload failed:', uploadResult.error);
-      return { error: `Product created but image upload failed: ${uploadResult.error}` };
+      console.warn(
+        "[addProduct] Product created but image upload failed:",
+        uploadResult.error
+      );
+      return {
+        error: `Product created but image upload failed: ${uploadResult.error}`,
+      };
     }
 
     // Update product with metadata and structured data
     const primaryImage = uploadResult.images?.[0];
     if (primaryImage) {
-      console.log('[addProduct] Generating metadata and structured data...');
+      console.log("[addProduct] Generating metadata and structured data...");
       const metadata = generateProductMetadata(
         {
           ...result,
@@ -607,7 +658,10 @@ export async function addProduct(input: AddProductInput) {
             | NullableJsonNullValueInput
             | InputJsonValue
             | undefined,
-          metadata: result.metadata as NullableJsonNullValueInput | InputJsonValue | undefined,
+          metadata: result.metadata as
+            | NullableJsonNullValueInput
+            | InputJsonValue
+            | undefined,
         },
         primaryImage.id
       );
@@ -616,7 +670,9 @@ export async function addProduct(input: AddProductInput) {
         images: uploadResult.images,
       });
 
-      console.log('[addProduct] Updating product in DB with metadata and structuredData...');
+      console.log(
+        "[addProduct] Updating product in DB with metadata and structuredData..."
+      );
       await prisma.product.update({
         where: { id: result.id },
         data: {
@@ -626,14 +682,14 @@ export async function addProduct(input: AddProductInput) {
       });
     }
 
-    console.log('[addProduct] Product creation complete:', result);
+    console.log("[addProduct] Product creation complete:", result);
     return {
       success: true,
       product: result,
     };
   } catch (err) {
-    console.error('ADD_PRODUCT_ERROR', err);
-    return { error: 'Failed to create product' };
+    console.error("ADD_PRODUCT_ERROR", err);
+    return { error: "Failed to create product" };
   }
 }
 
@@ -641,8 +697,8 @@ export const getAllProducts = async () => {
   try {
     const result = await prisma.product.findMany({
       where: {
-        status: 'PUBLISHED',
-        visibility: 'PUBLIC',
+        status: "PUBLISHED",
+        visibility: "PUBLIC",
       },
       include: {
         waitlists: true,
@@ -673,13 +729,13 @@ export const getAllProducts = async () => {
 
 export const getProductBySlug = async (slug: string) => {
   try {
-    if (!slug || slug.trim() === '') return { error: 'Invalid Slug!' };
+    if (!slug || slug.trim() === "") return { error: "Invalid Slug!" };
 
     const result = await prisma.product.findFirst({
       where: {
         slug: slug,
-        visibility: 'PUBLIC',
-        status: 'PUBLISHED',
+        visibility: "PUBLIC",
+        status: "PUBLISHED",
       },
       include: {
         productOffers: true,
@@ -701,7 +757,7 @@ export const getProductBySlug = async (slug: string) => {
       },
     });
 
-    if (!result) return { error: 'Product Not Found!' };
+    if (!result) return { error: "Product Not Found!" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
@@ -709,14 +765,14 @@ export const getProductBySlug = async (slug: string) => {
 };
 
 export const getOneProduct = async (productID: string) => {
-  if (!productID || productID === '') return { error: 'Invalid Product ID!' };
+  if (!productID || productID === "") return { error: "Invalid Product ID!" };
 
   try {
     const result = await db.product.findFirst({
       where: {
         id: productID,
-        visibility: 'PUBLIC',
-        status: 'PUBLISHED',
+        visibility: "PUBLIC",
+        status: "PUBLISHED",
       },
       include: {
         productOffers: true,
@@ -730,16 +786,17 @@ export const getOneProduct = async (productID: string) => {
         orderItems: true,
       },
     });
-    if (!result) return { error: 'Invalid Data!' };
+    if (!result) return { error: "Invalid Data!" };
 
     const specifications = await generateSpecTable(result.productSpecs);
-    if (!specifications || specifications.length === 0) return { error: 'Invalid Date' };
+    if (!specifications || specifications.length === 0)
+      return { error: "Invalid Date" };
 
     const pathArray: TPath[] | null = await getPathByCategoryID(
       result.category.id,
       result.category.parentID
     );
-    if (!pathArray || pathArray.length === 0) return { error: 'Invalid Date' };
+    if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
 
     //eslint-disable-next-line
     const { specs, ...others } = result;
@@ -756,7 +813,8 @@ export const getOneProduct = async (productID: string) => {
 };
 
 export const getCartProducts = async (productIDs: string[]) => {
-  if (!productIDs || productIDs.length === 0) return { error: 'Invalid Product List' };
+  if (!productIDs || productIDs.length === 0)
+    return { error: "Invalid Product List" };
 
   try {
     const result: TCartListItemDB[] | null = await db.product.findMany({
@@ -780,7 +838,7 @@ export const getCartProducts = async (productIDs: string[]) => {
 };
 
 export const deleteProduct = async (productID: string) => {
-  if (!productID || productID === '') return { error: 'Invalid Data!' };
+  if (!productID || productID === "") return { error: "Invalid Data!" };
   try {
     const result = await db.product.delete({
       where: {
@@ -816,13 +874,13 @@ const generateSpecTable = async (rawSpec: ProductSpec[]) => {
       const tempSpecs: { name: string; value: string }[] = [];
       spec.specValues.forEach((s, index) => {
         tempSpecs.push({
-          name: result[groupSpecIndex].specs[index] || '',
-          value: s || '',
+          name: result[groupSpecIndex].specs[index] || "",
+          value: s || "",
         });
       });
 
       specifications.push({
-        groupName: result[groupSpecIndex].title || '',
+        groupName: result[groupSpecIndex].title || "",
         specs: tempSpecs,
       });
     });
@@ -834,10 +892,13 @@ const generateSpecTable = async (rawSpec: ProductSpec[]) => {
   }
 };
 
-const getPathByCategoryID = async (categoryID: string, parentID: string | null) => {
+const getPathByCategoryID = async (
+  categoryID: string,
+  parentID: string | null
+) => {
   try {
-    if (!categoryID || categoryID === '') return null;
-    if (!parentID || parentID === '') return null;
+    if (!categoryID || categoryID === "") return null;
+    if (!parentID || parentID === "") return null;
     const result: TPath[] = await db.category.findMany({
       where: {
         OR: [{ id: categoryID }, { id: parentID }, { parentID: null }],

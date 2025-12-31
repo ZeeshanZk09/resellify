@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode, Fragment } from "react";
 import { cn } from "@/shared/utils/styling";
 
 export type Slide = {
@@ -284,15 +284,17 @@ export const HomeSlider = ({
 
       {totalSlides > 1 && showDots && (
         <div className="absolute bottom-5 left-0 right-0 flex gap-4 sm:gap-6 justify-center items-center">
-          {slides.map((_, index) =>
-            renderDot
-              ? renderDot(index, index === activeSlideNum, () =>
-                  handleSliding(index)
-                )
-              : defaultDot(index, index === activeSlideNum, () =>
-                  handleSliding(index)
-                )
-          )}
+          {slides.map((_, index) => (
+            <Fragment key={index}>
+              {renderDot
+                ? renderDot(index, index === activeSlideNum, () =>
+                    handleSliding(index)
+                  )
+                : defaultDot(index, index === activeSlideNum, () =>
+                    handleSliding(index)
+                  )}
+            </Fragment>
+          ))}
         </div>
       )}
     </div>

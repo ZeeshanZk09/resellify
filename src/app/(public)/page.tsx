@@ -38,7 +38,7 @@ export default async function Home() {
   return (
     <div className="w-full bg-mint-500 flex flex-col justify-between max-w-7xl px-5 mx-auto">
       <div className="storeContainer flex-col">
-        <div className="flex w-full mt-10">
+        <div className="flex flex-col sm:flex-row gap-5 mt-5">
           <HomeCategoryList />
           <HomeSlider slides={SlidesData} key={Math.random() * 10000} />
         </div>

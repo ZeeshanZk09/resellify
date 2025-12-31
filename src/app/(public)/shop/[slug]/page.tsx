@@ -81,7 +81,7 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
             }
           />
         </div>
-        <div className="md:col-span-1 lg:col-span-2 hidden sm:flex justify-center">
+        <div className="col-span-1 sm:col-span-2 sm:p-6 hidden sm:flex justify-center">
           <HomeSlider
             rounded={true}
             key={product.id}
@@ -165,9 +165,9 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
             {product.description}
           </p>
 
-          <p>
-            <h4>Size: { }</h4>
-          </p>
+          <div>
+            <h4>Size: {}</h4>
+          </div>
 
           {/* Specifications */}
           {product.productSpecs && product.productSpecs.length > 0 && (
@@ -187,7 +187,7 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
           )}
 
           {/* CTA */}
-          <div className="fixed bottom-0 left-0 right-0 p-2 sm:px-6 mt-6 sm:mt-8 bg-card flex gap-2">
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 p-2 sm:px-6 mt-6 sm:mt-8 bg-card flex gap-2">
             <button className="bg-green-400 text-background px-4 sm:px-6 py-2.5 sm:py-3 rounded-md shadow transition disabled:opacity-50 w-full sm:w-auto">
               <BoxIcon className="inline-block mr-2" />
               Place Order
