@@ -273,6 +273,44 @@ import type {
 } from "@/shared/lib/generated/prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/client";
 import { NullableJsonNullValueInput } from "@/shared/lib/generated/prisma/internal/prismaNamespace";
+
+export type optionSets ={
+    name: string;
+    type: OptionSet["type"];
+    options: {
+      name: string;
+      value?: string | null;
+      position?: number;
+    }[];
+  }[];
+  export type variants = {
+    sku?: string | null;
+    productId: string; // Remove: not needed for creation
+    title?: string | null;
+    price?: number; // Changed from number | string
+    salePrice?: number | null; // Changed from number | string | null
+    stock?: number;
+    isDefault?: boolean;
+    weightGram?: number | null;
+    options?: string[]; // Changed from VariantOption[] to string[]
+  }[];
+  export type specs = {
+    groupTitle: string;
+    keys: string[];
+    values: string[];
+  }[];
+  export type tags= {
+    name: string;
+    slug: string;
+  }[];
+export type category = {
+  id?: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    parentId?: string | null;
+  };
+
 export type AddProductInput = {
   title: string;
   slug: string;
@@ -287,41 +325,12 @@ export type AddProductInput = {
   inventory?: number;
   lowStockThreshold?: number;
   images: File[] | File;
-  optionSets?: {
-    name: string;
-    type: OptionSet["type"];
-    options: {
-      name: string;
-      value?: string | null;
-      position?: number;
-    }[];
-  }[];
-  variants?: {
-    sku?: string | null;
-    productId: string; // Remove: not needed for creation
-    title?: string | null;
-    price?: number; // Changed from number | string
-    salePrice?: number | null; // Changed from number | string | null
-    stock?: number;
-    isDefault?: boolean;
-    weightGram?: number | null;
-    options?: string[]; // Changed from VariantOption[] to string[]
-  }[];
-  specs?: {
-    groupTitle: string;
-    keys: string[];
-    values: string[];
-  }[];
-  tags?: {
-    name: string;
-    slug: string;
-  }[];
-  category: {
-    name: string;
-    slug: string;
-    description?: string | null;
-    parentId?: string | null;
-  };
+  category: category;
+  optionSets: optionSets;
+  specs: specs;
+  tags: tags;
+  variants: variants
+
 };
 
 export async function addProduct(input: AddProductInput) {

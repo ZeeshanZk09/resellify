@@ -21,89 +21,44 @@ import { Label } from "@/shared/components/ui/label";
 import { Separator } from "@/shared/components/ui/separator";
 import { toast } from "sonner";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Category } from "@/shared/lib/generated/prisma/browser";
-import { addProduct, AddProductInput } from "@/actions/product/product";
+import {
+  addProduct,
+  AddProductInput,
+  category,
+  optionSets,
+  specs,
+  tags,
+  variants,
+} from "@/actions/product/product";
 import { Trash2, Plus } from "lucide-react";
 import { getSubCategoriesById } from "@/actions/category/category";
 import { generateProductSlug } from "@/shared/lib/utils/category";
 
 interface AddProductFormProps {
-  initialCategories: Category[];
+  initialCategories: category[];
 }
 
-type OptionSet = {
-  name: string;
-  type: "TEXT" | "COLOR" | "NUMBER" | "SIZE" | "MEASURE" | "RANGE" | "BOOLEAN";
-  options: {
-    name: string;
-    value?: string | null;
-    position?: number;
-  }[];
-};
-
-type Variant = {
-  sku?: string | null;
-  title?: string | null;
-  price?: number;
-  salePrice?: number | null;
-  stock?: number;
-  isDefault?: boolean;
-  weightGram?: number | null;
-  options?: string[];
-};
-
-type Spec = {
-  groupTitle: string;
-  keys: string[];
-  values: string[];
-};
-
-type Tag = {
-  name: string;
-  slug: string;
-};
-
-type FormData = {
-  title: string;
-  slug: string;
-  sku: string;
-  basePrice: number;
-  salePrice?: number | null;
-  description?: string | null;
-  shortDescription?: string | null;
-  currency: string;
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  visibility: "PUBLIC" | "PRIVATE" | "UNLISTED";
-  inventory: number;
-  lowStockThreshold: number;
-  images: File[] | File;
-  optionSets: OptionSet[];
-  variants: Variant[];
-  specs: Spec[];
-  tags: Tag[];
-  category: {
-    name: string;
-    slug: string;
-    description?: string | null;
-    parentId?: string | null;
-  };
-};
+type FormData = AddProductInput;
+type OptionSet = optionSets[number];
+type Variant = variants[number];
+type Spec = specs[number];
+type Tag = tags[number];
 
 export default function AddProductForm({
   initialCategories,
 }: AddProductFormProps) {
   const [loading, setLoading] = useState(false);
-  const [subCats, setSubCats] = useState<Category[]>([]);
+  const [subCats, setSubCats] = useState<category[]>([]);
   const [tagInput, setTagInput] = useState({ name: "", slug: "" });
   const [specsInput, setSpecsInput] = useState({
     groupTitle: "",
     keys: "",
     values: "",
   });
-  const [optionSets, setOptionSets] = useState<OptionSet[]>([]);
-  const [variants, setVariants] = useState<Variant[]>([]);
-  const [specs, setSpecs] = useState<Spec[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [optionSets, setOptionSets] = useState<optionSets>([]);
+  const [variants, setVariants] = useState<variants>([]);
+  const [specs, setSpecs] = useState<specs>([]);
+  const [tags, setTags] = useState<tags>([]);
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -114,8 +69,8 @@ export default function AddProductForm({
     description: "",
     shortDescription: "",
     currency: "PKR",
-    status: "DRAFT",
-    visibility: "UNLISTED",
+    status: "PUBLISHED",
+    visibility: "PUBLIC",
     inventory: 0,
     lowStockThreshold: 5,
     images: [],
@@ -141,24 +96,28 @@ export default function AddProductForm({
     generateSlug();
   }, [formData.title]);
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = <K extends keyof FormData>(
+    field: K,
+    value: FormData[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleNestedChange = (
-    parent: keyof FormData,
-    field: string,
-    value: any
+  ("use client");
+
+  const handleNestedChange = <P extends keyof FormData>(
+    parent: P,
+    field: keyof FormData[P],
+    value: FormData[P][keyof FormData[P]]
   ) => {
     setFormData((prev) => ({
       ...prev,
       [parent]: {
-        ...(prev[parent] as any),
+        ...(prev[parent] as object),
         [field]: value,
       },
     }));
   };
-
   const handleCategorySelect = async (categoryId: string) => {
     const category = initialCategories.find((c) => c.id === categoryId);
     if (category) {
@@ -171,7 +130,7 @@ export default function AddProductForm({
           parentId: category.parentId || "",
         },
       }));
-      const subCategories = await getSubCategoriesById(category.id);
+      const subCategories = await getSubCategoriesById(category?.id!);
       setSubCats(subCategories.res || []);
     }
   };
@@ -199,7 +158,7 @@ export default function AddProductForm({
       const valuesArray = specsInput.values.split(",").map((v) => v.trim());
 
       if (keysArray.length === valuesArray.length) {
-        const newSpec: Spec = {
+        const newSpec: specs[number] = {
           groupTitle: specsInput.groupTitle,
           keys: keysArray,
           values: valuesArray,
@@ -222,7 +181,11 @@ export default function AddProductForm({
   };
 
   const addOptionSet = () => {
-    const newOptionSet: OptionSet = { name: "", type: "TEXT", options: [] };
+    const newOptionSet: optionSets[number] = {
+      name: "",
+      type: "TEXT",
+      options: [],
+    };
     const newOptionSets = [...optionSets, newOptionSet];
     setOptionSets(newOptionSets);
     setFormData((prev) => ({ ...prev, optionSets: newOptionSets }));
@@ -230,7 +193,7 @@ export default function AddProductForm({
 
   const updateOptionSet = (
     index: number,
-    field: keyof OptionSet,
+    field: keyof optionSets[number],
     value: any
   ) => {
     const newOptionSets = [...optionSets];
@@ -279,7 +242,8 @@ export default function AddProductForm({
   };
 
   const addVariant = () => {
-    const newVariant: Variant = {
+    const newVariant: variants[number] = {
+      productId: "",
       sku: "",
       title: "",
       price: 0,
@@ -294,7 +258,11 @@ export default function AddProductForm({
     setFormData((prev) => ({ ...prev, variants: newVariants }));
   };
 
-  const updateVariant = (index: number, field: keyof Variant, value: any) => {
+  const updateVariant = (
+    index: number,
+    field: keyof variants[number],
+    value: any
+  ) => {
     const newVariants = [...variants];
     newVariants[index] = { ...newVariants[index], [field]: value };
     setVariants(newVariants);
@@ -323,6 +291,8 @@ export default function AddProductForm({
       return "Valid base price is required";
     if (!formData.category.name.trim()) return "Category name is required";
     if (!formData.category.slug.trim()) return "Category slug is required";
+    if (formData.specs.length < 1)
+      return "Please add one specification at least";
     if (
       !formData.images ||
       (Array.isArray(formData.images) && formData.images.length === 0)
@@ -359,7 +329,7 @@ export default function AddProductForm({
           salePrice: variant.salePrice || null,
           weightGram: variant.weightGram || null,
         })),
-        specs: formData.specs.length > 0 ? formData.specs : undefined,
+        specs: formData.specs,
       };
 
       const result = await addProduct(submitData);
@@ -591,7 +561,7 @@ export default function AddProductForm({
       </Card>
 
       {/* Status Card */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Status & Visibility</CardTitle>
         </CardHeader>
@@ -642,7 +612,7 @@ export default function AddProductForm({
             </p>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Images Card */}
       <Card>
@@ -678,7 +648,7 @@ export default function AddProductForm({
                 </SelectTrigger>
                 <SelectContent>
                   {initialCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem key={category.id} value={category.id!}>
                       {category.name}
                     </SelectItem>
                   ))}
@@ -697,7 +667,7 @@ export default function AddProductForm({
                 </SelectTrigger>
                 <SelectContent>
                   {subCats?.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem key={category.id} value={category.id!}>
                       {category.name}
                     </SelectItem>
                   ))}
@@ -1157,10 +1127,25 @@ export default function AddProductForm({
         </CardContent>
       </Card>
 
-      {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Creating Product..." : "Add Product"}
-      </Button>
+      {/* Action Buttons */}
+      <div className="w-full flex gap-2 justify-end">
+        <Button
+          onClick={() => {
+            setFormData((prev) => ({
+              ...prev,
+              visibility: "PRIVATE",
+              status: "DRAFT",
+            }));
+          }}
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? "Saving Product..." : "Save as Draft"}
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? "Creating Product..." : "Add Product"}
+        </Button>
+      </div>
     </form>
   );
 }
