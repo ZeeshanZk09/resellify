@@ -535,9 +535,9 @@ export async function addProduct(input: AddProductInput) {
         }
       }
 
+      console.log("[addProduct] Creating product specs:", input.specs);
       // 7. Create SpecGroup and ProductSpec
       if (input.specs && input.specs.length > 0) {
-        console.log("[addProduct] Creating product specs:", input.specs);
 
         for (const spec of input.specs) {
           // Create SpecGroup
@@ -559,19 +559,17 @@ export async function addProduct(input: AddProductInput) {
           ) {
             for (let i = 0; i < spec.keys.length; i++) {
               const key = spec.keys[i];
-              const value = spec.values;
+              const values = spec.values;
 
               await tx.productSpec.create({
                 data: {
                   specGroupId: specGroup.id,
-                  productId: product.id, // Assume `product` is created earlier
-                  values: value
-                  // Agar position ya order store karna ho to:
-                  // position: i
+                  productId: product.id,
+                  values: values,
                 },
               });
               console.log(
-                `[addProduct] Created productSpec for group "${spec.groupTitle}": ${key} = ${value}`
+                `[addProduct] Created productSpec for group "${spec.groupTitle}": ${key} = ${values}`
               );
             }
           } else {

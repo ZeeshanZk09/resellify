@@ -1056,11 +1056,11 @@ export default function AddProductForm({
                 <div className="space-y-2">
                   <Label>Options (comma separated)</Label>
                   <Input
-                    value={variant.options?.join(", ") || ""}
+                    value={variant?.options?.join(", ")}
                     onChange={(e) => {
                       const options = e.target.value
-                        .split(",")
-                        .map((opt) => opt.trim())
+                        .split(",  ")
+                        .map((opt) => opt)
                         .filter((opt) => opt);
                       updateVariant(index, "options", options);
                     }}
