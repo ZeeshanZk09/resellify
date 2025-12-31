@@ -2,8 +2,12 @@ import { getAllProducts } from '@/actions/product/product';
 import ProductCard from '@/domains/product/components/productCard';
 import { MoveLeftIcon } from 'lucide-react';
 
-export default async function Shop({ searchParams }: { searchParams: { search?: string } }) {
-  const search = searchParams?.search ?? '';
+export default async function Shop({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string }>;
+}) {
+  const search = (await searchParams)?.search ?? '';
 
   // Server-side fetch
   const { res: products } = await getAllProducts();

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 type Props = {
   userId: string;
+
   isActive: boolean;
 };
 

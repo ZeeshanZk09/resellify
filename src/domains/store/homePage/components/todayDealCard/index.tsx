@@ -28,7 +28,7 @@ export const TodayDealCards = ({ TodayDeals }: { TodayDeals: TodaysDealType[] | 
             <TodayDealCard
               productDescription={deal.description ?? ''}
               productName={deal.title}
-              oldPrice={+deal.price!}
+              oldPrice={+deal.basePrice!}
               newPrice={deal?.salePrice!}
               image={[path1!, path2!]}
               spec={

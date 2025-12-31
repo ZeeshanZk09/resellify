@@ -334,7 +334,7 @@ model ProductVariant {
 // Option sets and values (for filters & variants)
 model OptionSet {
     id         String              @id @default(cuid()) // option set id (e.g., "Color", "Fabric")
-    name       String // display name
+    name       String              @unique // display name
     type       OptionType // how to treat options (COLOR, SIZE, etc.)
     options    Option[] // list of option values
     categories CategoryOptionSet[] // which categories use this set

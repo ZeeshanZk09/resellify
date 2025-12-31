@@ -2,14 +2,22 @@ import { getUsers } from '@/actions/admin/users';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Card } from '@/shared/components/ui/card';
 import { UserActiveToggle } from './_components/toggle-active';
+import { auth } from '@/auth';
+import { toast } from 'sonner';
+import { redirect } from 'next/navigation';
 
 export default async function Users() {
+  const session = await auth();
   const data = await getUsers();
   console.log('admin-users', data);
 
-  //   if (!data.users) {
-  //     toast.error(data.message);
-  //   }
+  if (session?.user.role !== 'ADMIN') {
+    redirect('/dashboard');
+  }
+
+  if (!data.users) {
+    toast.error(data.message);
+  }
 
   console.log(data);
   return (
@@ -27,10 +35,11 @@ export default async function Users() {
 
               <h2 className='text-xl font-semibold'>{user.name} </h2>
               {/* In-active a user */}
-              <div className='flex justify-between'>
-                <p className='text-sm text-gray-600'>Active</p>
-                <UserActiveToggle userId={user.id} key={user.id} isActive={!!user.isActive} />
-                {/* <label className='relative inline-flex items-center cursor-pointer text-gray-900'>
+              {session?.user.email !== user.email && (
+                <div className='flex justify-between'>
+                  <p className='text-sm text-gray-600'>Active</p>
+                  <UserActiveToggle userId={user.id} key={user.id} isActive={!!user.isActive} />
+                  {/* <label className='relative inline-flex items-center cursor-pointer text-gray-900'>
                   <input
                     type='checkbox'
                     className='sr-only peer'
@@ -44,7 +53,8 @@ export default async function Users() {
                   <div className='w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200'></div>
                   <span className='dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-4'></span>
                 </label> */}
-              </div>
+                </div>
+              )}
               <p className='text-sm text-gray-600'>Email: {user.email}</p>
               <p className='text-sm text-gray-600'>ID: {user.id}</p>
             </Card>

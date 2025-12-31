@@ -266,7 +266,7 @@ export default function AddProductForm({ initialCategories }: AddProductFormProp
 
   console.log(errors);
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='py-14 space-y-8 max-w-4xl mx-auto'>
+    <form onSubmit={handleSubmit(onSubmit)} className='w-fit py-14 space-y-8 max-w-4xl sm:mx-auto'>
       {/* Basic Information Card */}
       <Card>
         <CardHeader>
@@ -505,13 +505,32 @@ export default function AddProductForm({ initialCategories }: AddProductFormProp
           <CardTitle>Product Images*</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input
-            type='file'
-            accept='image/*'
-            multiple
-            aria-describedby='images-help'
-            {...register('images')}
-          />
+          <div className='flex flex-col gap-2'>
+            <Controller
+              name='images'
+              control={control}
+              rules={{
+                validate: (files: any) => {
+                  // Accept FileList or array
+                  if (files && files.length >= 2) return true;
+                  return 'Please upload at least 2 images.';
+                },
+              }}
+              render={({ field }) => (
+                <Input
+                  type='file'
+                  accept='image/*'
+                  multiple
+                  aria-describedby='images-help'
+                  onChange={(e) => {
+                    field.onChange(e.target.files);
+                  }}
+                />
+              )}
+            />
+            <p className='text-xs text-gray-500'>Minimum 2 images required.</p>
+            {errors.images && <p className='text-sm text-red-500 mt-1'>{errors.images.message}</p>}
+          </div>
           <p id='images-help' className='text-sm text-gray-500 mt-2'>
             Upload clear product photos. Recommended: 800×800px or larger, JPG/PNG. First image will
             be primary.
