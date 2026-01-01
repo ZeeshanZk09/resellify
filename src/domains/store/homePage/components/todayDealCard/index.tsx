@@ -5,13 +5,14 @@ import Link from "next/link";
 import TodayDealCard from "./TodayDealCard";
 import { ArrowRight } from "lucide-react";
 import { TodaysDealType } from "@/actions/landing-dashboard/dashboard";
+import { cn } from "@/shared/lib/utils";
 
 export const TodayDealCards = ({
   TodayDeals,
 }: {
   TodayDeals: TodaysDealType[] | undefined;
 }) => {
-  console.log("todays deals:", TodayDeals);
+  console.log("todays deals:", TodayDeals?.length);
 
   return (
     <div className="w-full mt-14">
@@ -21,14 +22,16 @@ export const TodayDealCards = ({
         </h2>
       </div>
       <div
-        className={`flex justify-between gap-3.5 pb-7 2xl:pb-0 ${
-          //   TodayDeals?.length! > 0 &&
-          " overflow-x-scroll [&::-webkit-scrollbar]:h-1  ::-webkit-scrollbar-track]:bg-foreground/20 [&::-webkit-scrollbar-thumb]:bg-foreground/20 "
-        } `}
+        className={cn(
+          "flex justify-between gap-3.5 pb-7",
+          TodayDeals && TodayDeals.length > 3
+            ? "overflow-x-scroll [&::-webkit-scrollbar]:h-1  [&::-webkit-scrollbar-track]:bg-foreground/20  [&::-webkit-scrollbar-thumb]:bg-foreground/20"
+            : "grid sm:grid-cols-2 md:grid-cols-3"
+        )}
       >
-        {TodayDeals?.map((deal, index) => {
-          const path1 = deal.images?.[0]?.path;
-          const path2 = deal.images?.[1]?.path;
+        {TodayDeals?.map((deal) => {
+          const path1 = deal.images?.[0];
+          const path2 = deal.images?.[1];
           console.log("TodayDealCard", path1, path2, deal?.productVariants[0]);
           return (
             <TodayDealCard
@@ -42,14 +45,14 @@ export const TodayDealCards = ({
                 deal?.productVariants[deal?.id as any]?.options.map(
                   (option) => ({
                     name: option.option.name,
-                    value: option.option.value ?? "N/A" ?? null,
+                    value: option.option.value ?? "N/A",
                   })
                 ) ?? ([] as { name: string; value: string | null }[])
               }
               dealEndTime={deal?.endsAt!}
               //   new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
               url={`/shop/${deal.slug}`}
-              key={index}
+              key={deal.id}
             />
           );
         })}

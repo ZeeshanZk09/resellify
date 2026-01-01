@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ClockIcon } from "@/shared/components/icons/svgIcons";
 import { Visibility } from "@/shared/lib/generated/prisma/enums";
+import { Upload } from "@/shared/lib/generated/prisma/browser";
 
 // const DEFAULT_DEAL_DURATION_MS = 60 * 60 * 10000; // 1 hour
 
@@ -15,7 +16,7 @@ type TProps = {
   productName: string;
   newPrice: number;
   oldPrice: number;
-  image: [string, string];
+  image: [Upload, Upload];
   dealEndTime?: Date | string;
   spec?: { name: string; value: string }[];
   url: string;
@@ -102,127 +103,132 @@ const TodayDealCard = ({
 
   const { days, hours, minutes, seconds } = formatMsToDHMS(timeLeftMs);
   const saveAmount = Math.max(0, oldPrice - newPrice);
-  console.log('saveAmount: ', saveAmount, 'typeof: ', typeof saveAmount);
+  console.log("saveAmount: ", saveAmount, "typeof: ", typeof saveAmount);
   //   console.log('image in toadys deal card: ', image);
   console.log("product-specs: ", spec);
 
   return (
     <article
-      className="min-w-64 min-h-[400px] relative p-3 bg-card rounded-xl group transition-shadow hover:shadow-lg"
+      className="w-full min-w-[280px] h-auto sm:h-[250px] flex flex-col sm:flex-row gap-3 sm:gap-4 relative rounded-xl bg-card overflow-hidden mb-5 p-3 sm:p-0"
       aria-labelledby="deal-title"
     >
-      <Link
-        href={url}
-        className="imgWrapper block w-full h-[220px] relative overflow-hidden border border-foreground/12 rounded-lg"
-        aria-hidden="true"
-      >
-        {/* primary image */}
-        {Array.isArray(image) && image.length > 0 && (
-          <>
-            <Image
-              alt={productName}
-              src={image[0]}
-              fill
-              sizes="(max-width:240px) 240px, 400px"
-              className="object-contain transition-transform duration-300 ease-out"
-              priority={false}
-            />
-            {image[1] && (
+      {/* Image wrapper with badge */}
+      <div className="relative w-full sm:w-2/5 md:w-1/3 lg:w-2/5 h-48 sm:h-full">
+        <Link href={url} aria-hidden="true" className="block w-full h-full">
+          {Array.isArray(image) && image.length > 0 && (
+            <>
               <Image
-                alt={`${productName} - alternate`}
-                src={image[1]}
-                fill
-                sizes='(max-width:240px) 240px, 400px'
-                className='object-contain absolute inset-0 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-105'
+                alt={productName}
+                src={image[0].path}
+                width={image[0].width! || 400}
+                height={image[0].height! || 400}
+                className="object-contain w-full h-full transition-transform duration-300 ease-out"
                 priority={false}
               />
-            )}
-          </>
-        )}
-      </Link>
+              {image[1] && (
+                <Image
+                  alt={`${productName} - alternate`}
+                  src={image[1].path}
+                  width={image[1].width! || 400}
+                  height={image[1].height! || 400}
+                  className="object-contain absolute inset-0 w-full h-full transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-105"
+                  priority={false}
+                />
+              )}
+            </>
+          )}
+        </Link>
 
-      {/* Save badge */}
-      {!!saveAmount && saveAmount > 0 && (
-        <div className='absolute top-4 left-4 rounded-md px-2 py-1 bg-red-600 text-sm text-white shadow-sm'>
-          <span aria-hidden>Save</span>{' '}
-          <span className='font-semibold'>
-            {formatCurrency(saveAmount, locale)} {currencySymbol}
-          </span>
-          <span className='sr-only'> save amount</span>
-        </div>
-      )}
-
-      <Link href={url} className="block mt-4">
-        <h3
-          id="deal-title"
-          className="ml-1 text-foreground/95 text-md font-semibold leading-tight"
-        >
-          {productName}
-        </h3>
-      </Link>
-
-      <div className="mt-2 ml-1 min-h-[56px]">
-        {!!spec.length ? (
-          spec.map((item, index) => {
-            return (
-              <p key={index} className="text-sm text-foreground/70 leading-5">
-                {item.name}: {item.value ? item.value : "N/A"}
-              </p>
-            );
-          })
-        ) : (
-          <p className="text-xs text-foreground/70 leading-5 line-clamp-2 text-ellipsis overflow-hidden max-w-xs">
-            <span className="font-semibold text-foreground/95">
-              Description:
-            </span>{" "}
-            {productDescription ?? "N/A"}
-          </p>
+        {/* Save badge */}
+        {!!saveAmount && saveAmount > 0 && (
+          <div className="absolute top-2 left-2 rounded-md px-2 py-1 bg-red-600 text-xs text-white shadow-md">
+            <span aria-hidden>Save</span>{" "}
+            <span className="font-semibold">
+              {formatCurrency(saveAmount, locale)} {currencySymbol}
+            </span>
+            <span className="sr-only"> save amount</span>
+          </div>
         )}
       </div>
 
-      <p
-        className={
-          visibility === "PUBLIC"
-            ? "bg-green-100 text-green-500 px-2 py-1 rounded-md w-fit"
-            : "bg-red-100 text-red-500 px-2 py-1 rounded-md w-fit"
-        }
-      >
-        {visibility === "PUBLIC" ? "In Stock" : "Out of Stock"}
-      </p>
+      {/* Content area */}
+      <div className="flex-1 flex flex-col gap-2 justify-between">
+        <div className="flex flex-col gap-2">
+          <Link href={url}>
+            <h3
+              id="deal-title"
+              className="text-foreground/95 text-sm sm:text-base font-semibold leading-tight line-clamp-2"
+            >
+              {productName}
+            </h3>
+          </Link>
 
-      <div className="flex justify-between items-center mt-3 mx-1">
-        <div>
-          {oldPrice > 0 && (
-            <div className="text-sm text-foreground/70">
-              was{" "}
-              <del>
-                {formatCurrency(oldPrice, locale)} {currencySymbol}
-              </del>
-            </div>
-          )}
-          <div className="text-xl font-medium text-foreground/95">
-            {formatCurrency(newPrice, locale)} {currencySymbol}
+          <div className="min-h-[40px] sm:min-h-[48px]">
+            {!!spec.length ? (
+              <ul className="text-xs sm:text-sm text-foreground/70 space-y-1">
+                {spec.map((item, index) => (
+                  <li key={index}>
+                    <span className="font-medium">{item.name}:</span>{" "}
+                    {item.value ? item.value : "N/A"}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs sm:text-sm text-foreground/70 line-clamp-2">
+                <span className="font-medium text-foreground/95">
+                  Description:
+                </span>{" "}
+                {productDescription ?? "N/A"}
+              </p>
+            )}
           </div>
+
+          {/* Stock status */}
+          <p
+            className={
+              visibility === "PUBLIC"
+                ? "bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium w-fit"
+                : "bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium w-fit"
+            }
+          >
+            {visibility === "PUBLIC" ? "In Stock" : "Out of Stock"}
+          </p>
         </div>
 
-        {!isNaN(days) && !isNaN(minutes) && !isNaN(seconds) && (
-          <div className="flex flex-col items-center gap-2 text-sm">
-            <ClockIcon width={16} className="fill-red-600" />
-            <div
-              role="status"
-              aria-live="polite"
-              className="w-28 h-8 rounded-md border border-red-500 flex items-center justify-center font-medium text-sm"
-            >
-              {timeLeftMs <= 0 ? (
-                <span>Expired</span>
-              ) : days > 0 ? (
-                `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
-              ) : (
-                `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
-              )}
+        {/* Footer grid: price & timer */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 items-end mt-3 sm:mt-0">
+          {/* Price */}
+          <div className="flex flex-col">
+            {oldPrice > 0 && (
+              <div className="text-xs sm:text-sm text-foreground/60 line-through">
+                {formatCurrency(oldPrice, locale)} {currencySymbol}
+              </div>
+            )}
+            <div className="text-lg sm:text-xl font-bold text-foreground/95">
+              {formatCurrency(newPrice, locale)} {currencySymbol}
             </div>
           </div>
-        )}
+
+          {/* Timer */}
+          {!isNaN(days) && !isNaN(minutes) && !isNaN(seconds) && (
+            <div className="flex flex-col items-end gap-1">
+              <ClockIcon width={14} className="sm:w-4 fill-red-600" />
+              <div
+                role="status"
+                aria-live="polite"
+                className="w-full max-w-[90px] sm:max-w-[100px] h-7 sm:h-8 rounded-lg border border-red-500 flex items-center justify-center font-semibold text-xs sm:text-sm"
+              >
+                {timeLeftMs <= 0 ? (
+                  <span>Expired</span>
+                ) : days > 0 ? (
+                  `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+                ) : (
+                  `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </article>
   );

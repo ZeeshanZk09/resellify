@@ -46,7 +46,6 @@ export default async function Home() {
         <TodayDealCards TodayDeals={todaysDeals} />
         <CollectionCards CollectionsData={collections} />
         <TopSellingProductsList TopProducts={topSellingProducts} />
-
         <CompanyLogoList COMPANIES_LOGOS={brands} />
       </div>
     </div>

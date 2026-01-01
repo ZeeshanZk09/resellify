@@ -1,8 +1,12 @@
-import { getAllProducts, getProductBySlug } from "@/actions/product/product";
+import {
+  getAllProducts,
+  getProductBySlug,
+  getRelatedProducts,
+} from "@/actions/product/product";
 import { notFound } from "next/navigation";
 import React from "react";
 import { Metadata } from "next";
-import Link from "next/link";
+import Image from "next/image";
 import { Product } from "@/shared/lib/generated/prisma/client";
 import { HomeSlider } from "@/domains/store/homePage/components";
 import {
@@ -11,8 +15,23 @@ import {
   Heart,
   ShareIcon,
   StarIcon,
+  Truck,
+  Shield,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import FavBtn from "./_components/fav-btn";
+import AddToCartButton from "./_components/add-to-cart-button";
+import ProductVariantSelector from "./_components/product-variant-selector";
+import Breadcrumbs from "./_components/breadcrumbs";
+import ProductReviews from "./_components/product-reviews";
+import ProductSpecifications from "./_components/product-specifications";
+import ProductGallery from "./_components/product-gallery";
+import StockIndicator from "./_components/stock-indicator";
+import SocialShare from "./_components/social-share";
+import RelatedProducts from "./_components/related-products";
+import ProductStructuredData from "./_components/product-structured-data";
 
 interface ProductPageProps {
   params: Promise<{
@@ -30,17 +49,51 @@ export async function generateMetadata({
     return {
       title: "Product Not Found",
       description: "The product you are looking for does not exist.",
+      robots: "noindex, nofollow",
     };
   }
 
+  const images = product.images?.map((img) => img.path) || [];
+  const price = product.salePrice || product.basePrice;
+
   return {
-    title: product.title,
-    description: product.description || "",
+    title: product.metaTitle || product.title,
+    description: (product.metaDescription ||
+      product.shortDescription ||
+      product.description?.slice(0, 160)) as string,
+    keywords:
+      typeof product.metaKeywords === "string"
+        ? product.metaKeywords.split(",").map((k) => k.trim())
+        : [],
+    authors: [{ name: "Your Store" }],
     openGraph: {
+      type: "website",
+      title: product.ogTitle || product.title,
+      description: (product?.ogDescription! ||
+        product?.shortDescription! ||
+        product?.description?.slice(0, 200)!) as string,
+      images: images.length > 0 ? images : [],
+      url: `/shop/${product.slug}`,
+      siteName: "Your Store",
+      locale: product.locale || "en_US",
+    },
+    twitter: {
+      card:
+        product.twitterCard === "SUMMARY_LARGE_IMAGE"
+          ? "summary_large_image"
+          : "summary",
       title: product.title,
-      description: product.description || "",
-      images: product.images?.length > 0 ? [product.images[0].path] : [],
-      url: product.canonicalUrl ?? `/shop/${product.slug}`,
+      description: (product?.ogDescription! ||
+        product?.shortDescription! ||
+        product?.description?.slice(0, 200)!) as string,
+      images: images.length > 0 ? [images[0]] : [],
+    },
+    alternates: {
+      canonical: product.canonicalUrl || `/shop/${product.slug}`,
+    },
+    robots: {
+      index: product.visibility === "PUBLIC",
+      follow: product.visibility === "PUBLIC",
     },
   };
 }
@@ -55,150 +108,251 @@ export async function generateStaticParams() {
   );
 }
 
-export const revalidate = 0;
-// Page for displaying a single product detail
-export default async function ProductBySlug({ params }: ProductPageProps) {
-  const product = (await getProductBySlug((await params).slug)).res;
+// Cache for 1 hour, revalidate on-demand
+export const revalidate = 3600;
 
+// Preload critical image
+function preloadImage(imageUrl: string) {
+  return {
+    rel: "preload",
+    href: imageUrl,
+    as: "image",
+    type: "image/jpeg",
+  };
+}
+
+export default async function ProductBySlug({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = (await getProductBySlug(slug)).res;
+  const relatedProducts = (
+    await getRelatedProducts(
+      product?.id!,
+      product?.categories?.map((cat) => cat.category.id).join(",") || ""
+    )
+  ).res;
   if (!product) {
     notFound();
   }
 
+  const images = product.images || [];
+  const price = product.salePrice || product.basePrice;
+  const discount = product.salePrice
+    ? Math.round(
+        ((product.basePrice - product.salePrice) / product.basePrice) * 100
+      )
+    : 0;
+  const isInStock = product.inventory > 0;
+  const isLowStock =
+    product.inventory > 0 && product.inventory <= product.lowStockThreshold;
+
+  // Preload first image for better LCP
+  const preloadLinks = images.length > 0 ? [preloadImage(images[0].path)] : [];
+
   return (
-    <main className="text-card-foreground sm:mt-10  container mx-auto  max-w-7xl pb-20">
-      {/* Responsive grid: 1 column on small screens, 2 on ≥768px, 3 on ≥1024px */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-        {/* Image slider spans 1 column on small/medium, 2 columns on large */}
-        <div className="md:col-span-1 lg:col-span-2 sm:hidden flex justify-center">
-          <HomeSlider
-            rounded={false}
-            key={Math.random() * 10000}
-            slides={
-              product.images?.map((image) => ({
-                imgUrl: image.path,
-                alt: product.title,
-              })) || []
-            }
-          />
-        </div>
-        <div className="col-span-1 sm:col-span-2 sm:p-6 hidden sm:flex justify-center">
-          <HomeSlider
-            rounded={true}
-            key={product.id}
-            slides={
-              product.images?.map((image) => ({
-                imgUrl: image.path,
-                alt: product.title,
-              })) || []
-            }
-          />
-        </div>
+    <>
+      {/* Add preload links for critical resources */}
+      {preloadLinks.map((link, index) => (
+        <link key={index} {...link} />
+      ))}
 
-        {/* Product details */}
-        <div className="flex flex-col gap-4 px-4 sm:px-6 lg:px-8">
-          {/* Price */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3 text-lg sm:text-xl mt-2 sm:mt-4">
-              {product.salePrice && +product.salePrice < product.basePrice ? (
-                <>
-                  <span className="text-primary font-bold">
-                    Rs. {product.salePrice.toFixed(2)}
-                  </span>
-                  <span className="line-through text-gray-500 text-xs">
-                    Rs. {product.basePrice.toFixed(2)}
-                  </span>
-                  <span className="text-green-500 text-xs">
-                    -
-                    {Math.round(
-                      ((product.basePrice - product.salePrice) /
-                        product.basePrice) *
-                        100
-                    )}
-                    %
-                  </span>
-                </>
-              ) : (
-                <span className="text-primary font-bold">
-                  Rs. {product.basePrice.toFixed(2)}
-                </span>
-              )}
-            </div>
-            <div>
-              <FavBtn />
-            </div>
-          </div>
+      {/* Structured data for SEO */}
+      <ProductStructuredData structuredData={product.structuredData} />
 
-          <h1 className="text-2xl sm:text-3xl font-bold">{product.title}</h1>
-          {product.reviews?.length > 0 && (
-            <div>
-              {product.reviews.map(({ rating }) => (
-                <div key={rating} className="flex items-center gap-1">
-                  <StarIcon
-                    size={15}
-                    className="text-yellow-400 fill-yellow-400"
-                  />
-                  <span className="text-sm text-gray-600">{rating}</span>
+      <main
+        id="main-content"
+        className="text-card-foreground container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10"
+        role="main"
+        aria-label="Product details"
+      >
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          category={product.categories?.[0]?.category}
+          productTitle={product.title}
+        />
+
+        {/* Responsive product grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mt-6">
+          {/* Product Images */}
+          <section className="space-y-4" aria-label="Product images">
+            <ProductGallery
+              images={images}
+              productTitle={product.title}
+              discount={discount}
+            />
+          </section>
+
+          {/* Product Details */}
+          <section className="space-y-6" aria-label="Product information">
+            {/* Product Header */}
+            <header className="space-y-3">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                {product.title}
+              </h1>
+
+              {/* SKU */}
+              <div className="text-sm text-gray-500">
+                SKU: <span className="font-mono">{product.sku}</span>
+              </div>
+
+              {/* Rating */}
+              {+product?.averageRating! > 0 && (
+                <div
+                  className="flex items-center gap-2"
+                  role="img"
+                  aria-label={`Rated ${product.averageRating} out of 5 stars`}
+                >
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon
+                        key={i}
+                        size={18}
+                        className={`${
+                          i < Math.floor(+product?.averageRating!)
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
                   <span className="text-sm text-gray-600">
-                    ({product.reviews.filter((r) => r.rating === rating).length}{" "}
-                    Rating
-                    {product.reviews.filter((r) => r.rating === rating).length >
-                      1 && "s"}
-                    )
+                    {+product?.averageRating!.toFixed(1)} ({product.reviewCount}{" "}
+                    review{product.reviewCount !== 1 ? "s" : ""})
                   </span>
                 </div>
-              ))}
-              {/* <h2 className="text-base sm:text-lg font-medium mb-2">
-                Reviews:
-              </h2>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {product.reviews.map((review) => (
-                  <li key={review.id} className="text-sm text-gray-600">
-                    <span className="font-medium">Values: </span>
-                    <span>{review.comment || "N/A"}</span>
-                  </li>
-                ))}
-              </ul> */}
+              )}
+            </header>
+
+            {/* Price Section */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span
+                  className="text-3xl font-bold text-primary"
+                  aria-label={`Price: ${price} ${product.currency}`}
+                >
+                  {product.currency} {price.toFixed(2)}
+                </span>
+
+                {product.salePrice && (
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <span
+                      className="text-xl line-through text-gray-500"
+                      aria-hidden="true"
+                    >
+                      {product.currency} {product.basePrice.toFixed(2)}
+                    </span>
+                    <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-semibold">
+                      Save {discount}%
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* {product.tax && (
+                <p className="text-sm text-gray-500">Inclusive of all taxes</p>
+              )} */}
             </div>
-          )}
 
-          <p className="text-sm sm:text-base text-gray-700">
-            {product.description}
-          </p>
-
-          <div>
-            <h4>Size: {}</h4>
-          </div>
-
-          {/* Specifications */}
-          {product.productSpecs && product.productSpecs.length > 0 && (
-            <div className="mt-4 sm:mt-6">
-              <h2 className="text-base sm:text-lg font-medium mb-2">
-                Specifications:
-              </h2>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {product.productSpecs.map((spec) => (
-                  <li key={spec.id} className="text-sm text-gray-600">
-                    <span className="font-medium">Values: </span>
-                    <span>{spec.values?.join(", ") || "N/A"}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* Stock Status */}
+            <div className="flex items-center  justify-between gap-2">
+              <StockIndicator visible={product.visibility === "PUBLIC"} />
+              <FavBtn
+                productId={product?.id!}
+                aria-label={`Add ${product.title} to favorites`}
+              />
             </div>
-          )}
 
-          {/* CTA */}
-          <div className="sm:hidden fixed bottom-0 left-0 right-0 p-2 sm:px-6 mt-6 sm:mt-8 bg-card flex gap-2">
-            <button className="bg-green-400 text-background px-4 sm:px-6 py-2.5 sm:py-3 rounded-md shadow transition disabled:opacity-50 w-full sm:w-auto">
-              <BoxIcon className="inline-block mr-2" />
-              Place Order
-            </button>
-            <button className="bg-card text-card-foreground px-4 sm:px-6 py-2.5 sm:py-3 border border-card-foreground rounded-md transition disabled:opacity-50 w-full sm:w-auto">
-              <ArrowBigUpDash className="inline-block mr-2" />
-              Share
-            </button>
+            {/* Short Description */}
+            {product.shortDescription && (
+              <p className="text-gray-700 leading-relaxed">
+                {product.shortDescription}
+              </p>
+            )}
+
+            {/* Variants */}
+            {product.productVariants && product.productVariants.length > 0 && (
+              <ProductVariantSelector
+                variants={product.productVariants}
+                productId={product.id}
+              />
+            )}
+
+            {/* Add to Cart and Actions */}
+            <div className="w-full space-y-4 flex flex-col justify-between gap-4">
+              <AddToCartButton
+                productId={product.id}
+                price={price}
+                currency={product.currency!}
+                visible={product.visibility === "PUBLIC"}
+                variants={product.productVariants}
+              />
+
+              <div className="flex items-center justify-between gap-4 pt-4">
+                <SocialShare />
+              </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-6 border-t">
+              <div className="flex items-center gap-2 text-sm">
+                <Truck
+                  size={20}
+                  className="text-green-600"
+                  aria-hidden="true"
+                />
+                <span>Free Shipping</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <RefreshCw
+                  size={20}
+                  className="text-purple-600"
+                  aria-hidden="true"
+                />
+                <span>7-Day Returns</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <CheckCircle
+                  size={20}
+                  className="text-green-600"
+                  aria-hidden="true"
+                />
+                <span>Authentic Products</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Product Tabs */}
+        <div className="mt-12 border-t pt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Product Description */}
+            <section className="cols-span-1 lg:col-span-2 space-y-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Product Description
+              </h2>
+              <div className="wrap-break-word">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line ">
+                  {product.description}
+                </p>
+              </div>
+
+              {/* Specifications */}
+              {product.productSpecs && product.productSpecs.length > 0 && (
+                <ProductSpecifications specs={product.productSpecs} />
+              )}
+            </section>
+
+            {/* Reviews Section */}
+            <section className="lg:col-span-2">
+              <ProductReviews reviews={product?.reviews!} />
+            </section>
           </div>
         </div>
-      </div>
-    </main>
+
+        {/* Related Products */}
+
+        <RelatedProducts products={relatedProducts} />
+      </main>
+    </>
   );
 }
