@@ -102,7 +102,7 @@ const TodayDealCard = ({
 
   const { days, hours, minutes, seconds } = formatMsToDHMS(timeLeftMs);
   const saveAmount = Math.max(0, oldPrice - newPrice);
-
+  console.log('saveAmount: ', saveAmount, 'typeof: ', typeof saveAmount);
   //   console.log('image in toadys deal card: ', image);
   console.log("product-specs: ", spec);
 
@@ -117,7 +117,7 @@ const TodayDealCard = ({
         aria-hidden="true"
       >
         {/* primary image */}
-        {Array.isArray(image) && image.length > 0 && image[0] && image[1] && (
+        {Array.isArray(image) && image.length > 0 && (
           <>
             <Image
               alt={productName}
@@ -127,26 +127,30 @@ const TodayDealCard = ({
               className="object-contain transition-transform duration-300 ease-out"
               priority={false}
             />
-            <Image
-              alt={`${productName} - alternate`}
-              src={image[1]}
-              fill
-              sizes="(max-width:240px) 240px, 400px"
-              className="object-contain absolute inset-0 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-105"
-              priority={false}
-            />
+            {image[1] && (
+              <Image
+                alt={`${productName} - alternate`}
+                src={image[1]}
+                fill
+                sizes='(max-width:240px) 240px, 400px'
+                className='object-contain absolute inset-0 transition-all duration-300 ease-out opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-105'
+                priority={false}
+              />
+            )}
           </>
         )}
       </Link>
 
       {/* Save badge */}
-      <div className="absolute top-4 left-4 rounded-md px-2 py-1 bg-red-600 text-sm text-white shadow-sm">
-        <span aria-hidden>Save</span>{" "}
-        <span className="font-semibold">
-          {formatCurrency(saveAmount, locale)} {currencySymbol}
-        </span>
-        <span className="sr-only"> save amount</span>
-      </div>
+      {!!saveAmount && saveAmount > 0 && (
+        <div className='absolute top-4 left-4 rounded-md px-2 py-1 bg-red-600 text-sm text-white shadow-sm'>
+          <span aria-hidden>Save</span>{' '}
+          <span className='font-semibold'>
+            {formatCurrency(saveAmount, locale)} {currencySymbol}
+          </span>
+          <span className='sr-only'> save amount</span>
+        </div>
+      )}
 
       <Link href={url} className="block mt-4">
         <h3

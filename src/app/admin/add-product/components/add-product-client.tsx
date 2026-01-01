@@ -334,7 +334,9 @@ export default function AddProductForm({
 
       const result = await addProduct(submitData);
 
-      if (result.error) {
+      const result = await addProduct(submitData);
+
+      if (result?.error) {
         toast.error(result.error);
       } else {
         toast.success("Product created successfully!");

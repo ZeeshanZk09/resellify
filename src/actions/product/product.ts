@@ -620,15 +620,14 @@ export async function addProduct(input: AddProductInput) {
           }
           console.log("[addProduct] Tag resolved:", tag);
 
-          await tx.productTag.create({
-            data: {
-              productId: product.id,
-              tagId: tag.id,
-            },
+            return tx.productTag.create({
+              data: {
+                productId: product.id,
+                tagId: tag.id,
+              },
+            });
           });
-          console.log(
-            `[addProduct] Created ProductTag link between product [${product.id}] and tag [${tag.id}]`
-          );
+          await Promise.all(tagPromises);
         }
       }
 
@@ -692,7 +691,7 @@ export async function addProduct(input: AddProductInput) {
     console.log("[addProduct] Product creation complete:", result);
     return {
       success: true,
-      product: result,
+      product: completeProduct,
     };
   } catch (err) {
     console.error("ADD_PRODUCT_ERROR", err);
@@ -700,7 +699,20 @@ export async function addProduct(input: AddProductInput) {
   }
 }
 
-export const getAllProducts = async () => {
+export async function toggleStock(productId: string, visibility: Visibility) {
+  try {
+    await prisma.product.update({
+      where: {
+        id: productId,
+      },
+      data: {
+        visibility,
+      },
+    });
+  } catch (error) {}
+}
+
+export const getAllProducts = async (management?: boolean) => {
   try {
     const result = await prisma.product.findMany({
       where: {
@@ -864,7 +876,7 @@ const generateSpecTable = async (rawSpec: ProductSpec[]) => {
   try {
     const specGroupIDs = rawSpec.map((spec) => spec.specGroupId);
 
-    const result = await db.specGroup.findMany({
+    const result = await prisma.specGroup.findMany({
       where: {
         id: { in: specGroupIDs },
       },
