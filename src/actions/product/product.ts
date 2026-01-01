@@ -20,249 +20,7 @@ const convertStringToFloat = (str: string | number) => {
   (str as string).replace(/,/, ".");
   return str ? parseFloat(str as string) : 0.0;
 };
-type VariantInput = {
-  sku?: string;
-  title?: string;
-  price?: number | string;
-  salePrice?: number | string | null;
-  stock?: number;
-  isDefault?: boolean;
-  images?: string[]; // optional array of image URLs (if already uploaded)
-  optionIds?: string[]; // array of existing Option.id values to link as VariantOption
-};
 
-type SpecInput = {
-  specGroupId?: string; // existing SpecGroup id (preferred)
-  specGroup?: { title: string; keys: string[] }; // create a new SpecGroup if specGroupId not passed
-  values: string[]; // values aligned to SpecGroup.keys order
-};
-type AddProductExtras = {
-  tags?: Tag[];
-  variants?: ProductVariant[];
-  specs?: SpecGroup[];
-};
-// export const addProduct = async (
-//   {
-//     basePrice,
-//     slug,
-//     title,
-//     averageRating,
-//     canonicalUrl,
-//     currency,
-//     description,
-//     featured,
-//     inventory,
-//     locale,
-//     lowStockThreshold,
-//     reviewCount,
-//     price,
-//     publishedAt,
-//     structuredData,
-//     status,
-//     visibility,
-//     sku,
-//     shortDescription,
-//     salePrice,
-//     createdBy,
-//     twitterCard,
-//     translations,
-//     metadata,
-//     metaKeywords,
-//     metaDescription,
-//     metaTitle,
-//   }: ProductCreateInput,
-//   catIdOrCat: {
-//     categoryId?: string;
-//     category?: Category;
-//   },
-//   createdById: string,
-//   images: File[] | File,
-//   extras?: AddProductExtras,
-//   publishedById?: string
-// ) => {
-//   try {
-//     const required = {
-//       basePrice,
-//       slug,
-//       title,
-//       sku,
-//       publishedById,
-//       images,
-//       catIdOrCat,
-//       createdById,
-//     };
-
-//     const missing = validateRequiredFields(required);
-//     if (missing) return { error: missing.error };
-
-//     const floatPrice = convertStringToFloat(basePrice);
-//     const floatSalePrice = salePrice ? convertStringToFloat(salePrice) : null;
-
-//     // Upload images first
-//     const tempProductId = cuid(); // or use a different ID generation method
-//     const productImage = await uploadImage(
-//       {
-//         productId: tempProductId,
-//         type: 'PRODUCT',
-//       },
-//       images
-//     );
-
-//     if (productImage.error) {
-//       return { error: 'Error upload product Image' };
-//     }
-
-//     const pImgs = productImage.images;
-//     const metaInfo = generateProductMetadata(
-//       {
-//         description,
-//         title,
-//         shortDescription,
-//         metadata,
-//         metaKeywords,
-//       },
-//       pImgs?.[0].id!
-//     );
-
-//     const ProductstructuredData = generateProductStructuredData({
-//       title,
-//       visibility,
-//       averageRating,
-//       canonicalUrl,
-//       currency,
-//       description,
-//       metaDescription,
-//       metaTitle,
-//       price,
-//       reviewCount,
-//       shortDescription,
-//       sku,
-//       status,
-//       images: pImgs,
-//     });
-
-//     // Create product with all relations
-//     const product = await db.product.create({
-//       data: {
-//         id: tempProductId,
-//         basePrice: floatPrice,
-//         slug,
-//         title,
-//         averageRating,
-//         canonicalUrl,
-//         currency,
-//         description,
-//         featured,
-//         inventory,
-//         locale,
-//         lowStockThreshold,
-//         reviewCount,
-//         price,
-//         publishedAt,
-//         status,
-//         visibility,
-//         sku,
-//         shortDescription,
-//         salePrice: floatSalePrice,
-//         twitterCard,
-//         translations,
-//         metadata,
-//         createdById,
-//         publishedById,
-//         ...metaInfo,
-//         structuredData: ProductstructuredData,
-
-//         // Connect uploaded images
-//         images: {
-//           connect: pImgs.map((img) => ({ id: img.id })),
-//         },
-
-//         // Connect category
-//         categories: catIdOrCat.categoryId
-//           ? {
-//               create: {
-//                 categoryId: catIdOrCat.categoryId,
-//               },
-//             }
-//           : undefined,
-
-//         // Connect tags if provided
-//         tags: extras?.tagIds
-//           ? {
-//               create: extras.tagIds.map((tagId) => ({
-//                 tagId,
-//               })),
-//             }
-//           : undefined,
-
-//         // Create variants if provided
-//         productVariants: extras?.variants
-//           ? {
-//               create: extras.variants.map((variant) => ({
-//                 sku: variant.sku,
-//                 title: variant.title,
-//                 price: variant.price,
-//                 salePrice: variant.salePrice,
-//                 stock: variant.stock || 0,
-//                 isDefault: variant.isDefault || false,
-//                 images: variant.images || [],
-//                 weightGram: variant.weightGram,
-//                 options: variant.optionIds
-//                   ? {
-//                       create: variant.optionIds.map((optionId) => ({
-//                         optionId,
-//                       })),
-//                     }
-//                   : undefined,
-//               })),
-//             }
-//           : undefined,
-
-//         // Create specs if provided
-//         productSpecs: extras?.specs
-//           ? {
-//               create: extras.specs.map((spec) => ({
-//                 specGroupId: spec.specGroupId,
-//                 values: spec.values,
-//               })),
-//             }
-//           : undefined,
-//       },
-//       include: {
-//         images: true,
-//         categories: {
-//           include: {
-//             category: true,
-//           },
-//         },
-//         tags: {
-//           include: {
-//             tag: true,
-//           },
-//         },
-//         productVariants: {
-//           include: {
-//             options: {
-//               include: {
-//                 option: true,
-//               },
-//             },
-//           },
-//         },
-//         productSpecs: {
-//           include: {
-//             specGroup: true,
-//           },
-//         },
-//       },
-//     });
-
-//     return { res: product };
-//   } catch (error) {
-//     console.log(error);
-//     return { error: 'Failed adding Product.' };
-//   }
-// };
 import type {
   Product,
   OptionSet,
@@ -270,46 +28,47 @@ import type {
   Tag,
   SpecGroup,
   VariantOption,
+  Visibility,
 } from "@/shared/lib/generated/prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/client";
 import { NullableJsonNullValueInput } from "@/shared/lib/generated/prisma/internal/prismaNamespace";
 
-export type optionSets ={
+export type optionSets = {
+  name: string;
+  type: OptionSet["type"];
+  options: {
     name: string;
-    type: OptionSet["type"];
-    options: {
-      name: string;
-      value?: string | null;
-      position?: number;
-    }[];
+    value?: string | null;
+    position?: number;
   }[];
-  export type variants = {
-    sku?: string | null;
-    productId: string; // Remove: not needed for creation
-    title?: string | null;
-    price?: number; // Changed from number | string
-    salePrice?: number | null; // Changed from number | string | null
-    stock?: number;
-    isDefault?: boolean;
-    weightGram?: number | null;
-    options?: string[]; // Changed from VariantOption[] to string[]
-  }[];
-  export type specs = {
-    groupTitle: string;
-    keys: string[];
-    values: string[];
-  }[];
-  export type tags= {
-    name: string;
-    slug: string;
-  }[];
+}[];
+export type variants = {
+  sku?: string | null;
+  productId: string; // Remove: not needed for creation
+  title?: string | null;
+  price?: number; // Changed from number | string
+  salePrice?: number | null; // Changed from number | string | null
+  stock?: number;
+  isDefault?: boolean;
+  weightGram?: number | null;
+  options?: string[]; // Changed from VariantOption[] to string[]
+}[];
+export type specs = {
+  groupTitle: string;
+  keys: string[];
+  values: string[];
+}[];
+export type tags = {
+  name: string;
+  slug: string;
+}[];
 export type category = {
   id?: string;
-    name: string;
-    slug: string;
-    description?: string | null;
-    parentId?: string | null;
-  };
+  name: string;
+  slug: string;
+  description?: string | null;
+  parentId?: string | null;
+};
 
 export type AddProductInput = {
   title: string;
@@ -329,8 +88,7 @@ export type AddProductInput = {
   optionSets: optionSets;
   specs: specs;
   tags: tags;
-  variants: variants
-
+  variants: variants;
 };
 
 export async function addProduct(input: AddProductInput) {
@@ -547,7 +305,6 @@ export async function addProduct(input: AddProductInput) {
       console.log("[addProduct] Creating product specs:", input.specs);
       // 7. Create SpecGroup and ProductSpec
       if (input.specs && input.specs.length > 0) {
-
         for (const spec of input.specs) {
           // Create SpecGroup
           const specGroup = await tx.specGroup.create({
@@ -620,14 +377,15 @@ export async function addProduct(input: AddProductInput) {
           }
           console.log("[addProduct] Tag resolved:", tag);
 
-            return tx.productTag.create({
-              data: {
-                productId: product.id,
-                tagId: tag.id,
-              },
-            });
+          await tx.productTag.create({
+            data: {
+              productId: product.id,
+              tagId: tag.id,
+            },
           });
-          await Promise.all(tagPromises);
+          console.log(
+            `[addProduct] Created ProductTag link between product [${product.id}] and tag [${tag.id}]`
+          );
         }
       }
 
@@ -691,7 +449,7 @@ export async function addProduct(input: AddProductInput) {
     console.log("[addProduct] Product creation complete:", result);
     return {
       success: true,
-      product: completeProduct,
+      product: result,
     };
   } catch (err) {
     console.error("ADD_PRODUCT_ERROR", err);
@@ -783,173 +541,173 @@ export const getProductBySlug = async (slug: string) => {
   }
 };
 
-export const getOneProduct = async (productID: string) => {
-  if (!productID || productID === "") return { error: "Invalid Product ID!" };
+// export const getOneProduct = async (productID: string) => {
+//   if (!productID || productID === "") return { error: "Invalid Product ID!" };
 
-  try {
-    const result = await db.product.findFirst({
-      where: {
-        id: productID,
-        visibility: "PUBLIC",
-        status: "PUBLISHED",
-      },
-      include: {
-        productOffers: true,
-        productSpecs: true,
-        productVariants: true,
-        couponProducts: true,
-        reviews: true,
-        images: true,
-        tags: true,
-        favouritedBy: true,
-        orderItems: true,
-      },
-    });
-    if (!result) return { error: "Invalid Data!" };
+//   try {
+//     const result = await prisma.product.findFirst({
+//       where: {
+//         id: productID,
+//         visibility: "PUBLIC",
+//         status: "PUBLISHED",
+//       },
+//       include: {
+//         productOffers: true,
+//         productSpecs: true,
+//         productVariants: true,
+//         couponProducts: true,
+//         reviews: true,
+//         images: true,
+//         tags: true,
+//         favouritedBy: true,
+//         orderItems: true,
+//       },
+//     });
+//     if (!result) return { error: "Invalid Data!" };
 
-    const specifications = await generateSpecTable(result.productSpecs);
-    if (!specifications || specifications.length === 0)
-      return { error: "Invalid Date" };
+//     const specifications = await generateSpecTable(result.productSpecs);
+//     if (!specifications || specifications.length === 0)
+//       return { error: "Invalid Date" };
 
-    const pathArray: TPath[] | null = await getPathByCategoryID(
-      result.category.id,
-      result.category.parentID
-    );
-    if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
+//     const pathArray: TPath[] | null = await getPathByCategoryID(
+//       result.category.id,
+//       result.category.parentID
+//     );
+//     if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
 
-    //eslint-disable-next-line
-    const { specs, ...others } = result;
-    const mergedResult: TProductPageInfo = {
-      ...others,
-      specifications,
-      path: pathArray,
-    };
+//     //eslint-disable-next-line
+//     const { specs, ...others } = result;
+//     const mergedResult: TProductPageInfo = {
+//       ...others,
+//       specifications,
+//       path: pathArray,
+//     };
 
-    return { res: mergedResult };
-  } catch (error) {
-    return { error: JSON.stringify(error) };
-  }
-};
+//     return { res: mergedResult };
+//   } catch (error) {
+//     return { error: JSON.stringify(error) };
+//   }
+// };
 
-export const getCartProducts = async (productIDs: string[]) => {
-  if (!productIDs || productIDs.length === 0)
-    return { error: "Invalid Product List" };
+// export const getCartProducts = async (productIDs: string[]) => {
+//   if (!productIDs || productIDs.length === 0)
+//     return { error: "Invalid Product List" };
 
-  try {
-    const result: TCartListItemDB[] | null = await db.product.findMany({
-      where: {
-        id: { in: productIDs },
-      },
-      select: {
-        id: true,
-        name: true,
-        images: true,
-        price: true,
-        salePrice: true,
-      },
-    });
+//   try {
+//     const result: TCartListItemDB[] | null = await prisma.product.findMany({
+//       where: {
+//         id: { in: productIDs },
+//       },
+//       select: {
+//         id: true,
+//         name: true,
+//         images: true,
+//         price: true,
+//         salePrice: true,
+//       },
+//     });
 
-    if (!result) return { error: "Can't Get Data from Database!" };
-    return { res: result };
-  } catch (error) {
-    return { error: JSON.stringify(error) };
-  }
-};
+//     if (!result) return { error: "Can't Get Data from Database!" };
+//     return { res: result };
+//   } catch (error) {
+//     return { error: JSON.stringify(error) };
+//   }
+// };
 
-export const deleteProduct = async (productID: string) => {
-  if (!productID || productID === "") return { error: "Invalid Data!" };
-  try {
-    const result = await db.product.delete({
-      where: {
-        id: productID,
-      },
-    });
+// export const deleteProduct = async (productID: string) => {
+//   if (!productID || productID === "") return { error: "Invalid Data!" };
+//   try {
+//     const result = await prisma.product.delete({
+//       where: {
+//         id: productID,
+//       },
+//     });
 
-    if (!result) return { error: "Can't Delete!" };
-    return { res: result };
-  } catch (error) {
-    return { error: JSON.stringify(error) };
-  }
-};
+//     if (!result) return { error: "Can't Delete!" };
+//     return { res: result };
+//   } catch (error) {
+//     return { error: JSON.stringify(error) };
+//   }
+// };
 
-const generateSpecTable = async (rawSpec: ProductSpec[]) => {
-  try {
-    const specGroupIDs = rawSpec.map((spec) => spec.specGroupId);
+// const generateSpecTable = async (rawSpec: ProductSpec[]) => {
+//   try {
+//     const specGroupIDs = rawSpec.map((spec) => spec.specGroupId);
 
-    const result = await prisma.specGroup.findMany({
-      where: {
-        id: { in: specGroupIDs },
-      },
-      include: {
-        products: true,
-      },
-    });
-    if (!result || result.length === 0) return null;
+//     const result = await prisma.specGroup.findMany({
+//       where: {
+//         id: { in: specGroupIDs },
+//       },
+//       include: {
+//         products: true,
+//       },
+//     });
+//     if (!result || result.length === 0) return null;
 
-    const specifications: TSpecification[] = [];
+//     const specifications: TSpecification[] = [];
 
-    rawSpec.forEach((spec) => {
-      const groupSpecIndex = result.findIndex((g) => g.id === spec.specGroupId);
-      const tempSpecs: { name: string; value: string }[] = [];
-      spec.specValues.forEach((s, index) => {
-        tempSpecs.push({
-          name: result[groupSpecIndex].specs[index] || "",
-          value: s || "",
-        });
-      });
+//     rawSpec.forEach((spec) => {
+//       const groupSpecIndex = result.findIndex((g) => g.id === spec.specGroupId);
+//       const tempSpecs: { name: string; value: string }[] = [];
+//       spec.specValues.forEach((s, index) => {
+//         tempSpecs.push({
+//           name: result[groupSpecIndex].products[index].title || "",
+//           value: s || "",
+//         });
+//       });
 
-      specifications.push({
-        groupName: result[groupSpecIndex].title || "",
-        specs: tempSpecs,
-      });
-    });
-    if (specifications.length === 0) return null;
+//       specifications.push({
+//         groupName: result[groupSpecIndex].title || "",
+//         specs: tempSpecs,
+//       });
+//     });
+//     if (specifications.length === 0) return null;
 
-    return specifications;
-  } catch {
-    return null;
-  }
-};
+//     return specifications;
+//   } catch {
+//     return null;
+//   }
+// };
 
-const getPathByCategoryID = async (
-  categoryID: string,
-  parentID: string | null
-) => {
-  try {
-    if (!categoryID || categoryID === "") return null;
-    if (!parentID || parentID === "") return null;
-    const result: TPath[] = await db.category.findMany({
-      where: {
-        OR: [{ id: categoryID }, { id: parentID }, { parentID: null }],
-      },
-      select: {
-        id: true,
-        parentID: true,
-        name: true,
-        url: true,
-      },
-    });
-    if (!result || result.length === 0) return null;
+// const getPathByCategoryID = async (
+//   categoryID: string,
+//   parentID: string | null
+// ) => {
+//   try {
+//     if (!categoryID || categoryID === "") return null;
+//     if (!parentID || parentID === "") return null;
+//     const result: TPath[] = await db.category.findMany({
+//       where: {
+//         OR: [{ id: categoryID }, { id: parentID }, { parentID: null }],
+//       },
+//       select: {
+//         id: true,
+//         parentID: true,
+//         name: true,
+//         url: true,
+//       },
+//     });
+//     if (!result || result.length === 0) return null;
 
-    const path: TPath[] = [];
-    let tempCatID: string | null = categoryID;
-    let searchCount = 0;
+//     const path: TPath[] = [];
+//     let tempCatID: string | null = categoryID;
+//     let searchCount = 0;
 
-    const generatePath = () => {
-      const foundCatIndex = result.findIndex((cat) => cat.id === tempCatID);
-      if (foundCatIndex === -1) return;
-      path.unshift(result[foundCatIndex]);
-      tempCatID = result[foundCatIndex].parentID;
-      if (!tempCatID) return;
-      searchCount++;
-      if (searchCount <= 3) generatePath();
-      return;
-    };
-    generatePath();
+//     const generatePath = () => {
+//       const foundCatIndex = result.findIndex((cat) => cat.id === tempCatID);
+//       if (foundCatIndex === -1) return;
+//       path.unshift(result[foundCatIndex]);
+//       tempCatID = result[foundCatIndex].parentID;
+//       if (!tempCatID) return;
+//       searchCount++;
+//       if (searchCount <= 3) generatePath();
+//       return;
+//     };
+//     generatePath();
 
-    if (!path || path.length === 0) return null;
-    return path;
-  } catch {
-    return null;
-  }
-};
+//     if (!path || path.length === 0) return null;
+//     return path;
+//   } catch {
+//     return null;
+//   }
+// };
