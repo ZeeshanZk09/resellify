@@ -1,5 +1,5 @@
-"use server";
-import prisma from "@/shared/lib/prisma";
+'use server';
+import prisma from '@/shared/lib/prisma';
 import {
   TAddProductFormValues,
   TCartListItemDB,
@@ -7,17 +7,17 @@ import {
   TProductListItem,
   TProductPageInfo,
   TSpecification,
-} from "@/shared/types/product";
+} from '@/shared/types/product';
 import {
   generateProductMetadata,
   generateProductStructuredData,
   validateRequiredFields,
-} from "@/shared/lib/utils/product";
-import { uploadImage } from "./product-image";
-import { auth } from "@/auth";
+} from '@/shared/lib/utils/product';
+import { uploadImage } from './product-image';
+import { auth } from '@/auth';
 
 const convertStringToFloat = (str: string | number) => {
-  (str as string).replace(/,/, ".");
+  (str as string).replace(/,/, '.');
   return str ? parseFloat(str as string) : 0.0;
 };
 
@@ -30,13 +30,13 @@ import {
   type VariantOption,
   type Visibility,
   Prisma,
-} from "@/shared/lib/generated/prisma/client";
-import { InputJsonValue } from "@prisma/client/runtime/client";
-import { NullableJsonNullValueInput } from "@/shared/lib/generated/prisma/internal/prismaNamespace";
+} from '@/shared/lib/generated/prisma/client';
+import { InputJsonValue } from '@prisma/client/runtime/client';
+import { NullableJsonNullValueInput } from '@/shared/lib/generated/prisma/internal/prismaNamespace';
 
 export type optionSets = {
   name: string;
-  type: OptionSet["type"];
+  type: OptionSet['type'];
   options: {
     name: string;
     value?: string | null;
@@ -80,8 +80,8 @@ export type AddProductInput = {
   description?: string | null;
   shortDescription?: string | null;
   currency?: string;
-  status?: Product["status"];
-  visibility?: Product["visibility"];
+  status?: Product['status'];
+  visibility?: Product['visibility'];
   inventory?: number;
   lowStockThreshold?: number;
   images: File[] | File;
@@ -92,27 +92,18 @@ export type AddProductInput = {
   variants: variants;
 };
 
-export type GetAllProducts = Awaited<ReturnType<typeof getAllProducts>>["res"];
-export type GetRelatedProducts = Awaited<
-  ReturnType<typeof getRelatedProducts>
->["res"];
-export type GetInitialProducts = Awaited<
-  ReturnType<typeof getInitialProducts>
->["res"];
-export type LoadMoreProducts = Awaited<
-  ReturnType<typeof loadMoreProducts>
->["res"];
+export type GetAllProducts = Awaited<ReturnType<typeof getAllProducts>>['res'];
+export type GetRelatedProducts = Awaited<ReturnType<typeof getRelatedProducts>>['res'];
+export type GetInitialProducts = Awaited<ReturnType<typeof getInitialProducts>>['res'];
+export type LoadMoreProducts = Awaited<ReturnType<typeof loadMoreProducts>>['res'];
 
 export async function addProduct(input: AddProductInput) {
   try {
-    console.log(
-      "[addProduct] Called with input:",
-      JSON.stringify(input, null, 2)
-    );
+    console.log('[addProduct] Called with input:', JSON.stringify(input, null, 2));
 
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== "ADMIN") {
-      return { error: "Unauthorized" };
+    if (!session?.user?.id || session.user.role !== 'ADMIN') {
+      return { error: 'Unauthorized' };
     }
 
     // Validate required fields
@@ -133,7 +124,7 @@ export async function addProduct(input: AddProductInput) {
       },
     });
     if (existing) {
-      return { error: "Product with this slug or SKU already exists" };
+      return { error: 'Product with this slug or SKU already exists' };
     }
 
     // Start transaction
@@ -166,15 +157,14 @@ export async function addProduct(input: AddProductInput) {
             salePrice: input.salePrice,
             slug: input.slug,
             sku: input.sku,
-            currency: input.currency || "PKR",
-            status: input.status || "DRAFT",
-            visibility: input.visibility || "UNLISTED",
+            currency: input.currency || 'PKR',
+            status: input.status || 'DRAFT',
+            visibility: input.visibility || 'UNLISTED',
             inventory: input.inventory || 0,
             lowStockThreshold: input.lowStockThreshold || 5,
             createdById: session.user.id,
-            publishedById:
-              input.status === "PUBLISHED" ? session.user.id : undefined,
-            publishedAt: input.status === "PUBLISHED" ? new Date() : undefined,
+            publishedById: input.status === 'PUBLISHED' ? session.user.id : undefined,
+            publishedAt: input.status === 'PUBLISHED' ? new Date() : undefined,
           },
         });
 
@@ -254,22 +244,18 @@ export async function addProduct(input: AddProductInput) {
 
             // Link variant options
             if (variant.options && variant.options.length > 0) {
-              const variantOptionPromises = variant.options.map(
-                async (optionName) => {
-                  const optionId = optionNameToIdMap.get(optionName);
-                  if (!optionId) {
-                    throw new Error(
-                      `Option "${optionName}" not found in any option set`
-                    );
-                  }
-                  return tx.variantOption.create({
-                    data: {
-                      variantId: createdVariant.id,
-                      optionId,
-                    },
-                  });
+              const variantOptionPromises = variant.options.map(async (optionName) => {
+                const optionId = optionNameToIdMap.get(optionName);
+                if (!optionId) {
+                  throw new Error(`Option "${optionName}" not found in any option set`);
                 }
-              );
+                return tx.variantOption.create({
+                  data: {
+                    variantId: createdVariant.id,
+                    optionId,
+                  },
+                });
+              });
               await Promise.all(variantOptionPromises);
             }
           }
@@ -278,7 +264,7 @@ export async function addProduct(input: AddProductInput) {
           await tx.productVariant.create({
             data: {
               productId: product.id,
-              title: "Default",
+              title: 'Default',
               price: product.basePrice,
               stock: product.inventory,
               isDefault: true,
@@ -286,7 +272,7 @@ export async function addProduct(input: AddProductInput) {
           });
         }
 
-        console.log("[addProduct] Creating product specs:", input.specs);
+        console.log('[addProduct] Creating product specs:', input.specs);
         // 7. Create SpecGroup and ProductSpec
         if (input.specs && input.specs.length > 0) {
           for (const spec of input.specs) {
@@ -299,14 +285,10 @@ export async function addProduct(input: AddProductInput) {
                 // to values ko alag se ProductSpec mein store karna hoga
               },
             });
-            console.log("[addProduct] Created specGroup:", specGroup);
+            console.log('[addProduct] Created specGroup:', specGroup);
 
             // Create ProductSpec records for each key-value pair
-            if (
-              spec.keys &&
-              spec.values &&
-              spec.keys.length === spec.values.length
-            ) {
+            if (spec.keys && spec.values && spec.keys.length === spec.values.length) {
               for (let i = 0; i < spec.keys.length; i++) {
                 const key = spec.keys[i];
                 const values = spec.values;
@@ -367,16 +349,10 @@ export async function addProduct(input: AddProductInput) {
     // 8. Handle Image Upload (outside transaction for performance)
     let uploadResult;
     if (input.images && (input.images as File[]).length > 0) {
-      uploadResult = await uploadImage(
-        { type: "PRODUCT", productId: result.id },
-        input.images
-      );
+      uploadResult = await uploadImage({ type: 'PRODUCT', productId: result.id }, input.images);
 
       if (uploadResult.error) {
-        console.warn(
-          "Product created but image upload failed:",
-          uploadResult.error
-        );
+        console.warn('Product created but image upload failed:', uploadResult.error);
         // Don't fail the whole operation if image upload fails
       } else {
         // Update product with metadata and structured data
@@ -389,10 +365,7 @@ export async function addProduct(input: AddProductInput) {
                 | NullableJsonNullValueInput
                 | InputJsonValue
                 | undefined,
-              metadata: result.metadata as
-                | NullableJsonNullValueInput
-                | InputJsonValue
-                | undefined,
+              metadata: result.metadata as NullableJsonNullValueInput | InputJsonValue | undefined,
             },
             primaryImage.id
           );
@@ -434,23 +407,22 @@ export async function addProduct(input: AddProductInput) {
       product: completeProduct,
     };
   } catch (err) {
-    console.error("ADD_PRODUCT_ERROR", err);
+    console.error('ADD_PRODUCT_ERROR', err);
 
     // Provide more specific error messages
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === "P2002") {
-        return { error: "A product with this slug or SKU already exists" };
+      if (err.code === 'P2002') {
+        return { error: 'A product with this slug or SKU already exists' };
       }
-      if (err.code === "P2003") {
+      if (err.code === 'P2003') {
         return {
-          error:
-            "Foreign key constraint failed. Please check your category references.",
+          error: 'Foreign key constraint failed. Please check your category references.',
         };
       }
     }
 
     return {
-      error: err instanceof Error ? err.message : "Failed to create product",
+      error: err instanceof Error ? err.message : 'Failed to create product',
     };
   }
 }
@@ -472,7 +444,7 @@ export const getAllProducts = async () => {
   try {
     const result = await prisma.product.findMany({
       where: {
-        status: "PUBLISHED",
+        status: 'PUBLISHED',
       },
       include: {
         waitlists: true,
@@ -505,7 +477,7 @@ export const getAllProducts = async () => {
         },
       },
       orderBy: {
-        publishedAt: "desc",
+        publishedAt: 'desc',
       },
     });
 
@@ -520,7 +492,7 @@ export const getInitialProducts = async (limit: number = 10) => {
   try {
     const result = await prisma.product.findMany({
       where: {
-        status: "PUBLISHED",
+        status: 'PUBLISHED',
       },
       include: {
         waitlists: true,
@@ -554,7 +526,7 @@ export const getInitialProducts = async (limit: number = 10) => {
       },
       take: limit,
       orderBy: {
-        publishedAt: "desc",
+        publishedAt: 'desc',
       },
     });
 
@@ -572,7 +544,7 @@ export const loadMoreProducts = async (
   try {
     const result = await prisma.product.findMany({
       where: {
-        status: "PUBLISHED",
+        status: 'PUBLISHED',
       },
       include: {
         waitlists: true,
@@ -610,7 +582,7 @@ export const loadMoreProducts = async (
         id: cursorId,
       },
       orderBy: {
-        publishedAt: "desc",
+        publishedAt: 'desc',
       },
     });
 
@@ -633,13 +605,13 @@ export const loadMoreProducts = async (
 
 export const getProductBySlug = async (slug: string) => {
   try {
-    if (!slug || slug.trim() === "") return { error: "Invalid Slug!" };
+    if (!slug || slug.trim() === '') return { error: 'Invalid Slug!' };
 
     const result = await prisma.product.findFirst({
       where: {
         slug: slug,
-        visibility: "PUBLIC",
-        status: "PUBLISHED",
+        visibility: 'PUBLIC',
+        status: 'PUBLISHED',
       },
       include: {
         productOffers: true,
@@ -657,7 +629,11 @@ export const getProductBySlug = async (slug: string) => {
           },
         },
         couponProducts: true,
-        reviews: true,
+        reviews: {
+          include: {
+            user: true,
+          },
+        },
         images: true,
         waitlists: true,
         tags: true,
@@ -672,18 +648,15 @@ export const getProductBySlug = async (slug: string) => {
       },
     });
 
-    if (!result) return { error: "Product Not Found!" };
+    if (!result) return { error: 'Product Not Found!' };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
   }
 };
 
-export const getRelatedProducts = async (
-  productID: string,
-  categoryID: string
-) => {
-  if (!productID || productID === "") return { error: "Invalid Product ID!" };
+export const getRelatedProducts = async (productID: string, categoryID: string) => {
+  if (!productID || productID === '') return { error: 'Invalid Product ID!' };
   try {
     const result = await prisma.product.findMany({
       where: {
@@ -691,13 +664,13 @@ export const getRelatedProducts = async (
           some: {
             category: {
               id: {
-                in: categoryID.split(","),
+                in: categoryID.split(','),
               },
             },
           },
         },
-        visibility: "PUBLIC",
-        status: "PUBLISHED",
+        visibility: 'PUBLIC',
+        status: 'PUBLISHED',
       },
       include: {
         productOffers: true,
@@ -711,7 +684,7 @@ export const getRelatedProducts = async (
         orderItems: true,
       },
     });
-    if (!result) return { error: "Invalid Data!" };
+    if (!result) return { error: 'Invalid Data!' };
     return { res: result };
   } catch (error) {
     return { error };

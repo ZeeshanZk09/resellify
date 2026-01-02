@@ -98,8 +98,16 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <Toaster
+              position='top-right'
+              richColors
+              closeButton
+              duration={5000}
+              theme='system'
+              className='z-100 bg-background text-foreground border border-border rounded-lg shadow-lg p-4'
+            />
+
             {children}
-            <Toaster />
           </ThemeProvider>
         </AuthProvider>
       </body>

@@ -180,14 +180,14 @@ export type OptionSetOrderByWithRelationInput = {
 
 export type OptionSetWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  name?: string
   AND?: Prisma.OptionSetWhereInput | Prisma.OptionSetWhereInput[]
   OR?: Prisma.OptionSetWhereInput[]
   NOT?: Prisma.OptionSetWhereInput | Prisma.OptionSetWhereInput[]
-  name?: Prisma.StringFilter<"OptionSet"> | string
   type?: Prisma.EnumOptionTypeFilter<"OptionSet"> | $Enums.OptionType
   options?: Prisma.OptionListRelationFilter
   categories?: Prisma.CategoryOptionSetListRelationFilter
-}, "id">
+}, "id" | "name">
 
 export type OptionSetOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
