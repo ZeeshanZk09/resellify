@@ -150,10 +150,13 @@ export const AddressScalarFieldEnum = {
   label: 'label',
   fullName: 'fullName',
   phone: 'phone',
+  whatsappNumber: 'whatsappNumber',
   line1: 'line1',
   line2: 'line2',
-  city: 'city',
   state: 'state',
+  city: 'city',
+  area: 'area',
+  nearbyLandmark: 'nearbyLandmark',
   postalCode: 'postalCode',
   country: 'country',
   isDefault: 'isDefault',
@@ -168,6 +171,7 @@ export const FavouriteScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   productId: 'productId',
+  isFav: 'isFav',
   createdAt: 'createdAt'
 } as const
 
@@ -472,6 +476,7 @@ export const CouponScalarFieldEnum = {
   perUserLimit: 'perUserLimit',
   firstOrderOnly: 'firstOrderOnly',
   minOrderValue: 'minOrderValue',
+  minOrderPrice: 'minOrderPrice',
   categoryId: 'categoryId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

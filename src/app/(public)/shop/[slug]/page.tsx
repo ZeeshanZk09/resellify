@@ -28,7 +28,6 @@ import StockIndicator from './_components/stock-indicator';
 import SocialShare from './_components/social-share';
 import RelatedProducts from './_components/related-products';
 import ProductStructuredData from './_components/product-structured-data';
-import { User } from '@/shared/lib/generated/prisma/browser';
 
 interface ProductPageProps {
   params: Promise<{
@@ -36,9 +35,12 @@ interface ProductPageProps {
   }>;
 }
 
+export const revalidate = 0;
+
 // Generates metadata for each product page
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = (await getProductBySlug((await params).slug)).res;
+  const slug = decodeURIComponent((await params).slug);
+  const product = (await getProductBySlug(slug)).res;
 
   if (!product) {
     return {
@@ -49,7 +51,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 
   const images = product.images?.map((img) => img.path) || [];
-  const price = product.salePrice || product.basePrice;
+  //   const price = product.salePrice || product.basePrice;
 
   return {
     title: product.metaTitle || product.title,
@@ -60,7 +62,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       typeof product.metaKeywords === 'string'
         ? product.metaKeywords.split(',').map((k) => k.trim())
         : [],
-    authors: [{ name: 'Your Store' }],
+    authors: [{ name: 'Muhammad Zeeshan Khan' }],
     openGraph: {
       type: 'website',
       title: product.ogTitle || product.title,
@@ -69,7 +71,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         product?.description?.slice(0, 200)!) as string,
       images: images.length > 0 ? images : [],
       url: `/shop/${product.slug}`,
-      siteName: 'Your Store',
+      siteName: 'GO Shop',
       locale: product.locale || 'en_US',
     },
     twitter: {
@@ -100,9 +102,6 @@ export async function generateStaticParams() {
   );
 }
 
-// Cache for 1 hour, revalidate on-demand
-export const revalidate = 3600;
-
 // Preload critical image
 function preloadImage(imageUrl: string) {
   return {
@@ -114,7 +113,9 @@ function preloadImage(imageUrl: string) {
 }
 
 export default async function ProductBySlug({ params }: ProductPageProps) {
-  const { slug } = await params;
+  const slug = decodeURIComponent((await params).slug);
+  console.log('product-slug: ', slug);
+
   const product = (await getProductBySlug(slug)).res;
   const relatedProducts = (
     await getRelatedProducts(
@@ -249,16 +250,14 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
             {/* Add to Cart and Actions */}
             <div className='w-full space-y-4 flex flex-col justify-between gap-4'>
               <AddToCartButton
-                productId={product.id}
+                slug={product.slug}
                 price={price}
                 currency={product.currency!}
                 visible={product.visibility === 'PUBLIC'}
                 variants={product.productVariants}
               />
 
-              <div className='flex items-center justify-between gap-4 pt-4'>
-                <SocialShare />
-              </div>
+              <SocialShare />
             </div>
 
             {/* Trust Badges */}
@@ -299,23 +298,7 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
 
             {/* Reviews Section */}
             <section className='lg:col-span-2'>
-              <ProductReviews
-                productId={product.id!}
-                averageRating={product.averageRating!}
-                reviews={
-                  product?.reviews! as {
-                    id: string;
-                    title: string | null;
-                    createdAt: Date;
-                    updatedAt: Date | null;
-                    productId: string;
-                    userId: string;
-                    rating: number;
-                    comment: string | null;
-                    user: User;
-                  }[]
-                }
-              />
+              <ProductReviews productId={product.id!} averageRating={product.averageRating!} />
             </section>
           </div>
         </div>

@@ -162,20 +162,23 @@ model VerificationToken {
 }
 
 model Address {
-    id         String  @id @default(cuid())
-    userId     String
-    label      String? // "Home", "Office"
-    fullName   String
-    phone      String
-    line1      String
-    line2      String?
-    city       String
-    state      String?
-    postalCode String?
-    country    String  @default("Pakistan")
-    isDefault  Boolean @default(false)
+    id             String  @id @default(cuid())
+    userId         String?
+    label          String? // "Home", "Office"
+    fullName       String
+    phone          String
+    whatsappNumber String
+    line1          String
+    line2          String?
+    state          String?
+    city           String
+    area           String
+    nearbyLandmark String? // Nearest location (shop/police station/hospital etc.)
+    postalCode     String?
+    country        String  @default("Pakistan")
+    isDefault      Boolean @default(false)
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     createdAt DateTime  @default(now())
     updatedAt DateTime? @updatedAt
@@ -187,7 +190,8 @@ model Address {
 model Favourite {
     id        String   @id @default(cuid())
     userId    String
-    productId String
+    productId String   @unique
+    isFav     Boolean  @default(true)
     createdAt DateTime @default(now())
 
     user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -414,7 +418,7 @@ model ProductTag {
 // ---------- Cart ----------
 model Cart {
     id        String    @id @default(cuid())
-    userId    String
+    userId    String    @unique
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     expiresAt DateTime? // optional
@@ -590,6 +594,7 @@ model Coupon {
     perUserLimit   Int? // uses per user
     firstOrderOnly Boolean  @default(false)
     minOrderValue  Decimal?
+    minOrderPrice  Decimal?
 
     // 🎯 optional category-based coupon
     categoryId String?   @unique

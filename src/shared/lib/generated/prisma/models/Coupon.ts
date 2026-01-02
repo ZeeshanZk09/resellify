@@ -33,6 +33,7 @@ export type CouponAvgAggregateOutputType = {
   usageLimit: number | null
   perUserLimit: number | null
   minOrderValue: runtime.Decimal | null
+  minOrderPrice: runtime.Decimal | null
 }
 
 export type CouponSumAggregateOutputType = {
@@ -42,6 +43,7 @@ export type CouponSumAggregateOutputType = {
   usageLimit: number | null
   perUserLimit: number | null
   minOrderValue: runtime.Decimal | null
+  minOrderPrice: runtime.Decimal | null
 }
 
 export type CouponMinAggregateOutputType = {
@@ -61,6 +63,7 @@ export type CouponMinAggregateOutputType = {
   perUserLimit: number | null
   firstOrderOnly: boolean | null
   minOrderValue: runtime.Decimal | null
+  minOrderPrice: runtime.Decimal | null
   categoryId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -83,6 +86,7 @@ export type CouponMaxAggregateOutputType = {
   perUserLimit: number | null
   firstOrderOnly: boolean | null
   minOrderValue: runtime.Decimal | null
+  minOrderPrice: runtime.Decimal | null
   categoryId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -105,6 +109,7 @@ export type CouponCountAggregateOutputType = {
   perUserLimit: number
   firstOrderOnly: number
   minOrderValue: number
+  minOrderPrice: number
   categoryId: number
   createdAt: number
   updatedAt: number
@@ -119,6 +124,7 @@ export type CouponAvgAggregateInputType = {
   usageLimit?: true
   perUserLimit?: true
   minOrderValue?: true
+  minOrderPrice?: true
 }
 
 export type CouponSumAggregateInputType = {
@@ -128,6 +134,7 @@ export type CouponSumAggregateInputType = {
   usageLimit?: true
   perUserLimit?: true
   minOrderValue?: true
+  minOrderPrice?: true
 }
 
 export type CouponMinAggregateInputType = {
@@ -147,6 +154,7 @@ export type CouponMinAggregateInputType = {
   perUserLimit?: true
   firstOrderOnly?: true
   minOrderValue?: true
+  minOrderPrice?: true
   categoryId?: true
   createdAt?: true
   updatedAt?: true
@@ -169,6 +177,7 @@ export type CouponMaxAggregateInputType = {
   perUserLimit?: true
   firstOrderOnly?: true
   minOrderValue?: true
+  minOrderPrice?: true
   categoryId?: true
   createdAt?: true
   updatedAt?: true
@@ -191,6 +200,7 @@ export type CouponCountAggregateInputType = {
   perUserLimit?: true
   firstOrderOnly?: true
   minOrderValue?: true
+  minOrderPrice?: true
   categoryId?: true
   createdAt?: true
   updatedAt?: true
@@ -300,6 +310,7 @@ export type CouponGroupByOutputType = {
   perUserLimit: number | null
   firstOrderOnly: boolean
   minOrderValue: runtime.Decimal | null
+  minOrderPrice: runtime.Decimal | null
   categoryId: string | null
   createdAt: Date
   updatedAt: Date | null
@@ -345,6 +356,7 @@ export type CouponWhereInput = {
   perUserLimit?: Prisma.IntNullableFilter<"Coupon"> | number | null
   firstOrderOnly?: Prisma.BoolFilter<"Coupon"> | boolean
   minOrderValue?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.StringNullableFilter<"Coupon"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
@@ -371,6 +383,7 @@ export type CouponOrderByWithRelationInput = {
   perUserLimit?: Prisma.SortOrderInput | Prisma.SortOrder
   firstOrderOnly?: Prisma.SortOrder
   minOrderValue?: Prisma.SortOrderInput | Prisma.SortOrder
+  minOrderPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -401,6 +414,7 @@ export type CouponWhereUniqueInput = Prisma.AtLeast<{
   perUserLimit?: Prisma.IntNullableFilter<"Coupon"> | number | null
   firstOrderOnly?: Prisma.BoolFilter<"Coupon"> | boolean
   minOrderValue?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   category?: Prisma.XOR<Prisma.CategoryNullableScalarRelationFilter, Prisma.CategoryWhereInput> | null
@@ -426,6 +440,7 @@ export type CouponOrderByWithAggregationInput = {
   perUserLimit?: Prisma.SortOrderInput | Prisma.SortOrder
   firstOrderOnly?: Prisma.SortOrder
   minOrderValue?: Prisma.SortOrderInput | Prisma.SortOrder
+  minOrderPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -456,6 +471,7 @@ export type CouponScalarWhereWithAggregatesInput = {
   perUserLimit?: Prisma.IntNullableWithAggregatesFilter<"Coupon"> | number | null
   firstOrderOnly?: Prisma.BoolWithAggregatesFilter<"Coupon"> | boolean
   minOrderValue?: Prisma.DecimalNullableWithAggregatesFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.DecimalNullableWithAggregatesFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"Coupon"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Coupon"> | Date | string | null
@@ -478,6 +494,7 @@ export type CouponCreateInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
   category?: Prisma.CategoryCreateNestedOneWithoutCouponsInput
@@ -503,6 +520,7 @@ export type CouponUncheckedCreateInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
@@ -528,6 +546,7 @@ export type CouponUpdateInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   category?: Prisma.CategoryUpdateOneWithoutCouponsNestedInput
@@ -553,6 +572,7 @@ export type CouponUncheckedUpdateInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -578,6 +598,7 @@ export type CouponCreateManyInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
@@ -600,6 +621,7 @@ export type CouponUpdateManyMutationInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -621,6 +643,7 @@ export type CouponUncheckedUpdateManyInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -653,6 +676,7 @@ export type CouponCountOrderByAggregateInput = {
   perUserLimit?: Prisma.SortOrder
   firstOrderOnly?: Prisma.SortOrder
   minOrderValue?: Prisma.SortOrder
+  minOrderPrice?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -665,6 +689,7 @@ export type CouponAvgOrderByAggregateInput = {
   usageLimit?: Prisma.SortOrder
   perUserLimit?: Prisma.SortOrder
   minOrderValue?: Prisma.SortOrder
+  minOrderPrice?: Prisma.SortOrder
 }
 
 export type CouponMaxOrderByAggregateInput = {
@@ -684,6 +709,7 @@ export type CouponMaxOrderByAggregateInput = {
   perUserLimit?: Prisma.SortOrder
   firstOrderOnly?: Prisma.SortOrder
   minOrderValue?: Prisma.SortOrder
+  minOrderPrice?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -706,6 +732,7 @@ export type CouponMinOrderByAggregateInput = {
   perUserLimit?: Prisma.SortOrder
   firstOrderOnly?: Prisma.SortOrder
   minOrderValue?: Prisma.SortOrder
+  minOrderPrice?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -718,6 +745,7 @@ export type CouponSumOrderByAggregateInput = {
   usageLimit?: Prisma.SortOrder
   perUserLimit?: Prisma.SortOrder
   minOrderValue?: Prisma.SortOrder
+  minOrderPrice?: Prisma.SortOrder
 }
 
 export type CouponScalarRelationFilter = {
@@ -841,6 +869,7 @@ export type CouponCreateWithoutCategoryInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
   products?: Prisma.CouponProductCreateNestedManyWithoutCouponInput
@@ -865,6 +894,7 @@ export type CouponUncheckedCreateWithoutCategoryInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
   products?: Prisma.CouponProductUncheckedCreateNestedManyWithoutCouponInput
@@ -918,6 +948,7 @@ export type CouponScalarWhereInput = {
   perUserLimit?: Prisma.IntNullableFilter<"Coupon"> | number | null
   firstOrderOnly?: Prisma.BoolFilter<"Coupon"> | boolean
   minOrderValue?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.DecimalNullableFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.StringNullableFilter<"Coupon"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Coupon"> | Date | string
   updatedAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
@@ -940,6 +971,7 @@ export type CouponCreateWithoutProductsInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
   category?: Prisma.CategoryCreateNestedOneWithoutCouponsInput
@@ -964,6 +996,7 @@ export type CouponUncheckedCreateWithoutProductsInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
@@ -1004,6 +1037,7 @@ export type CouponUpdateWithoutProductsInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   category?: Prisma.CategoryUpdateOneWithoutCouponsNestedInput
@@ -1028,6 +1062,7 @@ export type CouponUncheckedUpdateWithoutProductsInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1052,6 +1087,7 @@ export type CouponCreateWithoutRedemptionsInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
   category?: Prisma.CategoryCreateNestedOneWithoutCouponsInput
@@ -1076,6 +1112,7 @@ export type CouponUncheckedCreateWithoutRedemptionsInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
@@ -1116,6 +1153,7 @@ export type CouponUpdateWithoutRedemptionsInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   category?: Prisma.CategoryUpdateOneWithoutCouponsNestedInput
@@ -1140,6 +1178,7 @@ export type CouponUncheckedUpdateWithoutRedemptionsInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1164,6 +1203,7 @@ export type CouponCreateWithoutProductOffersInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
   category?: Prisma.CategoryCreateNestedOneWithoutCouponsInput
@@ -1188,6 +1228,7 @@ export type CouponUncheckedCreateWithoutProductOffersInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
@@ -1228,6 +1269,7 @@ export type CouponUpdateWithoutProductOffersInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   category?: Prisma.CategoryUpdateOneWithoutCouponsNestedInput
@@ -1252,6 +1294,7 @@ export type CouponUncheckedUpdateWithoutProductOffersInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1276,6 +1319,7 @@ export type CouponCreateManyCategoryInput = {
   perUserLimit?: number | null
   firstOrderOnly?: boolean
   minOrderValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string | null
 }
@@ -1297,6 +1341,7 @@ export type CouponUpdateWithoutCategoryInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   products?: Prisma.CouponProductUpdateManyWithoutCouponNestedInput
@@ -1321,6 +1366,7 @@ export type CouponUncheckedUpdateWithoutCategoryInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   products?: Prisma.CouponProductUncheckedUpdateManyWithoutCouponNestedInput
@@ -1345,6 +1391,7 @@ export type CouponUncheckedUpdateManyWithoutCategoryInput = {
   perUserLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   firstOrderOnly?: Prisma.BoolFieldUpdateOperationsInput | boolean
   minOrderValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  minOrderPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -1415,6 +1462,7 @@ export type CouponSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   perUserLimit?: boolean
   firstOrderOnly?: boolean
   minOrderValue?: boolean
+  minOrderPrice?: boolean
   categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1442,6 +1490,7 @@ export type CouponSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   perUserLimit?: boolean
   firstOrderOnly?: boolean
   minOrderValue?: boolean
+  minOrderPrice?: boolean
   categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1465,6 +1514,7 @@ export type CouponSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   perUserLimit?: boolean
   firstOrderOnly?: boolean
   minOrderValue?: boolean
+  minOrderPrice?: boolean
   categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1488,12 +1538,13 @@ export type CouponSelectScalar = {
   perUserLimit?: boolean
   firstOrderOnly?: boolean
   minOrderValue?: boolean
+  minOrderPrice?: boolean
   categoryId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "description" | "type" | "value" | "maxDiscount" | "discountType" | "stackable" | "priority" | "isActive" | "startsAt" | "endsAt" | "usageLimit" | "perUserLimit" | "firstOrderOnly" | "minOrderValue" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["coupon"]>
+export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "description" | "type" | "value" | "maxDiscount" | "discountType" | "stackable" | "priority" | "isActive" | "startsAt" | "endsAt" | "usageLimit" | "perUserLimit" | "firstOrderOnly" | "minOrderValue" | "minOrderPrice" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["coupon"]>
 export type CouponInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.Coupon$categoryArgs<ExtArgs>
   products?: boolean | Prisma.Coupon$productsArgs<ExtArgs>
@@ -1533,6 +1584,7 @@ export type $CouponPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     perUserLimit: number | null
     firstOrderOnly: boolean
     minOrderValue: runtime.Decimal | null
+    minOrderPrice: runtime.Decimal | null
     categoryId: string | null
     createdAt: Date
     updatedAt: Date | null
@@ -1979,6 +2031,7 @@ export interface CouponFieldRefs {
   readonly perUserLimit: Prisma.FieldRef<"Coupon", 'Int'>
   readonly firstOrderOnly: Prisma.FieldRef<"Coupon", 'Boolean'>
   readonly minOrderValue: Prisma.FieldRef<"Coupon", 'Decimal'>
+  readonly minOrderPrice: Prisma.FieldRef<"Coupon", 'Decimal'>
   readonly categoryId: Prisma.FieldRef<"Coupon", 'String'>
   readonly createdAt: Prisma.FieldRef<"Coupon", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Coupon", 'DateTime'>

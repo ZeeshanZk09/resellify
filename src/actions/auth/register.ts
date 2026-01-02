@@ -108,6 +108,14 @@ export async function verifyEmail(code: string) {
           expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days expiry (typical default)
         },
       });
+
+      const cart = await prisma.cart.create({
+        data: {
+          userId: user.id,
+        },
+      });
+
+      (await cookies()).set('cartId', cart.id);
     } catch (sessionErr) {
       // Roll back user if session creation fails
       await prisma.user.delete({ where: { id: user.id } });

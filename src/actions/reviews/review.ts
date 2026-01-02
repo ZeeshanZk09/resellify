@@ -2,6 +2,9 @@
 import { auth } from '@/auth';
 import prisma from '@/shared/lib/prisma';
 
+export type GetAllReviews = Awaited<ReturnType<typeof getReviews>>['reviews'];
+export type CreateReview = Awaited<ReturnType<typeof createReview>>;
+
 async function createReview(productId: string, rating: number, title: string, comment: string) {
   try {
     const session = await auth();
@@ -54,4 +57,26 @@ async function createReview(productId: string, rating: number, title: string, co
   }
 }
 
-export { createReview };
+async function getReviews(productId: string, limit = 10) {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { productId },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return { reviews, status: 200 };
+  } catch (error) {
+    console.error(error);
+    return { error: 'Failed to fetch reviews', status: 500 };
+  }
+}
+export { createReview, getReviews };

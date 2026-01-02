@@ -64,6 +64,20 @@ export const login = async (password: string) => {
   }
 
   try {
+    let cart = await prisma.cart.findUnique({
+      where: {
+        userId: user.id,
+      },
+    });
+    if (!cart) {
+      cart = await prisma.cart.create({
+        data: {
+          userId: user.id,
+        },
+      });
+    }
+    (await cookies()).set('cartId', cart.id);
+
     // 🔐 NextAuth credentials login
     await signIn('credentials', { email, password, redirect: false });
 

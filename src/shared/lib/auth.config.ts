@@ -1,29 +1,28 @@
 // /auth.config.ts
-import type { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import prisma from "@/shared/lib/prisma";
-import { sendVerification } from "@/actions/send-verification";
-import { compare } from "bcryptjs";
-import Google from "next-auth/providers/google";
-import { Role } from "./generated/prisma/enums";
+import type { NextAuthConfig } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import prisma from '@/shared/lib/prisma';
+import { sendVerification } from '@/actions/send-verification';
+import { compare } from 'bcryptjs';
+import Google from 'next-auth/providers/google';
+import { Role } from './generated/prisma/enums';
 // import Linkedin from 'next-auth/providers/linkedin';
 
 export const authConfig = {
   pages: {
-    signIn: "/auth/sign-in",
-    error: "/auth/error",
+    signIn: '/auth/sign-in',
+    error: '/auth/error',
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       if (isOnDashboard) {
         if (isLoggedIn) return true;
         return false; // Redirect unauthenticated users to login page
       } else if (
         isLoggedIn &&
-        (nextUrl.pathname === "/auth/sign-in" ||
-          nextUrl.pathname === "/auth/sign-up")
+        (nextUrl.pathname === '/auth/sign-in' || nextUrl.pathname === '/auth/sign-up')
       ) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
@@ -51,8 +50,8 @@ export const authConfig = {
     // Linkedin({ allowDangerousEmailAccountLinking: true }),
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) {
@@ -70,14 +69,11 @@ export const authConfig = {
         if (!user.emailVerified) {
           return null;
         }
-        const isValid = await compare(
-          credentials.password as string,
-          user.password
-        );
+        const isValid = await compare(credentials.password as string, user.password);
         if (!isValid) {
           return null;
         }
-        console.log("user ahmade: ", user);
+        console.log('user ahmade: ', user);
         return user;
       },
     }),

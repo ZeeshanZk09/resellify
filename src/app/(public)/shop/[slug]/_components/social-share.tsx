@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Share2,
   Copy,
@@ -18,7 +18,7 @@ import { FacebookIcon, InstagramIcon } from '@/shared/components/icons/svgIcons'
 export default function SocialShare() {
   const [copied, setCopied] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
-
+  const [mounted, setMounted] = useState(false);
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const shareLinks = {
@@ -36,7 +36,12 @@ export default function SocialShare() {
     }
   };
 
-  if (window === undefined) return null;
+  useEffect(() => {
+    if (mounted) return;
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
   return (
     <div className='w-full space-y-6 sm:space-y-8'>
       {/* Share Dropdown */}

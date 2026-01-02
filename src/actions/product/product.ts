@@ -96,6 +96,7 @@ export type GetAllProducts = Awaited<ReturnType<typeof getAllProducts>>['res'];
 export type GetRelatedProducts = Awaited<ReturnType<typeof getRelatedProducts>>['res'];
 export type GetInitialProducts = Awaited<ReturnType<typeof getInitialProducts>>['res'];
 export type LoadMoreProducts = Awaited<ReturnType<typeof loadMoreProducts>>['res'];
+export type GetProductBySlug = Awaited<ReturnType<typeof getProductBySlug>>['res'];
 
 export async function addProduct(input: AddProductInput) {
   try {

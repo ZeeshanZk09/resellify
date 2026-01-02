@@ -1,4 +1,4 @@
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle } from 'lucide-react';
 
 interface StockIndicatorProps {
   visible: boolean;
@@ -7,22 +7,17 @@ interface StockIndicatorProps {
 export default function StockIndicator({ visible }: StockIndicatorProps) {
   if (!visible) {
     return (
-      <div
-        className="flex items-center gap-2 text-red-600"
-        role="alert"
-        aria-live="polite"
-      >
+      <div className='flex items-center gap-2 text-red-600' role='alert' aria-live='polite'>
         <AlertCircle size={18} />
-        <span className="font-medium">Out of Stock</span>
+        <span className='font-medium'>Out of Stock</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 text-green-600" aria-live="polite">
+    <div className='flex items-center gap-2 text-green-600' aria-live='polite'>
       <CheckCircle size={18} />
-      <span className="font-medium">In Stock</span>
-      <span className="text-sm text-gray-500">({visible} available)</span>
+      <span className='font-medium'>In Stock</span>
     </div>
   );
 }
