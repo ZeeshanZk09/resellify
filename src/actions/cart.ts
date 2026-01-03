@@ -1,10 +1,12 @@
-'use server';
-import { auth } from '@/auth';
-import prisma from '@/shared/lib/prisma';
-import { Decimal } from '@prisma/client/runtime/client';
-import { cookies } from 'next/headers';
+"use server";
+import { auth } from "@/auth";
+import prisma from "@/shared/lib/prisma";
+import { Decimal } from "@prisma/client/runtime/client";
+import { cookies } from "next/headers";
 
-// Cart CRUD operations
+export type GetCartItems = Awaited<
+  ReturnType<typeof getCartItems>
+>["cartItems"];
 
 /**
  * Create a new cart for a user
@@ -43,7 +45,10 @@ export async function getCartById(cartId: string) {
 /**
  * Update cart information
  */
-export async function updateCart(cartId: string, data: Partial<{ expiresAt: Date }>) {
+export async function updateCart(
+  cartId: string,
+  data: Partial<{ expiresAt: Date }>
+) {
   return await prisma.cart.update({
     where: { id: cartId },
     data,
@@ -64,27 +69,46 @@ export async function deleteCart(cartId: string) {
 /**
  * Add item to cart (create CartItem)
  */
-export async function addItemToCart(productId: string, price?: Decimal, quantity: number = 1) {
+export async function addItemToCart(
+  productId: string,
+  price?: number,
+  quantity: number = 1
+) {
   try {
     const session = await auth();
-    if (!session?.user.id) return 'Unauthorized';
+    if (!session?.user.id) {
+      return {
+        message: "Unauthorized",
+      };
+    }
     const cookieObj = await cookies();
-    const cartId = cookieObj.get('cartId')! as unknown as string;
-    console.log('add-item-to-cart: ', cartId);
+    const cartId = cookieObj.get("cartId")?.value as string;
+    console.log("add-item-to-cart: ", cartId);
 
+    if (!cartId) {
+      return {
+        message: "Cart not found",
+      };
+    }
     const cartItem = await prisma.cartItem.create({
       data: {
         cartId,
         productId,
-        price,
+        price: new Decimal(price!),
         quantity,
       },
     });
 
-    return cartItem;
+    return {
+      cartItem,
+      success: true,
+      message: "Cart item added successfully",
+    };
   } catch (error) {
     console.log(error);
-    return null;
+    return {
+      message: "Failed to add item to cart",
+    };
   }
 }
 
@@ -113,11 +137,58 @@ export async function removeItemFromCart(cartItemId: string) {
 /**
  * Get all items in a cart by cartId
  */
-export async function getCartItems(cartId: string) {
-  return await prisma.cartItem.findMany({
-    where: { cartId },
-    include: { product: true },
-  });
+export async function getCartItems() {
+  try {
+    const session = await auth();
+    if (!session?.user.id)
+      return {
+        cartItems: [],
+        message: "Unauthorized",
+      };
+    const cookieObj = await cookies();
+    const cartId = cookieObj.get("cartId")?.value as string;
+    console.log("add-item-to-cart: ", cartId);
+
+    const cartItems = await prisma.cartItem.findMany({
+      where: { cartId },
+      include: {
+        product: {
+          include: {
+            images: true,
+          },
+        },
+      },
+    });
+
+    // Convert Decimal fields to plain numbers recursively
+    const plainItems = cartItems.map((item) => ({
+      ...item,
+      price: Number(item.price),
+      product: {
+        ...item.product,
+        images: item.product.images.map((img) => ({
+          ...img,
+          // If image has any Decimal fields, convert them here
+        })),
+      },
+    }));
+
+    const totalPrice = plainItems.reduce((acc, item) => {
+      return acc + (item?.price || 0) * item.quantity;
+    }, 0);
+
+    return {
+      cartItems: plainItems,
+      totalPrice,
+      message: "Cart items fetched successfully",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      cartItems: [],
+      message: "Failed to fetch cart items",
+    };
+  }
 }
 
 /**

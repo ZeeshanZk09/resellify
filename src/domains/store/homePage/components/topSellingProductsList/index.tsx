@@ -15,7 +15,7 @@ export const TopSellingProductsList = ({
         <h2 className="text-2xl font-medium text-foreground">
           Top Selling Products
         </h2>
-        <Link href="/" className="text-sm sm:text-base">
+        <Link href="/" className="text-sm sm:text-base w-16">
           view all
         </Link>
       </div>
@@ -52,7 +52,7 @@ export const TopSellingProductsList = ({
               url={`/shop/${product.slug}`}
               dealPrice={+product?.salePrice!}
               key={index}
-              staticWidth
+              className="max-w-[240px] shrink-0 h-full"
             />
           ))}
         </div>

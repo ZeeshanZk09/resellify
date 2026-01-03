@@ -256,7 +256,6 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
                 visible={product.visibility === 'PUBLIC'}
                 variants={product.productVariants}
               />
-
               <SocialShare />
             </div>
 

@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ShoppingCart, Minus, Plus } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { ShoppingCart, Minus, Plus } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { useRouter } from "next/navigation";
+import { addItemToCart } from "@/actions/cart";
+import { getProductBySlug } from "@/actions/product/product";
+import { toast } from "sonner";
+import Link from "next/link";
 
 interface AddToCartButtonProps {
   slug: string;
@@ -23,83 +27,122 @@ export default function AddToCartButton({
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
   const router = useRouter();
+
   const handleAddToCart = async () => {
-    if (!selectedVariant && variants && variants.length > 0) {
-      // Show error or select first variant
-      if (!selectedVariant && variants.length > 0) {
-        setSelectedVariant(variants[0].id);
+    // if (!visible) return;
+
+    // Auto-select first variant if none selected and variants exist
+    // if (!selectedVariant && variants && variants.length > 0) {
+    //   setSelectedVariant(variants[0].id);
+    //   return;
+    // }
+
+    setIsLoading(true);
+    try {
+      const { success: productSuccess, res } = await getProductBySlug(slug);
+      if (!productSuccess) {
+        toast.error("Product not found");
         return;
       }
 
-      setIsLoading(true);
-      try {
-        // Implement add to cart logic
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-      } finally {
-        setIsLoading(false);
+      const totalPrice = price * quantity;
+      const { success, message } = await addItemToCart(
+        res.id,
+        totalPrice,
+        quantity
+      );
+      console.log(success, message);
+      if (success) {
+        toast.success(message);
+        setAddedToCart(true);
+        return;
       }
+      if (!success) {
+        toast.error(message);
+        return;
+      }
+    } catch (err) {
+      toast.error("Failed to add item to cart");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleClick = () => {
     router.push(`/checkout?product_slug=${slug}&qty=${quantity}`);
   };
+
   const isOutOfStock = !visible;
 
   return (
-    <div className='space-y-4'>
-      <div className='flex items-center gap-4'>
-        <div className='flex items-center border rounded-lg'>
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center border rounded-lg">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className='px-3 py-2 hover:bg-gray-100 disabled:opacity-50'
+            className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50"
             disabled={quantity <= 1}
-            aria-label='Decrease quantity'
+            aria-label="Decrease quantity"
           >
             <Minus size={16} />
           </button>
-          <span className='px-4 py-2 min-w-[60px] text-center' aria-live='polite'>
+          <span
+            className="px-4 py-2 min-w-[60px] text-center"
+            aria-live="polite"
+          >
             {quantity}
           </span>
           <button
             onClick={() => setQuantity(quantity + 1)}
-            className='px-3 py-2 hover:bg-gray-100 disabled:opacity-50'
+            className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50"
             disabled={quantity >= 100 || !visible}
-            aria-label='Increase quantity'
+            aria-label="Increase quantity"
           >
             <Plus size={16} />
           </button>
         </div>
       </div>
 
-      <Button
-        onClick={handleAddToCart}
-        disabled={isOutOfStock || isLoading}
-        className='w-full py-6 text-lg font-semibold'
-        size='lg'
-        aria-label={isOutOfStock ? 'Out of stock' : `Add ${quantity} items to cart`}
-      >
-        {isLoading ? (
-          <span className='flex items-center gap-2'>
-            <span className='animate-spin'>⟳</span>
-            Adding...
-          </span>
-        ) : isOutOfStock ? (
-          'Out of Stock'
-        ) : (
-          <span className='flex items-center justify-center gap-2'>
-            <ShoppingCart size={20} />
-            Add to Cart • {currency} {(price * quantity).toFixed(2)}
-          </span>
-        )}
-      </Button>
-
+      {!addedToCart && (
+        <Button
+          onClick={handleAddToCart}
+          disabled={isOutOfStock || isLoading}
+          className="w-full py-6 text-lg font-semibold"
+          size="lg"
+          aria-label={
+            isOutOfStock ? "Out of stock" : `Add ${quantity} items to cart`
+          }
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <span className="animate-spin">⟳</span>
+              Adding...
+            </span>
+          ) : isOutOfStock ? (
+            "Out of Stock"
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <ShoppingCart size={20} />
+              Add to Cart • {currency} {(price * quantity).toFixed(2)}
+            </span>
+          )}
+        </Button>
+      )}
+      {addedToCart && (
+        <Button className="w-full py-7 text-lg font-semibold" size="lg">
+          <Link href="/checkout" className="w-full py-6 text-lg font-semibold">
+            Check Out
+          </Link>
+        </Button>
+      )}
       <Button
         onClick={handleClick}
-        variant='outline'
-        className='w-full py-6 text-lg font-semibold'
-        size='lg'
+        variant="outline"
+        className="w-full py-6 text-lg font-semibold"
+        size="lg"
       >
         Buy Now
       </Button>

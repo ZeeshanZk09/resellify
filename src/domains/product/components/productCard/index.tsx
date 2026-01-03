@@ -18,8 +18,8 @@ interface ProductCardProps {
   category?: string;
   rating?: number;
   reviewCount?: number;
-  staticWidth?: boolean;
   showCategory?: boolean;
+  className?: string;
 }
 
 export default function ProductCard({
@@ -35,9 +35,9 @@ export default function ProductCard({
   category,
   rating,
   reviewCount = 0,
-  staticWidth = false,
   showCategory = true,
-}: ProductCardProps) {
+  className,
+}: ProductCardProps & { ref?: React.Ref<HTMLDivElement> }) {
   const discount =
     dealPrice && basePrice
       ? Math.round(100 - (dealPrice / +basePrice) * 100)
@@ -49,11 +49,11 @@ export default function ProductCard({
     <Link
       href={url || `/shop/${slug}`}
       className={cn(
-        "group relative flex flex-col h-full",
+        className,
+        "group relative flex flex-col w-full h-auto",
         "bg-card rounded-xl border border-border overflow-hidden",
-        "transition-all duration-300 hover:shadow-lg hover:scale-[1.02]",
-        "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-        staticWidth && "w-full min-w-[280px] max-w-[380px]"
+        "transition-all duration-300 hover:shadow-lg",
+        "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       )}
       aria-label={`View ${name} product details`}
     >

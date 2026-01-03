@@ -1,23 +1,11 @@
-"use client";
-
 import { Store } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { SignedIn, SignedOut } from "../auth";
 import UserButton from "../profile/user-btn";
 import SearchInput from "../SearchInput";
-import { usePathname } from "next/navigation";
-import { useMobile } from "@/shared/utils/useMobile";
 
 const Header = () => {
-  const pathname = usePathname();
-  const isMobile = useMobile();
-  // Hide header for any route under /shop
-  const isShopRoute = pathname?.startsWith("/shop");
-
-  if (isShopRoute && isMobile) return null;
-
-  console.log("pathname", pathname);
   return (
     <header className="top-0 sticky z-20 bg-card">
       <nav className="p-5 max-w-7xl mx-auto flex justify-between items-center">

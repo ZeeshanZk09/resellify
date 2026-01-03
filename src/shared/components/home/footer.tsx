@@ -1,20 +1,9 @@
-"use client";
 import ThemeSwitch from "../theme-switch";
-import { usePathname } from "next/navigation";
-import { useMobile } from "@/shared/utils/useMobile";
 import Link from "next/link";
-import { ChevronRight, CreditCard, Heart, ShoppingBag } from "lucide-react";
+import { ChevronRight, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 
 const Footer = () => {
-  const pathname = usePathname();
-  const isMobile = useMobile();
-  // Hide header for any route under /shop
-  const isShopRoute = pathname?.startsWith("/shop");
-
-  if (isShopRoute && isMobile) return null;
-
-  console.log("pathname", pathname);
   return (
     <footer className="bg-linear-to-b from-card to-card/95 text-foreground border-t border-border/50">
       <div className="max-w-7xl mx-auto px-5 py-12">
@@ -205,7 +194,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-muted-foreground">
             <p className="flex items-center gap-1">
               &copy; {new Date().getFullYear()} GO Shop. All rights reserved.
             </p>
@@ -223,7 +212,7 @@ const Footer = () => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <ThemeSwitch />
 
             <a
