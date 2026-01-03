@@ -1,12 +1,10 @@
-"use server";
-import { auth } from "@/auth";
-import prisma from "@/shared/lib/prisma";
-import { Decimal } from "@prisma/client/runtime/client";
-import { cookies } from "next/headers";
+'use server';
+import { auth } from '@/auth';
+import prisma from '@/shared/lib/prisma';
+import { Decimal } from '@prisma/client/runtime/client';
+import { cookies } from 'next/headers';
 
-export type GetCartItems = Awaited<
-  ReturnType<typeof getCartItems>
->["cartItems"];
+export type GetCartItems = Awaited<ReturnType<typeof getCartItems>>['cartItems'];
 
 /**
  * Create a new cart for a user
@@ -45,10 +43,7 @@ export async function getCartById(cartId: string) {
 /**
  * Update cart information
  */
-export async function updateCart(
-  cartId: string,
-  data: Partial<{ expiresAt: Date }>
-) {
+export async function updateCart(cartId: string, data: Partial<{ expiresAt: Date }>) {
   return await prisma.cart.update({
     where: { id: cartId },
     data,
@@ -69,45 +64,68 @@ export async function deleteCart(cartId: string) {
 /**
  * Add item to cart (create CartItem)
  */
-export async function addItemToCart(
-  productId: string,
-  price?: number,
-  quantity: number = 1
-) {
+export async function addItemToCart(productId: string, price?: number, quantity: number = 1) {
   try {
     const session = await auth();
     if (!session?.user.id) {
       return {
-        message: "Unauthorized",
+        message: 'Unauthorized',
       };
     }
     const cookieObj = await cookies();
-    const cartId = cookieObj.get("cartId")?.value as string;
-    console.log("add-item-to-cart: ", cartId);
+    const cartId = cookieObj.get('cartId')?.value as string;
+    console.log('add-item-to-cart: ', cartId);
 
     if (!cartId) {
       return {
-        message: "Cart not found",
+        message: 'Cart not found',
       };
     }
-    const cartItem = await prisma.cartItem.create({
-      data: {
+
+    // Check if cartItem already exists for the given productId in the cart
+    const existingCartItem = await prisma.cartItem.findFirst({
+      where: {
         cartId,
         productId,
-        price: new Decimal(price!),
-        quantity,
       },
     });
 
+    let cartItem;
+    let updated = false;
+    if (existingCartItem) {
+      // Update quantity
+      cartItem = await prisma.cartItem.update({
+        where: { id: existingCartItem.id },
+        data: {
+          quantity: existingCartItem.quantity + quantity,
+          // Optional: price update logic if needed, usually price is not updated here
+        },
+      });
+      updated = true;
+    } else {
+      // Create new cartItem
+      cartItem = await prisma.cartItem.create({
+        data: {
+          cartId,
+          productId,
+          price: new Decimal(price!),
+          quantity,
+        },
+      });
+    }
+
     return {
-      cartItem,
+      cartItem: {
+        ...cartItem,
+        price: Number(cartItem.price),
+      },
       success: true,
-      message: "Cart item added successfully",
+      message: updated ? 'Cart item quantity updated successfully' : 'Cart item added successfully',
     };
   } catch (error) {
     console.log(error);
     return {
-      message: "Failed to add item to cart",
+      message: 'Failed to add item to cart',
     };
   }
 }
@@ -143,15 +161,21 @@ export async function getCartItems() {
     if (!session?.user.id)
       return {
         cartItems: [],
-        message: "Unauthorized",
+        message: 'Unauthorized',
       };
     const cookieObj = await cookies();
-    const cartId = cookieObj.get("cartId")?.value as string;
-    console.log("add-item-to-cart: ", cartId);
+    const cartId = cookieObj.get('cartId')?.value as string;
+    console.log('add-item-to-cart: ', cartId);
 
     const cartItems = await prisma.cartItem.findMany({
       where: { cartId },
-      include: {
+
+      select: {
+        price: true,
+        id: true,
+        quantity: true,
+        cartId: true,
+        productId: true,
         product: {
           include: {
             images: true,
@@ -180,13 +204,13 @@ export async function getCartItems() {
     return {
       cartItems: plainItems,
       totalPrice,
-      message: "Cart items fetched successfully",
+      message: 'Cart items fetched successfully',
     };
   } catch (error) {
     console.log(error);
     return {
       cartItems: [],
-      message: "Failed to fetch cart items",
+      message: 'Failed to fetch cart items',
     };
   }
 }
