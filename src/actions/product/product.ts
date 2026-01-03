@@ -98,6 +98,29 @@ export type GetInitialProducts = Awaited<ReturnType<typeof getInitialProducts>>[
 export type LoadMoreProducts = Awaited<ReturnType<typeof loadMoreProducts>>['res'];
 export type GetProductBySlug = Awaited<ReturnType<typeof getProductBySlug>>['res'];
 
+function convertDecimals(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(convertDecimals);
+  } else if (obj && typeof obj === 'object') {
+    const result: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = obj[key];
+        // Prisma Decimal: check _isDecimal, or has toNumber
+        if (value && typeof value === 'object' && value._isDecimal) {
+          result[key] = Number(value);
+        } else if (value && typeof value === 'object' && typeof value.toNumber === 'function') {
+          result[key] = value.toNumber();
+        } else {
+          result[key] = convertDecimals(value);
+        }
+      }
+    }
+    return result;
+  }
+  return obj;
+}
+
 export async function addProduct(input: AddProductInput) {
   try {
     console.log('[addProduct] Called with input:', JSON.stringify(input, null, 2));
@@ -532,7 +555,8 @@ export const getInitialProducts = async (limit: number = 10) => {
     });
 
     if (!result) return { error: "Can't Get Data from Database!" };
-    return { res: result };
+    const plainProducts = convertDecimals(result);
+    return { res: plainProducts as typeof result };
   } catch (error) {
     return { error: JSON.stringify(error) };
   }
@@ -592,9 +616,10 @@ export const loadMoreProducts = async (
     const lastItem = items[items.length - 1];
 
     if (!result) return { error: "Can't Get Data from Database!" };
+    const plainProducts = convertDecimals(result);
     return {
       res: {
-        products: items,
+        products: plainProducts as typeof result,
         lastId: lastItem?.id || null,
         hasMore: hasNextPage,
       },

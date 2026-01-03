@@ -6,10 +6,10 @@ import { ShoppingBag, Loader } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { toast } from 'sonner';
 import Image from 'next/image';
-import { Order } from '@/shared/lib/generated/prisma/browser';
+import { GetMyOrders, getMyOrders } from '@/actions/order';
 
 export default function MyOrders() {
-  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [orders, setOrders] = useState<GetMyOrders>();
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
@@ -18,12 +18,8 @@ export default function MyOrders() {
     async function fetchOrders() {
       setLoading(true);
       try {
-        const res = await fetch('/api/orders', {
-          method: 'GET',
-        });
-        if (!res.ok) throw new Error('Failed to fetch orders');
-        const { orders: orderList } = await res.json();
-        setOrders(orderList);
+        const { orders } = await getMyOrders();
+        setOrders(orders);
       } catch (err: any) {
         setOrders([]);
         toast.error(err?.message || 'Failed to load your orders. Please try again.');
@@ -36,57 +32,119 @@ export default function MyOrders() {
 
   if (loading) {
     return (
-      <div className='flex flex-col items-center justify-center py-10 gap-3'>
-        <Loader className='animate-spin text-gray-400' size={32} />
-        <p className='text-gray-500'>Loading your orders...</p>
+      <div className='flex flex-col items-center justify-center py-10 gap-3 min-h-[60vh] w-full'>
+        <div className='w-full max-w-2xl flex flex-col gap-6 px-2 sm:px-0'>
+          {/* Skeleton for header */}
+          <div className='h-7 w-5/6 sm:w-2/5 bg-gray-200 rounded animate-pulse mx-auto mb-6' />
+          {/* Skeleton for multiple orders */}
+          {[...Array(2)].map((_, idx) => (
+            <div
+              key={idx}
+              className='bg-white border border-gray-100 rounded-lg p-3 sm:p-5 shadow flex flex-col gap-3 animate-pulse'
+            >
+              <div className='flex flex-col sm:flex-row items-center justify-between gap-3'>
+                <div className='h-5 w-4/6 sm:w-32 bg-gray-200 rounded' />
+                <div className='flex gap-2 w-full sm:w-auto'>
+                  <div className='h-5 w-1/3 sm:w-20 bg-gray-200 rounded' />
+                  <div className='h-5 w-1/2 sm:w-24 bg-gray-100 rounded' />
+                </div>
+              </div>
+              <div className='grid grid-cols-2 sm:grid-cols-6 gap-4 mt-2'>
+                {/* Image skeleton(s) */}
+                <div className='col-span-1 flex justify-center'>
+                  <div className='w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-md' />
+                </div>
+                {/* Details skeleton */}
+                <div className='col-span-1 sm:col-span-5 flex flex-col gap-2 justify-center'>
+                  <div className='h-4 w-2/3 sm:w-48 bg-gray-200 rounded' />
+                  <div className='h-4 w-1/2 sm:w-32 bg-gray-100 rounded' />
+                  <div className='h-4 w-1/3 sm:w-28 bg-gray-100 rounded' />
+                </div>
+              </div>
+              {/* Skeleton for totals */}
+              <div className='flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-5 pt-2'>
+                <div className='h-5 w-3/5 sm:w-20 bg-gray-200 rounded' />
+                <div className='h-5 w-2/3 sm:w-24 bg-gray-200 rounded' />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (!orders || orders.length === 0) {
     return (
-      <div className='max-w-2xl mx-auto p-6 flex flex-col items-center'>
+      <div className='max-w-7xl w-full sm:w-11/12 mx-auto p-6 flex flex-col items-center'>
         <ShoppingBag size={38} className='text-primary mb-2' />
-        <h1 className='text-xl font-semibold mb-2'>No Orders Yet</h1>
+        <h1 className='text-xl font-semibold mb-2 text-center'>No Orders Yet</h1>
         <p className='mb-4 text-gray-500 text-center'>
           Looks like you have not placed any orders yet.
         </p>
-        <Button onClick={() => router.push('/')}>Go Shopping</Button>
+        <Button className='w-full sm:w-auto' onClick={() => router.push('/shop')}>
+          Go Shopping
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className='max-w-4xl mx-auto px-4 py-8'>
-      <h1 className='text-2xl md:text-3xl font-bold mb-6 flex gap-3 items-center'>
-        <ShoppingBag size={28} />
-        My Orders
+    <div className='max-w-7xl mx-auto px-5 py-4 sm:py-8'>
+      <h1 className='text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 flex gap-2 sm:gap-3 items-center'>
+        <ShoppingBag size={24} className='text-green-500 sm:hidden' />
+        <ShoppingBag size={28} className='text-green-500 hidden sm:block' />
+        <span>My Orders</span>
       </h1>
-      <div className='space-y-8'>
+      <div className='flex flex-col gap-4 sm:gap-8'>
         {orders.map((order) => (
-          <div key={order.id} className='bg-white shadow rounded-lg p-5 border border-gray-100'>
-            <div className='flex flex-wrap items-center justify-between gap-2 mb-3'>
-              <div className='text-primary font-semibold text-sm'>#{order.orderNumber}</div>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  order.status === 'DELIVERED'
-                    ? 'bg-green-100 text-green-700'
-                    : order.status === 'CANCELLED'
-                    ? 'bg-red-100 text-red-700'
-                    : order.status === 'CREATED'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                {order.status}
-              </span>
-              <span className='text-xs text-gray-400'>{order?.placedAt?.toLocaleDateString()}</span>
+          <div
+            key={order.id}
+            className='bg-white shadow rounded-lg p-3 sm:p-5 border border-gray-100 flex flex-col gap-2'
+          >
+            <div className='flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-2 mb-2 sm:mb-3'>
+              <div className='text-primary font-semibold text-sm break-all'>
+                #{order.orderNumber}
+              </div>
+              <div className='flex flex-row items-center gap-2 flex-wrap'>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    order.status === 'DELIVERED'
+                      ? 'bg-green-100 text-green-700'
+                      : order.status === 'CANCELLED'
+                      ? 'bg-red-100 text-red-700'
+                      : order.status === 'CREATED'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {order.status}
+                </span>
+                <span className='text-xs text-gray-400 block'>
+                  {order?.placedAt
+                    ? new Date(order.placedAt)
+                        .toLocaleString('en-CA', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                          hour12: false,
+                        })
+                        .replace(',', '')
+                        .replace(/\//g, '-')
+                    : ''}
+                </span>
+              </div>
             </div>
             {/* ORDER ITEMS */}
             <div className='divide-y'>
-              {order?.item?.map((item) => (
-                <div key={item.id} className='flex py-3 gap-4 items-center'>
-                  <div className='flex-shrink-0 w-16 h-16 rounded overflow-hidden bg-gray-100 flex items-center justify-center'>
+              {order?.items?.map((item) => (
+                <div
+                  key={item.id}
+                  className='flex flex-col sm:flex-row py-2 sm:py-3 gap-2 sm:gap-4 items-start sm:items-center'
+                >
+                  <div className='shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded overflow-hidden bg-gray-100 flex items-center justify-center'>
                     {item.product.images?.[0]?.path ? (
                       <Image
                         src={item.product.images[0].path}
@@ -99,19 +157,23 @@ export default function MyOrders() {
                       <div className='w-full h-full bg-gray-200' />
                     )}
                   </div>
-                  <div className='flex-1'>
-                    <div className='font-medium text-gray-900'>
-                      {item.product.title}
+                  <div className='flex-1 w-full'>
+                    <div className='flex flex-col sm:flex-row sm:items-center sm:gap-2'>
+                      <div className='font-medium text-gray-900'>{item.product.title}</div>
                       {item.variant?.title && (
-                        <span className='ml-2 text-gray-500 text-sm'>({item.variant.title})</span>
+                        <span className='ml-0 sm:ml-2 text-gray-500 text-sm'>
+                          ({item.variant.title})
+                        </span>
                       )}
                     </div>
-                    {item.sku && <div className='text-xs text-gray-400'>SKU: {item.sku}</div>}
+                    {item.sku && (
+                      <div className='text-xs text-gray-400 mt-0.5 sm:mt-0'>SKU: {item.sku}</div>
+                    )}
                     <div className='text-xs text-gray-500 mt-1'>
                       Quantity: <span className='font-semibold'>{item.quantity}</span>
                     </div>
                   </div>
-                  <div className='text-right min-w-[80px]'>
+                  <div className='text-left sm:text-right min-w-[80px] w-full sm:w-auto mt-1 sm:mt-0'>
                     <div className='font-semibold text-gray-800'>
                       PKR {item.price?.toLocaleString()}
                     </div>
@@ -121,14 +183,14 @@ export default function MyOrders() {
               ))}
             </div>
             {/* ORDER SUMMARY */}
-            <div className='flex flex-wrap items-center justify-between gap-2 mt-4 border-t pt-3'>
+            <div className='flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-2 mt-3 sm:mt-4 border-t pt-2 sm:pt-3'>
               <div>
                 <div className='text-xs text-gray-500'>Payment:</div>
                 <div className='font-medium text-sm'>{order.paymentMethod}</div>
               </div>
               <div>
                 <div className='text-xs text-gray-500'>Order Total:</div>
-                <div className='font-bold text-lg text-primary'>
+                <div className='font-bold text-base sm:text-lg text-primary'>
                   PKR {order.totalAmount?.toLocaleString()}
                 </div>
               </div>
@@ -143,9 +205,14 @@ export default function MyOrders() {
                 </div>
               </div>
             </div>
-            {/* Actions (e.g. Details, Track, Invoice, etc.) */}
-            <div className='flex gap-2 mt-4 text-sm'>
-              <Button size='sm' variant='outline' onClick={() => router.push(`/order/${order.id}`)}>
+            {/* Actions */}
+            <div className='flex flex-col gap-2 sm:flex-row sm:gap-2 mt-3 sm:mt-4 text-sm w-full'>
+              <Button
+                size='sm'
+                variant='outline'
+                className='w-full sm:w-auto'
+                onClick={() => router.push(`/order/${order.id}`)}
+              >
                 View Details
               </Button>
               {/* <Button size="sm" variant="ghost">Track</Button> */}

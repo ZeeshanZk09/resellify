@@ -25,6 +25,8 @@ interface CreateOrderInput {
   notes?: string;
 }
 
+export type GetMyOrders = Awaited<ReturnType<typeof getMyOrders>>['orders'];
+
 /**
  * Generate a unique order number in format: ORD-YYYYMMDD-XXXX
  */
@@ -44,7 +46,7 @@ function generateOrderNumber(): string {
 /**
  * Create a new order with order items
  */
-export async function createOrder(input: CreateOrderInput, productId?: string) {
+async function createOrder(input: CreateOrderInput, productId?: string) {
   try {
     console.log('[createOrder] Step 1: Authenticating user...');
     const session = (await authUser()) as Session;
@@ -169,15 +171,6 @@ export async function createOrder(input: CreateOrderInput, productId?: string) {
               create: [orderItemData],
             },
           },
-          include: {
-            items: {
-              include: {
-                product: true,
-                variant: true,
-              },
-            },
-            address: true,
-          },
         });
       });
 
@@ -287,15 +280,6 @@ export async function createOrder(input: CreateOrderInput, productId?: string) {
               create: orderItemsData,
             },
           },
-          include: {
-            items: {
-              include: {
-                product: true,
-                variant: true,
-              },
-            },
-            address: true,
-          },
         });
 
         console.log('[createOrder] Order created successfully, now deleting cart items...');
@@ -319,3 +303,104 @@ export async function createOrder(input: CreateOrderInput, productId?: string) {
     };
   }
 }
+
+async function getMyOrders() {
+  try {
+    const session = await auth();
+    const userId = session?.user.id;
+    if (!session?.user.id)
+      return {
+        cartItems: [],
+        message: 'Unauthorized',
+      };
+
+    const orders = await prisma.order.findMany({
+      where: { userId },
+      select: {
+        userId: true,
+        updatedAt: true,
+        totalAmount: true,
+        taxAmount: true,
+        subTotal: true,
+        status: true,
+        shippingFee: true,
+        placedAt: true,
+        paymentStatus: true,
+        paymentMethod: true,
+        payment: true,
+        orderNumber: true,
+        notes: true,
+        id: true,
+        discountAmount: true,
+        createdAt: true,
+        addressId: true,
+        items: {
+          include: {
+            product: {
+              include: {
+                images: true,
+              },
+            },
+            variant: true,
+          },
+        },
+      },
+    });
+
+    console.log('orders: ', orders);
+
+    // Helper function to deeply convert Decimal instances to numbers,
+    // but ensures Date fields like placedAt are returned as ISO strings
+    function convertDecimalsAndDates(obj: any): any {
+      if (Array.isArray(obj)) {
+        return obj.map(convertDecimalsAndDates);
+      } else if (obj && typeof obj === 'object') {
+        const result: any = {};
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            const value = obj[key];
+            // For Prisma's Decimal type
+            if (value && typeof value === 'object' && value._isDecimal) {
+              result[key] = Number(value);
+            }
+            // For legacy decimal.js style (sometimes toNumber exists)
+            else if (value && typeof value === 'object' && typeof value.toNumber === 'function') {
+              result[key] = value.toNumber();
+            }
+            // Ensure placedAt and createdAt fields are serialized to ISO strings if they're Dates
+            else if (
+              (key === 'placedAt' || key === 'createdAt' || key === 'updatedAt') &&
+              value instanceof Date
+            ) {
+              result[key] = value.toISOString();
+            } else {
+              result[key] = convertDecimalsAndDates(value);
+            }
+          }
+        }
+        return result;
+      }
+      return obj;
+    }
+
+    // Process and clean all returned objects, with placedAt, createdAt, updatedAt as ISO strings
+    const plainOrders = orders.map((order) => {
+      const plainOrder = convertDecimalsAndDates(order);
+      return plainOrder;
+    });
+    console.log('plainOrders: ', plainOrders);
+
+    return {
+      orders: plainOrders as typeof orders,
+      message: 'Cart items fetched successfully',
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      cartItems: [],
+      message: 'Failed to fetch cart items',
+    };
+  }
+}
+
+export { createOrder, getMyOrders };
