@@ -5,7 +5,7 @@ const AdminNavbar = ({ name }: { name: string }) => {
   return (
     <div className='w-full fixed flex items-center justify-between px-6 sm:px-12 py-3 border-b border-foreground/05 bg-background transition-all z-50'>
       <Link href='/' className='relative text-lg sm:text-4xl font-semibold text-slate-700'>
-        <h1 className='logo small' aria-label='Resellify - brand'>
+        <h1 className='logo small' aria-label='GO Shop - brand'>
           <span className='mark' aria-hidden>
             Go
           </span>

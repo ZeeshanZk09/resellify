@@ -4,7 +4,7 @@
   viewBox="0 0 260 64"
   xmlns="http://www.w3.org/2000/svg"
   role="img"
-  aria-label="Resellify logo"
+  aria-label="GO Shop"
 >
   <defs>
     <!-- Mark gradient -->
@@ -48,7 +48,7 @@
       fill="#ffffff"
       font-family="Inter, Arial, sans-serif"
     >
-      R
+      GO
     </text>
   </g>
 
@@ -62,6 +62,6 @@
     font-family="Inter, Arial, sans-serif"
     letter-spacing="-0.02em"
   >
-    Resellify
+    Shop
   </text>
 </svg>

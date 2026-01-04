@@ -62,7 +62,7 @@ export const sendVerification = async (email: string) => {
             <table cellpadding="0" cellspacing="0" border="0" width="600">
               <tr>
                 <td align="left" style="padding:16px 32px;">
-                 <img src="https://zebotix.com/Zebotix.png" width="180" alt="Resellify" />
+                 <img src="https://zebotix.com/Zebotix.png" width="180" alt="goshop" />
 
                 </td>
               </tr>

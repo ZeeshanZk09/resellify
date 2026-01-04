@@ -11,15 +11,15 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
-    default: 'Resellify | Buy Quality Products Online at Best Prices',
-    template: '%s | Resellify',
+    default: 'GO Shop | Buy Quality Products Online at Best Prices',
+    template: '%s | GO Shop',
   },
 
   description:
-    'Resellify is a trusted online store where you can buy quality products at competitive prices. We carefully source products, add value, and deliver directly to customers.',
-  applicationName: 'Resellify',
+    'GO Shop is a trusted online store where you can buy quality products at competitive prices. We carefully source products, add value, and deliver directly to customers.',
+  applicationName: 'GO Shop',
   keywords: [
-    'Resellify',
+    'GO Shop',
     'online shopping',
     'buy products online',
     'best prices',
@@ -28,19 +28,19 @@ export const metadata: Metadata = {
     'Pakistan online store',
     'ecommerce website',
   ],
-  authors: [{ name: 'Resellify' }],
-  creator: 'Resellify',
-  publisher: 'Resellify',
-  metadataBase: new URL('https://www.resellify.com'),
+  authors: [{ name: 'GO Shop' }],
+  creator: 'GO Shop',
+  publisher: 'GO Shop',
+  metadataBase: new URL('https://www.GO Shop.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Resellify | Quality Products at Honest Prices',
+    title: 'GO Shop | Quality Products at Honest Prices',
     description:
-      'Shop confidently at Resellify. We source quality products, add value, and sell directly to customers with transparent pricing.',
-    url: 'https://www.resellify.com',
-    siteName: 'Resellify',
+      'Shop confidently at GO Shop. We source quality products, add value, and sell directly to customers with transparent pricing.',
+    url: 'https://www.GO Shop.com',
+    siteName: 'GO Shop',
     locale: 'en_PK',
     type: 'website',
     images: [
@@ -48,16 +48,16 @@ export const metadata: Metadata = {
         url: '/og-image.png', // add a real OG image
         width: 1200,
         height: 630,
-        alt: 'Resellify Online Store',
+        alt: 'GO Shop Online Store',
       },
     ],
   },
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Resellify | Smart Online Shopping',
+    title: 'GO Shop | Smart Online Shopping',
     description:
-      'Buy quality products online from Resellify. Carefully sourced, fairly priced, and delivered to your doorstep.',
+      'Buy quality products online from GO Shop. Carefully sourced, fairly priced, and delivered to your doorstep.',
     images: ['/og-image.png'],
   },
 
