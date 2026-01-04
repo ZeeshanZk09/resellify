@@ -17,7 +17,7 @@ type TProps = {
 };
 
 const SpecGroup = ({ data, reloadRequest }: TProps) => {
-  const { id, title, specs } = data;
+  const { id, title, keys } = data;
   const [isLoading, setIsLoading] = useState(false);
   const [specToAdd, setSpecToAdd] = useState('');
   const handleDeleteSpecGroup = async () => {
@@ -40,7 +40,7 @@ const SpecGroup = ({ data, reloadRequest }: TProps) => {
     setIsLoading(true);
     const data: TSingleSpec = {
       specGroupID: id,
-      value: specToAdd,
+      key: specToAdd,
     };
 
     const response = await addSingleSpec(data);
@@ -61,7 +61,7 @@ const SpecGroup = ({ data, reloadRequest }: TProps) => {
     setIsLoading(true);
     const data: TSingleSpec = {
       specGroupID: id,
-      value: spec,
+      key: spec,
     };
 
     const response = await deleteSingleSpec(data);
@@ -96,9 +96,9 @@ const SpecGroup = ({ data, reloadRequest }: TProps) => {
           </Button>
         </div>
       </div>
-      {specs.length ? (
+      {keys.length ? (
         <>
-          {specs.map((spec, index) => (
+          {keys.map((spec, index) => (
             <div
               className='flex px-3 py-2 mx-2 justify-between items-center rounded-md transition-colors duration-300'
               key={index}

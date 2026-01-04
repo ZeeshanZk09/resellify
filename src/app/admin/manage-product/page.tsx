@@ -8,21 +8,21 @@ export const revalidate = 0;
 export default async function StoreManageProducts() {
   const currency = 'Rs';
 
-  const products = (await getAllProducts(true)).res;
+  const products = (await getAllProducts()).res;
 
   return (
     <>
-      <h1 className="text-2xl text-slate-500 mb-5">
-        Manage <span className="text-slate-800 font-medium">Products</span>
+      <h1 className='text-2xl text-slate-500 mb-5'>
+        Manage <span className='text-slate-800 font-medium'>Products</span>
       </h1>
-      <table className="w-full max-w-4xl text-left  ring ring-slate-200  rounded overflow-hidden text-sm">
-        <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
+      <table className='w-full max-w-4xl text-left  ring ring-slate-200  rounded overflow-hidden text-sm'>
+        <thead className='bg-slate-50 text-gray-700 uppercase tracking-wider'>
           <tr>
-            <th className="px-4 py-3">Name</th>
-            <th className="px-4 py-3 hidden md:table-cell">Description</th>
-            <th className="px-4 py-3 hidden md:table-cell">MRP</th>
-            <th className="px-4 py-3">Price</th>
-            <th className="px-4 py-3">Actions</th>
+            <th className='px-4 py-3'>Name</th>
+            <th className='px-4 py-3 hidden md:table-cell'>Description</th>
+            <th className='px-4 py-3 hidden md:table-cell'>MRP</th>
+            <th className='px-4 py-3'>Price</th>
+            <th className='px-4 py-3'>Actions</th>
           </tr>
         </thead>
         <tbody className='text-slate-700'>

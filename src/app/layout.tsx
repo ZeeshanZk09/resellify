@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { headers } from 'next/headers';
 
 import './globals.css';
 import { AuthProvider } from '@/shared/components/auth-provider';
 import { ThemeProvider } from '@/shared/components/theme-provider';
 import { auth } from '@/auth';
 import { Toaster } from 'sonner';
+import { addVisit } from '@/actions/pageVisit/pageVisitServices';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'GO Shop' }],
   creator: 'GO Shop',
   publisher: 'GO Shop',
-  metadataBase: new URL('https://www.GO Shop.com'),
+  metadataBase: new URL('https://www.goshop.shop'),
   alternates: {
     canonical: '/',
   },
@@ -83,6 +85,9 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   console.log('user-session-from-next-auth: ', session);
+  const headerList = await headers();
+  const currentPath = headerList.get('x-pathname') || headerList.get('referer') || '/';
+  await addVisit(currentPath);
   return (
     <html lang='en' suppressHydrationWarning>
       <body

@@ -7,16 +7,16 @@ import { ReactNode } from 'react';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await auth();
-  console.log('session in admin route:', session)
+  console.log('session in admin route:', session);
   if (!session || session.user.role !== 'ADMIN') {
     redirect('/dashboard');
   }
 
   return (
-    <div className='relative flex flex-col min-h-screen overflow-hidden'>
+    <div className='w-full relative flex flex-col min-h-screen overflow-hidden'>
       <AdminNavbar name={session?.user?.name!} />
       <div
-        className='flex flex-1 items-start h-full '
+        className='w-full flex flex-1 items-start h-full '
         //   overflow-y-scroll no-scrollbar
         //   [&::-webkit-scrollbar]:w-1
         //   [&::-webkit-scrollbar-track]:bg-gray-100
@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       >
         <AdminSidebar />
         <div
-          className='flex-1 h-full p-5 lg:pl-12 lg:pt-20 border-l border-foreground/05 '
+          className='w-full flex-1 h-full p-5 lg:pl-12 lg:pt-20 border-l border-foreground/05 '
           //   overflow-y-scroll [&::-webkit-scrollbar]:w-1
           //   [&::-webkit-scrollbar-track]:bg-gray-100
           //   [&::-webkit-scrollbar-thumb]:bg-gray-300

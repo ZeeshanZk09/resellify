@@ -33,6 +33,7 @@ import {
 } from '@/shared/lib/generated/prisma/client';
 import { InputJsonValue } from '@prisma/client/runtime/client';
 import { NullableJsonNullValueInput } from '@/shared/lib/generated/prisma/internal/prismaNamespace';
+import { TRAFFIC_LIST_PAGE_SIZE } from '@/shared/constants/admin/trafficView';
 
 export type optionSets = {
   name: string;
@@ -742,173 +743,278 @@ function toPlain(val: any): any {
   return val;
 }
 
-// export const getOneProduct = async (productID: string) => {
-//   if (!productID || productID === "") return { error: "Invalid Product ID!" };
+export const getOneProduct = async (productID: string) => {
+  if (!productID || productID === '') return { error: 'Invalid Product ID!' };
 
-//   try {
-//     const result = await prisma.product.findFirst({
-//       where: {
-//         id: productID,
-//         visibility: "PUBLIC",
-//         status: "PUBLISHED",
-//       },
-//       include: {
-//         productOffers: true,
-//         productSpecs: true,
-//         productVariants: true,
-//         couponProducts: true,
-//         reviews: true,
-//         images: true,
-//         tags: true,
-//         favouritedBy: true,
-//         orderItems: true,
-//       },
-//     });
-//     if (!result) return { error: "Invalid Data!" };
+  try {
+    const result = await prisma.product.findFirst({
+      where: {
+        id: productID,
+        visibility: 'PUBLIC',
+        status: 'PUBLISHED',
+      },
+      include: {
+        productOffers: true,
+        productSpecs: {
+          include: {
+            specGroup: true,
+          },
+        },
+        productVariants: true,
+        couponProducts: true,
+        reviews: true,
+        images: true,
+        tags: true,
+        favouritedBy: true,
+        orderItems: true,
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+    if (!result) return { error: 'Invalid Data!' };
 
-//     const specifications = await generateSpecTable(result.productSpecs);
-//     if (!specifications || specifications.length === 0)
-//       return { error: "Invalid Date" };
+    const specifications = await generateSpecTable(result.productSpecs);
+    if (!specifications || specifications.length === 0) return { error: 'Invalid Date' };
 
-//     const pathArray: TPath[] | null = await getPathByCategoryID(
-//       result.category.id,
-//       result.category.parentID
-//     );
-//     if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
+    // Get the first category (products can have multiple categories)
+    const firstCategory = result.categories[0]?.category;
+    if (!firstCategory) return { error: 'Product has no category' };
 
-//     //eslint-disable-next-line
-//     const { specs, ...others } = result;
-//     const mergedResult: TProductPageInfo = {
-//       ...others,
-//       specifications,
-//       path: pathArray,
-//     };
+    const pathArray: TPath[] | null = await getPathByCategoryID(
+      firstCategory.id,
+      firstCategory.parentId
+    );
+    if (!pathArray || pathArray.length === 0) return { error: 'Invalid Date' };
 
-//     return { res: mergedResult };
-//   } catch (error) {
-//     return { error: JSON.stringify(error) };
-//   }
-// };
+    // Transform Product to TProductPageInfo format
+    const mergedResult: TProductPageInfo = {
+      id: result.id,
+      name: result.title, // Map title to name
+      isAvailable: result.inventory > 0, // Map inventory > 0 to isAvailable
+      desc: result.description || result.shortDescription || null,
+      images: result.images.map((img) => img.path),
+      optionSets: [], // TODO: Populate from productVariants if needed
+      specialFeatures: [], // TODO: Populate from metadata if needed
+      price: result.basePrice,
+      salePrice: result.salePrice,
+      specifications,
+      path: pathArray,
+    };
 
-// export const getCartProducts = async (productIDs: string[]) => {
-//   if (!productIDs || productIDs.length === 0)
-//     return { error: "Invalid Product List" };
+    return { res: mergedResult };
+  } catch (error) {
+    return { error: JSON.stringify(error) };
+  }
+};
 
-//   try {
-//     const result: TCartListItemDB[] | null = await prisma.product.findMany({
-//       where: {
-//         id: { in: productIDs },
-//       },
-//       select: {
-//         id: true,
-//         name: true,
-//         images: true,
-//         price: true,
-//         salePrice: true,
-//       },
-//     });
+export const getCartProducts = async (productIDs: string[]) => {
+  if (!productIDs || productIDs.length === 0) return { error: 'Invalid Product List' };
 
-//     if (!result) return { error: "Can't Get Data from Database!" };
-//     return { res: result };
-//   } catch (error) {
-//     return { error: JSON.stringify(error) };
-//   }
-// };
+  try {
+    const result = await prisma.product.findMany({
+      where: {
+        id: { in: productIDs },
+      },
+      select: {
+        id: true,
+        title: true, // Product has 'title' not 'name'
+        images: {
+          select: {
+            path: true,
+          },
+        },
+        basePrice: true, // Product has 'basePrice' not 'price'
+        salePrice: true,
+      },
+    });
 
-// export const deleteProduct = async (productID: string) => {
-//   if (!productID || productID === "") return { error: "Invalid Data!" };
-//   try {
-//     const result = await prisma.product.delete({
-//       where: {
-//         id: productID,
-//       },
-//     });
+    if (!result) return { error: "Can't Get Data from Database!" };
 
-//     if (!result) return { error: "Can't Delete!" };
-//     return { res: result };
-//   } catch (error) {
-//     return { error: JSON.stringify(error) };
-//   }
-// };
+    // Transform to match TCartListItemDB type
+    const transformedResult: TCartListItemDB[] = result.map((product) => ({
+      id: product.id,
+      name: product.title, // Map title to name for type compatibility
+      images: product.images.map((img) => img.path),
+      price: product.basePrice, // Map basePrice to price for type compatibility
+      salePrice: product.salePrice,
+    }));
 
-// const generateSpecTable = async (rawSpec: ProductSpec[]) => {
-//   try {
-//     const specGroupIDs = rawSpec.map((spec) => spec.specGroupId);
+    return { res: transformedResult };
+  } catch (error) {
+    return { error: JSON.stringify(error) };
+  }
+};
 
-//     const result = await prisma.specGroup.findMany({
-//       where: {
-//         id: { in: specGroupIDs },
-//       },
-//       include: {
-//         products: true,
-//       },
-//     });
-//     if (!result || result.length === 0) return null;
+export const deleteProduct = async (productID: string) => {
+  if (!productID || productID === '') return { error: 'Invalid Data!' };
+  try {
+    const result = await prisma.product.delete({
+      where: {
+        id: productID,
+      },
+    });
 
-//     const specifications: TSpecification[] = [];
+    if (!result) return { error: "Can't Delete!" };
+    return { res: result };
+  } catch (error) {
+    return { error: JSON.stringify(error) };
+  }
+};
 
-//     rawSpec.forEach((spec) => {
-//       const groupSpecIndex = result.findIndex((g) => g.id === spec.specGroupId);
-//       const tempSpecs: { name: string; value: string }[] = [];
-//       spec.specValues.forEach((s, index) => {
-//         tempSpecs.push({
-//           name: result[groupSpecIndex].products[index].title || "",
-//           value: s || "",
-//         });
-//       });
+const generateSpecTable = async (
+  rawSpec: Array<{
+    specGroupId: string;
+    values: string[]; // ProductSpec has 'values' array (not 'specValues')
+    specGroup?: { id: string; title: string; keys: string[] };
+  }>
+) => {
+  try {
+    // Check if specGroup is already included in the data
+    const hasIncludedSpecGroups = rawSpec.some((spec) => spec.specGroup);
 
-//       specifications.push({
-//         groupName: result[groupSpecIndex].title || "",
-//         specs: tempSpecs,
-//       });
-//     });
-//     if (specifications.length === 0) return null;
+    let specGroups: Array<{ id: string; title: string; keys: string[] }> = [];
 
-//     return specifications;
-//   } catch {
-//     return null;
-//   }
-// };
+    if (hasIncludedSpecGroups) {
+      // Use included specGroup data
+      specGroups = rawSpec
+        .map((spec) => spec.specGroup)
+        .filter((sg): sg is { id: string; title: string; keys: string[] } => sg !== undefined);
+    } else {
+      // Fetch specGroups if not included
+      const specGroupIDs = rawSpec.map((spec) => spec.specGroupId);
+      const result = await prisma.specGroup.findMany({
+        where: {
+          id: { in: specGroupIDs },
+        },
+        select: {
+          id: true,
+          title: true,
+          keys: true, // SpecGroup has 'keys' array
+        },
+      });
+      if (!result || result.length === 0) return null;
+      specGroups = result;
+    }
 
-// const getPathByCategoryID = async (
-//   categoryID: string,
-//   parentID: string | null
-// ) => {
-//   try {
-//     if (!categoryID || categoryID === "") return null;
-//     if (!parentID || parentID === "") return null;
-//     const result: TPath[] = await db.category.findMany({
-//       where: {
-//         OR: [{ id: categoryID }, { id: parentID }, { parentID: null }],
-//       },
-//       select: {
-//         id: true,
-//         parentID: true,
-//         name: true,
-//         url: true,
-//       },
-//     });
-//     if (!result || result.length === 0) return null;
+    const specifications: TSpecification[] = [];
 
-//     const path: TPath[] = [];
-//     let tempCatID: string | null = categoryID;
-//     let searchCount = 0;
+    rawSpec.forEach((spec) => {
+      const groupSpec = specGroups.find((g) => g.id === spec.specGroupId);
+      if (!groupSpec) return;
 
-//     const generatePath = () => {
-//       const foundCatIndex = result.findIndex((cat) => cat.id === tempCatID);
-//       if (foundCatIndex === -1) return;
-//       path.unshift(result[foundCatIndex]);
-//       tempCatID = result[foundCatIndex].parentID;
-//       if (!tempCatID) return;
-//       searchCount++;
-//       if (searchCount <= 3) generatePath();
-//       return;
-//     };
-//     generatePath();
+      const tempSpecs: { name: string; value: string }[] = [];
+      // Map SpecGroup.keys to ProductSpec.values
+      // values array is aligned with SpecGroup.keys order
+      spec.values.forEach((value, index) => {
+        const keyName = groupSpec.keys[index] || ''; // Get key name from SpecGroup.keys array
+        tempSpecs.push({
+          name: keyName,
+          value: value || '',
+        });
+      });
 
-//     if (!path || path.length === 0) return null;
-//     return path;
-//   } catch {
-//     return null;
-//   }
-// };
+      specifications.push({
+        groupName: groupSpec.title || '',
+        specs: tempSpecs,
+      });
+    });
+    if (specifications.length === 0) return null;
+
+    return specifications;
+  } catch {
+    return null;
+  }
+};
+
+export const getTrafficReport = async (skip: number = 0) => {
+  try {
+    const [list, totalCount] = await Promise.all([
+      prisma.visit.findMany({
+        skip: skip,
+        take: TRAFFIC_LIST_PAGE_SIZE,
+        include: {
+          product: {
+            select: {
+              title: true,
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          id: 'desc',
+        },
+      }),
+      prisma.visit.count(),
+    ]);
+    if (!list) return { error: 'Can not read Data!' };
+    return { res: { list, totalCount } };
+  } catch (error) {
+    return { error: JSON.stringify(error) };
+  }
+};
+
+const getPathByCategoryID = async (categoryID: string, parentId: string | null) => {
+  try {
+    if (!categoryID || categoryID === '') return null;
+
+    // Build OR condition - include category, parent, and root categories
+    const orConditions: Array<{ id: string } | { parentId: null }> = [{ id: categoryID }];
+    if (parentId) {
+      orConditions.push({ id: parentId });
+    }
+    orConditions.push({ parentId: null });
+
+    const result = await prisma.category.findMany({
+      where: {
+        OR: orConditions,
+      },
+      select: {
+        id: true,
+        parentId: true, // Use camelCase 'parentId' not 'parentID'
+        name: true,
+        slug: true, // Use 'slug' instead of 'url'
+      },
+    });
+    if (!result || result.length === 0) return null;
+
+    const path: TPath[] = [];
+    let tempCatID: string | null = categoryID;
+    let searchCount = 0;
+
+    const generatePath = () => {
+      const foundCat = result.find((cat) => cat.id === tempCatID);
+      if (!foundCat) return;
+
+      // Transform to TPath format (with url field for type compatibility)
+      path.unshift({
+        id: foundCat.id,
+        parentID: foundCat.parentId, // Map parentId to parentID for type compatibility
+        name: foundCat.name,
+        url: foundCat.slug || '', // Map slug to url for type compatibility
+      });
+
+      tempCatID = foundCat.parentId; // Use camelCase 'parentId'
+      if (!tempCatID) return;
+      searchCount++;
+      if (searchCount <= 3) generatePath();
+      return;
+    };
+    generatePath();
+
+    if (!path || path.length === 0) return null;
+    return path;
+  } catch {
+    return null;
+  }
+};

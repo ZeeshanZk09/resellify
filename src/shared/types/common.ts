@@ -1,11 +1,6 @@
-import { NameValue, OptionSetType, PageType } from "@prisma/client";
-import {
-  ProductSpec,
-  Upload,
-  Visibility,
-  Visit,
-} from "../lib/generated/prisma/client";
-import { Decimal } from "@prisma/client/runtime/client";
+// import { NameValue, OptionSetType, PageType } from '@prisma/client';
+import { ProductSpec, Upload, Visibility, Visit } from '../lib/generated/prisma/client';
+import { Decimal } from '@prisma/client/runtime/client';
 
 export type TProductCard = {
   name: string;
@@ -53,12 +48,12 @@ export type TCategory = {
   subCategories?: TSubCategory[];
 };
 
-export type TOptionSet = {
-  id: string;
-  name: string;
-  options: NameValue[];
-  type: OptionSetType;
-};
+// export type TOptionSet = {
+//   id: string;
+//   name: string;
+//   options: NameValue[];
+//   type: OptionSetType;
+// };
 
 export type TSingleOption = {
   optionSetID: string;
@@ -69,12 +64,12 @@ export type TSingleOption = {
 export type TSpecGroup = {
   id: string;
   title: string;
-  specs: string[];
+  keys: string[]; // Changed from 'specs' to 'keys' to match Prisma schema
 };
 
 export type TSingleSpec = {
   specGroupID: string;
-  value: string;
+  key: string; // Changed from 'value' to 'key' to match updated action signature
 };
 
 export type TAddPageVisit = Visit;

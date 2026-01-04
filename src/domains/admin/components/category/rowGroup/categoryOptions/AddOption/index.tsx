@@ -5,14 +5,13 @@ import { useState } from 'react';
 import { addOptionSet } from '@/actions/category/categoryOptions';
 import Button from '@/shared/components/ui-v2/button';
 import Input from '@/shared/components/ui-v2/input';
-import { TOptionSet } from '@/shared/types/common';
 
 type TProps = {
-  categoryOptionId: string;
+  categoryId: string;
   reloadRequest: () => void;
 };
 
-const AddOption = ({ categoryOptionId, reloadRequest }: TProps) => {
+const AddOption = ({ reloadRequest, categoryId }: TProps) => {
   const [isColor, setIsColor] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState('');
@@ -20,15 +19,14 @@ const AddOption = ({ categoryOptionId, reloadRequest }: TProps) => {
   const handleAddOption = async () => {
     if (!name || name === '') return;
 
-    const data: TOptionSet = {
-      id: categoryOptionId,
-      name,
-      options: [],
-      type: isColor ? 'COLOR' : 'TEXT',
-    };
-
     setIsLoading(true);
-    const result = await addOptionSet(data);
+    const result = await addOptionSet(
+      {
+        name,
+        type: isColor ? 'COLOR' : 'TEXT',
+      },
+      categoryId
+    );
     if (result.error) {
       setIsLoading(false);
       return;

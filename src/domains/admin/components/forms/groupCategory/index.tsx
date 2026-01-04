@@ -1,77 +1,36 @@
 'use client';
 
-import { TGetAllCategories } from '@/actions/category/category';
+import { TAddCategory } from '@/actions/category/category';
 import Input from '@/shared/components/ui-v2/input';
 
 type TProps = {
-  errorMsg: string;
-  data: TGetAllCategories;
-  onChange: (data: TGetAllCategories) => void;
+  errorMsg: string | undefined;
+  data: TAddCategory;
+  onChange: (data: TAddCategory) => void;
 };
 
 const GroupCategory = ({ errorMsg, data, onChange }: TProps) => {
-  const iconSize: number[] = data.iconSize ? [...data.iconSize] : [];
-
   return (
     <div className='grid grid-cols-3 text-gray-500 gap-y-4 items-center my-6 mx-4 text-sm'>
       <span>Category Group Name:</span>
       <Input
         className='col-span-2 w-[200px]'
         name='name'
-        value={data.name}
+        value={data.name || ''}
         onChange={(e) => onChange({ ...data, name: e.currentTarget.value })}
         type='text'
-        placeholder='name...'
+        placeholder='Category name (min 3 characters)...'
+        required
       />
-      <span>URL:</span>
+      <span>Description:</span>
       <Input
         className='col-span-2 w-[200px]'
-        name='url'
-        onChange={(e) => onChange({ ...data, url: e.currentTarget.value })}
+        name='description'
+        onChange={(e) => onChange({ ...data, description: e.currentTarget.value || undefined })}
         type='text'
-        placeholder='URL...'
-        value={data.url}
+        placeholder='Description (optional)...'
+        value={data.description || ''}
       />
-      <span>ICON URL:</span>
-      <Input
-        className='col-span-2 w-[200px]'
-        name='iconUrl'
-        onChange={(e) => onChange({ ...data, iconUrl: e.currentTarget.value })}
-        type='text'
-        placeholder='ICON URL...'
-        value={data.iconUrl || ''}
-      />
-      <span>ICON Size:</span>
-      <div className='col-span-2 flex gap-2'>
-        {data.iconSize && (
-          <>
-            <Input
-              name='iconSize1'
-              type='number'
-              onChange={(e) =>
-                onChange({
-                  ...data,
-                  iconSize: [parseInt(e.currentTarget.value) | 0, iconSize[1]],
-                })
-              }
-              placeholder='0'
-              value={data.iconSize[0]}
-            />
-            <Input
-              name='iconSize2'
-              type='number'
-              placeholder='0'
-              onChange={(e) =>
-                onChange({
-                  ...data,
-                  iconSize: [iconSize[0], parseInt(e.currentTarget.value) | 0],
-                })
-              }
-              value={data.iconSize[1]}
-            />
-          </>
-        )}
-      </div>
       {errorMsg !== '' && <span className='col-span-3 text-bitex-red-500'>{errorMsg}</span>}
     </div>
   );

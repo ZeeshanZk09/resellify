@@ -9,10 +9,10 @@ import {
 } from '@/actions/category/categoryOptions';
 import Button from '@/shared/components/ui-v2/button';
 import Input from '@/shared/components/ui-v2/input';
-import { TOptionSet, TSingleOption } from '@/shared/types/common';
+import { TSingleOption } from '@/shared/types/common';
 
 type TProps = {
-  data: TOptionSet;
+  data: any;
   reloadRequest: () => void;
 };
 
@@ -86,7 +86,7 @@ const OptionSet = ({ data, reloadRequest }: TProps) => {
         </Button>
       </div>
       <div className='flex flex-col'>
-        {options.map((singleOption, index) => (
+        {options.map((singleOption: any, index: any) => (
           <div
             className='flex items-center justify-between p-1 rounded-md transition-colors duration-300 select-none'
             key={index}

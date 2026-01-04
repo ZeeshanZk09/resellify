@@ -3,7 +3,7 @@ import { TAddCategory } from '@/actions/category/category';
 import Input from '@/shared/components/ui-v2/input';
 
 type TProps = {
-  errorMsg: string;
+  errorMsg: string | undefined;
   data: TAddCategory;
   onChange: (data: TAddCategory) => void;
 };
@@ -15,22 +15,23 @@ const AddCategory = ({ data, errorMsg, onChange }: TProps) => {
       <Input
         className='col-span-4'
         name='name'
-        value={data.name}
+        value={data?.name || ''}
         onChange={(e) => onChange({ ...data, name: e.currentTarget.value })}
         type='text'
-        placeholder='name...'
+        placeholder='Category name (min 3 characters)...'
+        required
       />
-      <span className='col-span-3'>URL:</span>
+      <span className='col-span-3'>Description:</span>
       <Input
         className='col-span-4'
-        name='url'
-        onChange={(e) => onChange({ ...data, url: e.currentTarget.value })}
+        name='description'
+        onChange={(e) => onChange({ ...data, description: e.currentTarget.value || undefined })}
         type='text'
-        placeholder='URL...'
-        value={data.url}
+        placeholder='Description (optional)...'
+        value={data?.description || ''}
       />
 
-      {errorMsg !== '' && (
+      {errorMsg && (
         <div className='col-span-7'>
           <span className='text-bitex-red-500'>{errorMsg}</span>
         </div>

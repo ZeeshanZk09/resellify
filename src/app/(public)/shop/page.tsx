@@ -2,6 +2,8 @@ import { getInitialProducts } from '@/actions/product/product';
 import ProductCard from '@/domains/product/components/productCard';
 import { MoveLeftIcon } from 'lucide-react';
 import ProductList from './_components/ProductList';
+import { headers } from 'next/headers';
+import { addVisit } from '@/actions/pageVisit/pageVisitServices';
 
 export default async function Shop({
   searchParams,
@@ -35,6 +37,10 @@ export default async function Shop({
         return titleMatch || categoryMatch || tagsMatch;
       })
     : products;
+
+  const headerList = await headers();
+  const currentPath = headerList.get('x-pathname') || headerList.get('referer') || '/';
+  await addVisit(currentPath);
 
   return (
     <div className='min-h-[70vh] mx-6'>

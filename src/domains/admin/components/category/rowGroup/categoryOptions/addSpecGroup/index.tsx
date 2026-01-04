@@ -19,14 +19,11 @@ const AddSpecGroup = ({ categorySpecGroupID, reloadRequest }: TProps) => {
   const handleAddOption = async () => {
     if (!title || title === '') return;
 
-    const data: TSpecGroup = {
-      id: categorySpecGroupID,
-      specs: [],
-      title,
-    };
-
     setIsLoading(true);
-    const result = await addSpecGroup(data);
+    const result = await addSpecGroup({
+      title,
+      keys: [],
+    });
     if (result.error) {
       setIsLoading(false);
       return;

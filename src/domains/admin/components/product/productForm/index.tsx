@@ -1,16 +1,15 @@
 'use client';
 
-import { ProductSpec, SpecGroup } from '@prisma/client';
 import { useEffect, useState } from 'react';
 
 import { getAllBrands } from '@/actions/brands/brands';
-import { getAllCategoriesJSON } from '@/actions/category/category';
+import { getCategories, getSubCategoriesById } from '@/actions/category/category';
 import { getCategorySpecs } from '@/actions/category/specifications';
+import { SpecGroup } from '@/shared/lib/generated/prisma/client';
 import Button from '@/shared/components/ui-v2/button';
 import DropDownList from '@/shared/components/ui-v2/dropDown';
 import Input from '@/shared/components/ui-v2/input';
 import { TBrand } from '@/shared/types';
-import { TGroupJSON } from '@/shared/types/categories';
 import { TAddProductFormValues } from '@/shared/types/product';
 import { TDropDown } from '@/shared/types/uiElements';
 import { cn } from '@/shared/utils/styling';
@@ -40,9 +39,30 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const result = await getAllCategoriesJSON();
+      const result = await getCategories();
       if (result.res) {
-        setCategoryList(convertJSONtoDropdownList(result.res));
+        const dropDownData: TDropDown[] = [categoryListFirstItem];
+
+        // Add parent categories
+        for (const category of result.res) {
+          dropDownData.push({
+            text: category.name,
+            value: category.id,
+          });
+
+          // Get subcategories for this category
+          const subResult = await getSubCategoriesById(category.id);
+          if (subResult.res) {
+            subResult.res.forEach((sub) => {
+              dropDownData.push({
+                text: category.name + ' - ' + sub.name,
+                value: sub.id,
+              });
+            });
+          }
+        }
+
+        setCategoryList(dropDownData);
       }
     };
 
@@ -51,30 +71,6 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
       if (result.res) {
         setBrandList(convertBrandsToDropdownList(result.res));
       }
-    };
-
-    const convertJSONtoDropdownList = (json: TGroupJSON[]): TDropDown[] => {
-      const dropDownData: TDropDown[] = [categoryListFirstItem];
-      json.forEach((group) => {
-        dropDownData.push({
-          text: group.group.name,
-          value: group.group.id,
-        });
-        group.categories.forEach((category) => {
-          dropDownData.push({
-            text: group.group.name + ' - ' + category.category.name,
-            value: category.category.id,
-          });
-          category.subCategories.forEach((sub) => {
-            dropDownData.push({
-              text: group.group.name + ' - ' + category.category.name + ' - ' + sub.name,
-              value: sub.id,
-            });
-          });
-        });
-      });
-
-      return dropDownData;
     };
 
     const convertBrandsToDropdownList = (brandList: TBrand[]): TDropDown[] => {
@@ -115,11 +111,11 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
   const getSpecGroup = async (categoryID: string) => {
     const response = await getCategorySpecs(categoryID);
     if (response.res) {
-      const specArray: ProductSpec[] = [];
+      const specArray: Array<{ specGroupID: string; specValues: string[] }> = [];
       response.res.forEach((item) => {
         specArray.push({
           specGroupID: item.id,
-          specValues: item.specs.map(() => ''),
+          specValues: item.keys.map(() => ''), // Use 'keys' instead of 'specs'
         });
       });
       onChange({
@@ -312,7 +308,7 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
                     {specGroup.title}
                   </span>
                   <>
-                    {specGroup.specs.map((spec, specIndex) => (
+                    {specGroup.keys.map((spec, specIndex) => (
                       <div
                         className='w-full flex items-center justify-between p-2 pl-4 rounded-md transition-colors duration-600 hover:bg-gray-100'
                         key={specIndex}

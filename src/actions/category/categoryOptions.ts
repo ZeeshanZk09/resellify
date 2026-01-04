@@ -1,14 +1,16 @@
 'use server';
 
-// import { OptionSetType } from "@prisma/client";
 import { z } from 'zod';
 
 import db from '@/shared/lib/prisma';
-import { TOptionSet, TSingleOption, TSingleSpec, TSpecGroup } from '@/shared/types/common';
+import { TSingleOption } from '@/shared/types/common';
+import { OptionSetCreateInput } from '@/shared/lib/generated/prisma/models';
 
+// Validation Schemas
 const AddOptionSet = z.object({
   name: z.string().min(3),
-  //   type: z.enum([OptionSetType.COLOR, OptionSetType.TEXT]),
+  type: z.string().min(1), // OptionSetType string, adjust as needed
+  categoryId: z.string().min(6),
 });
 
 const SingleOption = z.object({
@@ -19,59 +21,68 @@ const SingleOption = z.object({
 
 const AddSpecGroup = z.object({
   title: z.string().min(3),
+  keys: z.array(z.string()).optional().default([]), // keys array for spec fields
 });
 
 const SingleSpec = z.object({
   specGroupID: z.string().min(6),
-  value: z.string().min(3),
+  key: z.string().min(1), // key to add/remove from keys array
 });
 
+// OPTION SETS
+
 export const getOptionSetByCatID = async (categoryID: string) => {
-  if (!categoryID || categoryID === '') return { error: 'Invalid Data!' };
+  if (!categoryID || typeof categoryID !== 'string' || categoryID.trim() === '') {
+    return { error: 'Invalid Data!' };
+  }
 
   try {
-    const result: TOptionSet[] = await db.optionSet.findMany({
+    // Find all optionSets where categoryId matches through CategoryOptionSet join table.
+    const result = await db.optionSet.findMany({
       where: {
-        Category_Option: {
-          some: {
-            categoryID: categoryID,
-          },
+        categories: {
+          some: { categoryId: categoryID },
         },
       },
+      include: { options: true },
     });
 
-    if (!result) return { error: 'Not Found!' };
+    // result will always be an array, so "if (!result)" is not a useful check.
+    if (!result || !Array.isArray(result) || result.length === 0) {
+      return { error: 'Not Found!' };
+    }
+
     return { res: result };
-  } catch (error) {
-    return { error: JSON.stringify(error) };
+  } catch (error: any) {
+    return { error: error?.message || String(error) };
   }
 };
 
-export const addOptionSet = async (data: TOptionSet) => {
+export const addOptionSet = async (data: OptionSetCreateInput, categoryId: string) => {
+  // data: {name, type, categoryId}
   if (!AddOptionSet.safeParse(data).success) return { error: 'Invalid Data' };
 
   try {
-    const result = await db.category.update({
-      where: {
-        id: data.id,
-      },
+    // Create OptionSet and connect to category through CategoryOptionSet
+    const result = await db.optionSet.create({
       data: {
-        Category_Option: {
-          create: {
-            option: {
-              create: {
-                name: data.name,
-                type: data.type,
-              },
-            },
-          },
+        name: data.name,
+        type: data.type,
+        categories: {
+          create: [{ categoryId: categoryId }],
         },
       },
     });
-    if (!result) return { error: 'failed' };
-    return { res: result };
+    return {
+      res: result,
+      success: true,
+    };
   } catch (error) {
-    return { res: JSON.stringify(error) };
+    console.log(error);
+    return {
+      error,
+      success: false,
+    };
   }
 };
 
@@ -80,60 +91,52 @@ export const deleteOptionSet = async (id: string) => {
 
   try {
     const result = await db.optionSet.delete({
-      where: {
-        id,
-      },
+      where: { id },
     });
     if (!result) return { error: 'failed' };
     return { res: result };
   } catch (error) {
-    return { res: JSON.stringify(error) };
+    return { error: JSON.stringify(error) };
   }
 };
 
 // ------------------------- SINGLE OPTION -------------------------
 export const addSingleOption = async (data: TSingleOption) => {
+  // Expects: { optionSetID, name, value }
   if (!SingleOption.safeParse(data).success) return { error: 'Invalid Data!' };
 
   try {
-    const result = await db.optionSet.update({
-      where: {
-        id: data.optionSetID,
-      },
+    const result = await db.option.create({
       data: {
-        options: {
-          push: {
-            name: data.name,
-            value: data.value,
-          },
-        },
+        optionSetId: data.optionSetID,
+        name: data.name,
+        value: data.value,
       },
     });
-
     if (!result) return { error: "Can't Insert!" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
   }
 };
+
 export const deleteSingleOption = async (data: TSingleOption) => {
   if (!SingleOption.safeParse(data).success) return { error: 'Invalid Data!' };
 
   try {
-    const result = await db.optionSet.update({
+    // Find the option by all 3 keys (set, name, value) and delete
+    const option = await db.option.findFirst({
       where: {
-        id: data.optionSetID,
+        optionSetId: data.optionSetID,
+        name: data.name,
+        value: data.value,
       },
-      data: {
-        options: {
-          deleteMany: {
-            where: {
-              name: data.name,
-              value: data.name,
-            },
-          },
-        },
-      },
+    });
+
+    if (!option) return { error: 'Option Not Found!' };
+
+    const result = await db.option.delete({
+      where: { id: option.id },
     });
 
     if (!result) return { error: "Can't Delete!" };
@@ -145,114 +148,167 @@ export const deleteSingleOption = async (data: TSingleOption) => {
 
 // ------------------------- SPECIFICATIONS -------------------------
 
+export type GetSpecGroupByCatID = Awaited<ReturnType<typeof getSpecGroupByCatID>>['res'];
+
 export const getSpecGroupByCatID = async (categoryID: string) => {
   if (!categoryID || categoryID === '') return { error: 'Invalid Data!' };
 
   try {
-    const result: TSpecGroup[] = await db.specGroup.findMany({
+    // SpecGroup doesn't have direct categoryId, so we find through products
+    // Get all products in this category, then get their spec groups
+    const products = await db.product.findMany({
       where: {
-        Category_SpecGroup: {
-          some: {
-            categoryID: categoryID,
+        categories: {
+          some: { categoryId: categoryID },
+        },
+      },
+      select: {
+        productSpecs: {
+          select: {
+            specGroup: true,
           },
         },
       },
     });
 
-    if (!result) return { error: 'Not Found!' };
-    return { res: result };
-  } catch (error) {
-    return { error: JSON.stringify(error) };
-  }
-};
+    // Extract unique spec groups
+    const specGroupIds = new Set<string>();
+    products.forEach((product) => {
+      product.productSpecs.forEach((ps) => {
+        specGroupIds.add(ps.specGroup.id);
+      });
+    });
 
-export const addSpecGroup = async (data: TSpecGroup) => {
-  if (!AddSpecGroup.safeParse(data).success) return { error: 'Invalid Data' };
+    if (specGroupIds.size === 0) {
+      return { error: 'Not Found!' };
+    }
 
-  try {
-    const result = await db.category.update({
+    const result = await db.specGroup.findMany({
       where: {
-        id: data.id,
+        id: {
+          in: Array.from(specGroupIds),
+        },
       },
-      data: {
-        Category_SpecGroup: {
-          create: {
-            specGroup: {
-              create: {
-                title: data.title,
-                specs: [],
+      include: {
+        products: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                title: true,
               },
             },
           },
         },
       },
     });
-    if (!result) return { error: 'failed' };
+
+    if (!result || result.length === 0) return { error: 'Not Found!' };
     return { res: result };
   } catch (error) {
-    return { res: JSON.stringify(error) };
-  }
-};
-export const deleteSpecGroup = async (id: string) => {
-  if (!id || id === '') return { error: 'Invalid Data' };
-  try {
-    const result = await db.specGroup.delete({
-      where: {
-        id,
-      },
-    });
-    if (!result) return { error: 'failed' };
-    return { res: result };
-  } catch (error) {
-    return { res: JSON.stringify(error) };
+    return { error: JSON.stringify(error) };
   }
 };
 
-// ------------------------- SINGLE SPEC -------------------------
-export const addSingleSpec = async (data: TSingleSpec) => {
-  if (!SingleSpec.safeParse(data).success) return { error: 'Invalid Data!' };
+export const addSpecGroup = async (data: { title: string; keys?: string[] }) => {
+  // data: { title, keys? }
+  const validation = AddSpecGroup.safeParse(data);
+  if (!validation.success) return { error: 'Invalid Data' };
+
   try {
-    const result = await db.specGroup.update({
-      where: {
-        id: data.specGroupID,
-      },
+    const result = await db.specGroup.create({
       data: {
-        specs: {
-          push: data.value,
-        },
+        title: data.title,
+        keys: data.keys || [],
       },
     });
+    if (!result) return { error: 'failed' };
+    return { res: result };
+  } catch (error) {
+    return { error: JSON.stringify(error) };
+  }
+};
+
+export const deleteSpecGroup = async (id: string) => {
+  if (!id || id === '') return { error: 'Invalid Data' };
+
+  try {
+    const result = await db.specGroup.delete({
+      where: { id },
+    });
+    if (!result) return { error: 'failed' };
+    return { res: result };
+  } catch (error) {
+    return { error: JSON.stringify(error) };
+  }
+};
+
+// ------------------------- SINGLE SPEC (Key Management) -------------------------
+// Note: In the schema, SpecGroup has a 'keys' array (not a separate Spec model)
+// These functions manage the keys array in SpecGroup
+export const addSingleSpec = async (data: { specGroupID: string; key: string }) => {
+  // { specGroupID, key } - adds a key to the SpecGroup's keys array
+  if (!SingleSpec.safeParse(data).success) return { error: 'Invalid Data!' };
+
+  try {
+    // Get current spec group
+    const specGroup = await db.specGroup.findUnique({
+      where: { id: data.specGroupID },
+      select: { keys: true },
+    });
+
+    if (!specGroup) return { error: 'SpecGroup Not Found!' };
+
+    // Check if key already exists
+    if (specGroup.keys.includes(data.key)) {
+      return { error: 'Key already exists!' };
+    }
+
+    // Add key to array
+    const updatedKeys = [...specGroup.keys, data.key];
+
+    const result = await db.specGroup.update({
+      where: { id: data.specGroupID },
+      data: {
+        keys: updatedKeys,
+      },
+    });
+
     if (!result) return { error: "Can't Insert!" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
   }
 };
-export const deleteSingleSpec = async (data: TSingleSpec) => {
-  if (!SingleSpec.safeParse(data).success) return { error: 'Invalid Data!' };
-  try {
-    const specsList = await db.specGroup.findFirst({
-      where: {
-        id: data.specGroupID,
-      },
-      select: {
-        specs: true,
-      },
-    });
-    if (!specsList || !specsList.specs) return { error: "Can't fins Item!" };
 
-    const filteredList = specsList.specs.filter((spec: any) => spec !== data.value);
+export const deleteSingleSpec = async (data: { specGroupID: string; key: string }) => {
+  // { specGroupID, key } - removes a key from the SpecGroup's keys array
+  if (!SingleSpec.safeParse(data).success) return { error: 'Invalid Data!' };
+
+  try {
+    // Get current spec group
+    const specGroup = await db.specGroup.findUnique({
+      where: { id: data.specGroupID },
+      select: { keys: true },
+    });
+
+    if (!specGroup) return { error: 'SpecGroup Not Found!' };
+
+    // Check if key exists
+    if (!specGroup.keys.includes(data.key)) {
+      return { error: 'Key Not Found!' };
+    }
+
+    // Remove key from array
+    const updatedKeys = specGroup.keys.filter((k) => k !== data.key);
 
     const result = await db.specGroup.update({
-      where: {
-        id: data.specGroupID,
-      },
+      where: { id: data.specGroupID },
       data: {
-        specs: {
-          set: filteredList,
-        },
+        keys: updatedKeys,
       },
     });
+
     if (!result) return { error: "Can't Delete!" };
     return { res: result };
   } catch (error) {

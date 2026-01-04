@@ -30,7 +30,17 @@ export async function getAdminDashboard() {
     const revenue = totalRevenue.toFixed(2);
     const products = await Prisma.product.count();
 
-    const dashboardData = { orders, products, revenue, allOrders };
+    // Convert all decimals to Numbers (specifically for revenue and allOrders.totalAmount)
+    const allOrdersNumbered = allOrders.map((order) => ({
+      ...order,
+      totalAmount: Number(order.totalAmount),
+    }));
+    const dashboardData = {
+      orders,
+      products,
+      revenue: Number(revenue),
+      allOrders: allOrdersNumbered,
+    };
 
     return {
       success: true,
@@ -120,10 +130,10 @@ export async function getStoreDashboard() {
 
     const dashboard = {
       ratings,
-      totalOrders: orders.length,
-      totalEarnings: Math.round(orders.reduce((acc, order) => acc + +order.totalAmount, 0)),
-      totalProducts: product.length,
-      totalRatings: ratings.length,
+      totalOrders: Number(orders.length),
+      totalEarnings: Math.round(orders.reduce((acc, order) => acc + Number(order.totalAmount), 0)),
+      totalProducts: Number(product.length),
+      totalRatings: Number(ratings.length),
     };
 
     return {

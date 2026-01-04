@@ -110,6 +110,30 @@ export const getAllCategories = async (catId: string) => {
     return { error: 'Cant read Category Groups' };
   }
 };
+
+export const getAllCategoriesFlat = async () => {
+  try {
+    const result = await db.category.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        parentId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!result) return { error: "Can't read categories" };
+    return { res: result as (Category & { parentId?: string | null })[] };
+  } catch {
+    return { error: 'Cant read Category Groups' };
+  }
+};
 // export const getAllCategoriesJSON = async () => {
 //   try {
 //     const session = await authUser();
@@ -127,7 +151,10 @@ export const addCategory = async (data: TAddCategory) => {
   if (!AddCategory.safeParse(data).success) return { error: 'Invalid Data!' };
   try {
     const session = await authAdmin();
-    if ((session as { error: string }).error) return session;
+    if ((session as { error: string }).error)
+      return {
+        session,
+      };
     const slug = await generateCategorySlug(data.name);
     const result = await db.category.create({
       data: {

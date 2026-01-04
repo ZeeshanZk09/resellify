@@ -1,18 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 import {
+  GetSpecGroupByCatID,
   getOptionSetByCatID,
   getSpecGroupByCatID,
-} from "@/actions/category/categoryOptions";
-import { TOptionSet, TSpecGroup } from "@/shared/types/common";
-import { cn } from "@/shared/utils/styling";
+} from '@/actions/category/categoryOptions';
+import { cn } from '@/shared/utils/styling';
 
-import AddOption from "./AddOption";
-import AddSpecGroup from "./addSpecGroup";
-import OptionSet from "./optionSet";
-import SpecGroup from "./specGroup";
+import AddOption from './AddOption';
+import AddSpecGroup from './addSpecGroup';
+import OptionSet from './optionSet';
+import SpecGroup from './specGroup';
+import { OptionType } from '@/shared/lib/generated/prisma/enums';
 
 type TProps = {
   categoryName: string;
@@ -21,8 +22,22 @@ type TProps = {
 
 const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
   const [isOption, setIsOption] = useState(true);
-  const [optionSetList, setOptionSetList] = useState<TOptionSet[]>([]);
-  const [specGroupList, setSpecGroupList] = useState<TSpecGroup[]>([]);
+  const [optionSetList, setOptionSetList] = useState<
+    ({
+      options: {
+        id: string;
+        name: string;
+        optionSetId: string;
+        value: string | null;
+        position: number | null;
+      }[];
+    } & {
+      id: string;
+      name: string;
+      type: OptionType;
+    })[]
+  >([]);
+  const [specGroupList, setSpecGroupList] = useState<GetSpecGroupByCatID>([]);
 
   const getCategoryOptionSet = async () => {
     if (categoryID) {
@@ -35,9 +50,9 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
 
   const getCategorySpecGroup = async () => {
     if (categoryID) {
-      const response = await getSpecGroupByCatID(categoryID);
-      if (response.res) {
-        setSpecGroupList(response.res);
+      const { res } = await getSpecGroupByCatID(categoryID);
+      if (res) {
+        setSpecGroupList(res);
       }
     }
   };
@@ -66,18 +81,16 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
   };
 
   return (
-    <div className="relative flex h-[500px] flex-col bg-white z-10 text-sm">
-      <div className="flex items-center justify-between text-gray-800">
-        <h2 className="flex-grow text-base h-full pt-1.5 border-b border-gray-300">
-          {categoryName}
-        </h2>
-        <div className="flex text-sm">
+    <div className='relative flex h-[500px] flex-col bg-white z-10 text-sm'>
+      <div className='flex items-center justify-between text-gray-800'>
+        <h2 className='grow text-base h-full pt-1.5 border-b border-gray-300'>{categoryName}</h2>
+        <div className='flex text-sm'>
           <h3
             className={cn(
-              " rounded-t-md px-4 py-3 transition-colors duration-300 border-b",
+              ' rounded-t-md px-4 py-3 transition-colors duration-300 border-b',
               isOption
-                ? "cursor-default text-gray-900 border-b-2 border-blue-500 hover:bg-white"
-                : "cursor-pointer text-gray-500 border-gray-300 hover:bg-gray-100"
+                ? 'cursor-default text-gray-900 border-b-2 border-blue-500 hover:bg-white'
+                : 'cursor-pointer text-gray-500 border-gray-300 hover:bg-gray-100'
             )}
             onClick={() => setIsOption(true)}
           >
@@ -85,10 +98,10 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
           </h3>
           <h3
             className={cn(
-              "rounded-t-md px-4 py-3 transition-colors duration-300 border-b",
+              'rounded-t-md px-4 py-3 transition-colors duration-300 border-b',
               !isOption
-                ? "cursor-default text-gray-900 border-b-2 border-blue-500 hover:bg-white"
-                : "cursor-pointer text-gray-500 border-gray-300 hover:bg-gray-100"
+                ? 'cursor-default text-gray-900 border-b-2 border-blue-500 hover:bg-white'
+                : 'cursor-pointer text-gray-500 border-gray-300 hover:bg-gray-100'
             )}
             onClick={() => setIsOption(false)}
           >
@@ -99,12 +112,9 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
 
       {isOption ? (
         // ------------------ OPTIONS SECTION ------------------
-        <div className="flex flex-col h-full overflow-hidden">
-          <AddOption
-            categoryOptionId={categoryID}
-            reloadRequest={handleReloadOptions}
-          />
-          <div className="flex flex-col gap-4 h-full overflow-y-scroll p-3">
+        <div className='flex flex-col h-full overflow-hidden'>
+          <AddOption categoryId={categoryID} reloadRequest={handleReloadOptions} />
+          <div className='flex flex-col gap-4 h-full overflow-y-scroll p-3'>
             {optionSetList.length ? (
               <>
                 {optionSetList.map((optionSet) => (
@@ -116,8 +126,8 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
                 ))}
               </>
             ) : (
-              <div className="mt-10 flex flex-col items-center justify-center">
-                <span className="text-center mb-[30px] w-[300px]">
+              <div className='mt-10 flex flex-col items-center justify-center'>
+                <span className='text-center mb-[30px] w-[300px]'>
                   There is no Options for this category
                 </span>
               </div>
@@ -126,13 +136,10 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
         </div>
       ) : (
         // ------------------ SPECIFICATION SECTION ------------------
-        <div className="flex flex-col h-full overflow-hidden">
-          <AddSpecGroup
-            categorySpecGroupID={categoryID}
-            reloadRequest={handleReloadSpecs}
-          />
-          <div className="flex flex-col gap-4 h-full overflow-y-scroll p-3">
-            {specGroupList.length > 0 ? (
+        <div className='flex flex-col h-full overflow-hidden'>
+          <AddSpecGroup categorySpecGroupID={categoryID} reloadRequest={handleReloadSpecs} />
+          <div className='flex flex-col gap-4 h-full overflow-y-scroll p-3'>
+            {specGroupList && specGroupList?.length! > 0 ? (
               <>
                 {specGroupList.map((specGroup) => (
                   <SpecGroup
@@ -143,8 +150,8 @@ const CategoryOptions = ({ categoryName, categoryID }: TProps) => {
                 ))}
               </>
             ) : (
-              <div className="mt-10 flex flex-col items-center justify-center">
-                <span className="text-center mb-[30px] w-[300px]">
+              <div className='mt-10 flex flex-col items-center justify-center'>
+                <span className='text-center mb-[30px] w-[300px]'>
                   There is no Specification for this category
                 </span>
               </div>
