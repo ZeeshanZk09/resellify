@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, Loader } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
@@ -12,6 +12,7 @@ export default function MyOrders() {
   const [orders, setOrders] = useState<GetMyOrders>();
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const printRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     // Fetch user orders from API
@@ -29,6 +30,83 @@ export default function MyOrders() {
     }
     fetchOrders();
   }, []);
+
+  // Export order receipt as print
+  const handleExportOrder = (orderId: string) => {
+    const printContents = printRefs.current[orderId]?.innerHTML;
+    const printWindow = window.open('', '_blank', 'width=800,height=900');
+    if (printWindow && printContents) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Order Receipt</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                padding: 40px 20px;
+                background: #fafbfc;
+              }
+              .receipt-title {
+                font-size: 1.5rem;
+                font-weight: bold;
+                margin-bottom: 18px;
+                color: #16a34a;
+              }
+              .receipt-container {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 24px 16px;
+                margin: 0 auto;
+                max-width: 700px;
+                box-shadow: 0 2px 12px #0000000b;
+                color: #222;
+              }
+              .receipt-section {
+                margin-bottom: 18px;
+              }
+              .receipt-summary {
+                margin-top: 18px;
+                border-top: 1px solid #eee;
+                padding-top: 12px;
+                font-size: 1rem;
+              }
+              .receipt-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+              }
+              .receipt-table th, .receipt-table td {
+                border: 1px solid #e5e7eb;
+                padding: 8px 10px;
+                text-align: left;
+              }
+              .receipt-table th {
+                background: #f3f4f6;
+                font-weight: 600;
+              }
+              .right {
+                text-align: right;
+              }
+              .green { color: #22c55e !important;font-weight: 700;}
+              .gray { color: #555;}
+              .borderd {border-top: 1px solid #e5e7eb;}
+            </style>
+          </head>
+          <body>
+            ${printContents}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      // Print after DOM loaded
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  };
 
   if (loading) {
     return (
@@ -101,6 +179,89 @@ export default function MyOrders() {
             key={order.id}
             className='bg-white shadow rounded-lg p-3 sm:p-5 border border-gray-100 flex flex-col gap-2'
           >
+            {/* --- hidden receipt: This will be printed --- */}
+            <div
+              style={{ display: 'none' }}
+              ref={(el) => {
+                printRefs.current[order.id] = el!;
+              }}
+            >
+              <div className='receipt-container'>
+                <div className='receipt-title'>Order Receipt</div>
+                <div className='receipt-section'>
+                  <div>
+                    <span className='gray'>Order #</span> <b>{order.orderNumber}</b>
+                  </div>
+                  <div>
+                    <span className='gray'>Status:</span>{' '}
+                    <span className='green'>{order.status}</span>
+                  </div>
+                  <div>
+                    <span className='gray'>Placed At:</span>
+                    <span>
+                      {' '}
+                      {order?.placedAt
+                        ? new Date(order.placedAt)
+                            .toLocaleString('en-CA', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                              hour12: false,
+                            })
+                            .replace(',', '')
+                            .replace(/\//g, '-')
+                        : ''}
+                    </span>
+                  </div>
+                </div>
+                <div className='receipt-section'>
+                  <table className='receipt-table'>
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Variant</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Line Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {order?.items?.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.product.title}</td>
+                          <td>{item.variant?.title || '-'}</td>
+                          <td className='right'>{item.quantity}</td>
+                          <td className='right'>PKR {item.price?.toLocaleString()}</td>
+                          <td className='right'>PKR {item.lineTotal?.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className='receipt-summary'>
+                  <div>
+                    <span className='gray'>Payment:</span> <b>{order.paymentMethod}</b>
+                  </div>
+                  <div>
+                    <span className='gray'>Order Total:</span>{' '}
+                    <b className='green'>PKR {order.totalAmount?.toLocaleString()}</b>
+                  </div>
+                  <div>
+                    <span className='gray'>Shipping Fee:</span>{' '}
+                    <b>PKR {order.shippingFee?.toLocaleString()}</b>
+                  </div>
+                  <div>
+                    <span className='gray'>You Saved:</span>{' '}
+                    <b className='green'>PKR {order.discountAmount?.toLocaleString()}</b>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* --- end hidden receipt content --- */}
+
             <div className='flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-2 mb-2 sm:mb-3'>
               <div className='text-primary font-semibold text-sm break-all'>
                 #{order.orderNumber}
@@ -166,9 +327,7 @@ export default function MyOrders() {
                         </span>
                       )}
                     </div>
-                    {item.sku && (
-                      <div className='text-xs text-gray-400 mt-0.5 sm:mt-0'>SKU: {item.sku}</div>
-                    )}
+
                     <div className='text-xs text-gray-500 mt-1'>
                       Quantity: <span className='font-semibold'>{item.quantity}</span>
                     </div>
@@ -211,9 +370,9 @@ export default function MyOrders() {
                 size='sm'
                 variant='outline'
                 className='w-full sm:w-auto'
-                onClick={() => router.push(`/order/${order.id}`)}
+                onClick={() => handleExportOrder(order.id)}
               >
-                View Details
+                Export
               </Button>
               {/* <Button size="sm" variant="ghost">Track</Button> */}
             </div>

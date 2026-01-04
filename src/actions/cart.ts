@@ -147,9 +147,26 @@ export async function updateCartItem(
  * Remove item from cart by cartItemId
  */
 export async function removeItemFromCart(cartItemId: string) {
-  return await prisma.cartItem.delete({
-    where: { id: cartItemId },
-  });
+  try {
+    const session = await auth();
+    if (!session?.user.id)
+      return {
+        success: false,
+        message: 'Unauthorized',
+      };
+    await prisma.cartItem.delete({
+      where: { id: cartItemId },
+    });
+    return {
+      success: true,
+      message: 'Cart item deleted successfully.',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Failed to remove item.',
+    };
+  }
 }
 
 /**

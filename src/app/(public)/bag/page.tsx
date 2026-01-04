@@ -1,9 +1,9 @@
 'use client';
-import { GetCartItems, getCartItems } from '@/actions/cart';
+import { GetCartItems, getCartItems, removeItemFromCart } from '@/actions/cart';
 import { ShoppingBag, Trash } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function MyBag() {
@@ -12,35 +12,24 @@ export default function MyBag() {
   const [cartItemsCount, setCartItemsCount] = useState<number>(0);
   const [productLoading, setProductLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    getCartItems()
-      .then((res) => {
-        console.log(res);
-        const isSameProductIds = res?.cartItems?.every(
-          (item) => item.productId === res?.cartItems[0].productId
-        );
-        if (isSameProductIds) {
-          setCartItems([res?.cartItems[0]]);
-          setCartItemsCount(res?.cartItems.length || 0);
-        } else {
-          setCartItems(res?.cartItems || []);
-          setCartItemsCount(
-            res?.cartItems?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0
-          );
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error(err);
-      })
-      .finally(() => {
-        setProductLoading(false);
-      });
+  const fetchCartItems = useCallback(async () => {
+    setProductLoading(true);
+    const res = await getCartItems();
+    setCartItems(res?.cartItems || []);
+    setCartItemsCount(res?.cartItems?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0);
+    setProductLoading(false);
   }, []);
 
-  const handleDeleteItem = (id: string) => {
-    // Handle delete logic here
-    console.log('Delete item:', id);
+  useEffect(() => {
+    fetchCartItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleDeleteItem = async (id: string) => {
+    setProductLoading(true);
+    await removeItemFromCart(id);
+    await fetchCartItems();
+    setProductLoading(false);
   };
 
   const renderStars = (rating: number) => {
