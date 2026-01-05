@@ -519,7 +519,7 @@ export default function AddProductForm({
       </Card>
 
       {/* Inventory Card */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Inventory</CardTitle>
         </CardHeader>
@@ -558,7 +558,7 @@ export default function AddProductForm({
             </p>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Status Card */}
       {/* <Card>

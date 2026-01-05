@@ -1,10 +1,10 @@
-import prisma from '../prisma';
-import { Decimal, InputJsonValue } from '@prisma/client/runtime/client';
-import { TwitterCard, Upload } from '../generated/prisma/client';
+import prisma from "../prisma";
+import { Decimal, InputJsonValue } from "@prisma/client/runtime/client";
+import { TwitterCard, Upload } from "../generated/prisma/client";
 import {
   DecimalJsLike,
   NullableJsonNullValueInput,
-} from '../generated/prisma/internal/prismaNamespace';
+} from "../generated/prisma/internal/prismaNamespace";
 
 function generateProductStructuredData(
   product: {
@@ -24,26 +24,29 @@ function generateProductStructuredData(
   } & { images?: Upload[] }
 ) {
   return {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
+    "@context": "https://schema.org",
+    "@type": "Product",
     name: product.metaTitle || product.title,
-    description: product.metaDescription || product.shortDescription || product.description,
+    description:
+      product.metaDescription ||
+      product.shortDescription ||
+      product.description,
     image: product.images?.map((img) => img.path) || [],
     sku: product.sku,
     url: product.canonicalUrl,
     offers: {
-      '@type': 'Offer',
-      priceCurrency: product.currency || 'PKR',
-      price: product.price?.toString() || '0',
+      "@type": "Offer",
+      priceCurrency: product.currency || "PKR",
+      price: product.price?.toString() || "0",
       availability:
-        product.status === 'PUBLISHED' && product.visibility === 'PUBLIC'
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
+        product.status === "PUBLISHED" && product.visibility === "PUBLIC"
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
     },
     aggregateRating: product.reviewCount
       ? {
-          '@type': 'AggregateRating',
-          ratingValue: product.averageRating?.toFixed(1) || '0',
+          "@type": "AggregateRating",
+          ratingValue: product.averageRating?.toFixed(1) || "0",
           reviewCount: product.reviewCount,
         }
       : undefined,
@@ -77,7 +80,7 @@ function generateProductMetadata(
     ogDescription: product.shortDescription,
     ogImageId: imageId,
     ogTitle: product.title,
-    twitterCard: 'SUMMARY',
+    twitterCard: "SUMMARY",
   };
 }
 
@@ -89,13 +92,15 @@ type ValidationError<T> = {
 /**
  * Validate required fields of any object
  */
-function validateRequiredFields<T extends Record<string, unknown>>(data: T): ValidationError<T> {
+function validateRequiredFields<T extends Record<string, unknown>>(
+  data: T
+): ValidationError<T> {
   for (const field of Object.keys(data) as Array<keyof T>) {
     const value = data[field];
     if (
       value === undefined ||
       value === null ||
-      (typeof value === 'string' && value.trim() === '') ||
+      (typeof value === "string" && value.trim() === "") ||
       (Array.isArray(value) && value.length === 0)
     ) {
       return {
@@ -107,4 +112,54 @@ function validateRequiredFields<T extends Record<string, unknown>>(data: T): Val
   return null;
 }
 
-export { generateProductStructuredData, generateProductMetadata, validateRequiredFields };
+export type Option = { id: string; name: string };
+export type OptionSet = { id: string; options: Option[] };
+
+export function generateAllCombinations(
+  optionSets: OptionSet[]
+): Array<{ optionSetId: string; optionId: string; optionName: string }[]> {
+  if (!optionSets || optionSets.length === 0) return [];
+
+  const combinations: Array<
+    { optionSetId: string; optionId: string; optionName: string }[]
+  > = [];
+
+  function generate(
+    current: { optionSetId: string; optionId: string; optionName: string }[],
+    depth: number
+  ): void {
+    if (depth === optionSets.length) {
+      combinations.push([...current]);
+      return;
+    }
+
+    const currentSet = optionSets[depth];
+    for (const option of currentSet.options) {
+      current.push({
+        optionSetId: currentSet.id,
+        optionId: option.id,
+        optionName: option.name,
+      });
+      generate(current, depth + 1);
+      current.pop();
+    }
+  }
+
+  generate([], 0);
+  return combinations;
+}
+
+export function calculateVariantCount(optionSets: OptionSet[]): number {
+  if (!optionSets || optionSets.length === 0) return 0;
+
+  return optionSets.reduce((total, set) => {
+    const optionCount = set.options?.length || 0;
+    return total * (optionCount > 0 ? optionCount : 1);
+  }, 1);
+}
+
+export {
+  generateProductStructuredData,
+  generateProductMetadata,
+  validateRequiredFields,
+};

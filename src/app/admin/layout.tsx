@@ -1,35 +1,30 @@
-import { auth } from '@/auth';
-import AdminNavbar from '@/shared/components/admin/AdminNavbar';
-import AdminSidebar from '@/shared/components/admin/AdminSidebar';
-import { redirect } from 'next/navigation';
+import { auth } from "@/auth";
+import AdminNavbar from "@/shared/components/admin/AdminNavbar";
+import AdminSidebar from "@/shared/components/admin/AdminSidebar";
+import { redirect } from "next/navigation";
 
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
-export default async function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const session = await auth();
-  console.log('session in admin route:', session);
-  if (!session || session.user.role !== 'ADMIN') {
-    redirect('/dashboard');
+  console.log("session in admin route:", session);
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/dashboard");
   }
 
   return (
-    <div className='w-full relative flex flex-col min-h-screen overflow-hidden'>
+    <div className="w-full relative flex flex-col min-h-screen overflow-hidden">
       <AdminNavbar name={session?.user?.name!} />
-      <div
-        className='w-full flex flex-1 items-start h-full '
-        //   overflow-y-scroll no-scrollbar
-        //   [&::-webkit-scrollbar]:w-1
-        //   [&::-webkit-scrollbar-track]:bg-gray-100
-        //   [&::-webkit-scrollbar-thumb]:bg-gray-300
-      >
-        <AdminSidebar />
-        <div
-          className='w-full flex-1 h-full p-5 lg:pl-12 lg:pt-20 border-l border-foreground/05 '
-          //   overflow-y-scroll [&::-webkit-scrollbar]:w-1
-          //   [&::-webkit-scrollbar-track]:bg-gray-100
-          //   [&::-webkit-scrollbar-thumb]:bg-gray-300
-        >
-          {children}
+      <div className="w-full flex flex-1 items-start h-full">
+        <div className="flex justify-between flex-1 h-full">
+          <AdminSidebar />
+          <div className="relative left-12 max-w-[94vw] w-full p-6 border-l border-foreground/05">
+            {children}
+          </div>
         </div>
       </div>
     </div>

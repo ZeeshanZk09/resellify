@@ -11,52 +11,45 @@ export type GetFavProduct = Awaited<ReturnType<typeof getFavProduct>>["fav"];
 async function toggleFavProduct(productId: string, status: boolean) {
   try {
     const session = await auth();
-    const userId = session?.user.id!;
+    const userId = session?.user.id;
+
+    console.log("[toggleFavProduct] session.user.id:", userId);
+    console.log("[toggleFavProduct] productId:", productId, "status:", status);
 
     if (!userId)
       return {
         error: "Unauthorized",
       };
 
-    let fav = await prisma.favourite.findUnique({
+    await prisma.favourite.upsert({
       where: {
+        OR: [
+          {
+            userId,
+          },
+          { productId },
+        ],
         userId_productId: {
           userId,
           productId,
         },
       },
+      update: {
+        isFav: status,
+      },
+      create: {
+        userId,
+        productId,
+        isFav: status,
+      },
     });
 
-    if (!fav) {
-      fav = await prisma.favourite.create({
-        data: {
-          userId: userId,
-          productId,
-          isFav: status,
-        },
-      });
-    } else {
-      fav = await prisma.favourite.update({
-        where: {
-          userId_productId: {
-            userId,
-            productId,
-          },
-        },
-        data: {
-          isFav: status,
-        },
-      });
-    }
-
     return {
-      fav: fav.isFav,
       success: true,
     };
   } catch (error) {
-    console.log(error);
+    console.log("[toggleFavProduct] error:", error);
     return {
-      fav: false,
       error: "Failed to favourite product.",
       success: false,
     };
@@ -68,36 +61,48 @@ async function getFavProduct(productId: string) {
     const session = await auth();
     const userId = session?.user.id!;
 
+    console.log("[getFavProduct] session.user.id:", userId);
+    console.log("[getFavProduct] productId:", productId);
+
     if (!userId)
       return {
         error: "Unauthorized",
       };
 
-    console.log("getFavProduct", productId);
+    console.log(
+      "[getFavProduct] fetching favourite for userId:",
+      userId,
+      "productId:",
+      productId
+    );
     const fav = await prisma.favourite.findUnique({
       where: {
-        productId,
-        isFav: true,
+        userId_productId: {
+          userId,
+          productId,
+        },
       },
       include: {
         product: true,
       },
     });
-    console.log("fav", fav);
+    console.log("[getFavProduct] found favourite:", fav);
 
     if (!fav) {
+      console.log("[getFavProduct] no favourite found, returning fav: false");
       return {
         fav: false,
         success: true,
       };
     }
+    console.log("[getFavProduct] returning favourite product");
     return {
       favProduct: fav,
       fav: fav?.isFav!,
       success: true,
     };
   } catch (error) {
-    console.log(error);
+    console.log("[getFavProduct] error:", error);
     return {
       fav: false,
       error: "No product found",

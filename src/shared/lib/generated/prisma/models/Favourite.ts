@@ -198,17 +198,17 @@ export type FavouriteOrderByWithRelationInput = {
 
 export type FavouriteWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  productId?: string
   userId_productId?: Prisma.FavouriteUserIdProductIdCompoundUniqueInput
   AND?: Prisma.FavouriteWhereInput | Prisma.FavouriteWhereInput[]
   OR?: Prisma.FavouriteWhereInput[]
   NOT?: Prisma.FavouriteWhereInput | Prisma.FavouriteWhereInput[]
   userId?: Prisma.StringFilter<"Favourite"> | string
+  productId?: Prisma.StringFilter<"Favourite"> | string
   isFav?: Prisma.BoolFilter<"Favourite"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Favourite"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
-}, "id" | "productId" | "userId_productId">
+}, "id" | "userId_productId">
 
 export type FavouriteOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

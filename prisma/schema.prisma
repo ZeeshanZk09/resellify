@@ -190,7 +190,7 @@ model Address {
 model Favourite {
     id        String   @id @default(cuid())
     userId    String
-    productId String   @unique
+    productId String   
     isFav     Boolean  @default(true)
     createdAt DateTime @default(now())
 
