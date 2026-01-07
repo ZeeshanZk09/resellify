@@ -95,3 +95,26 @@ export const getCategorySpecs = async (categoryID: string) => {
     return { error: JSON.stringify(error) };
   }
 };
+
+
+export type GetSpecGroups = Awaited<
+  ReturnType<typeof getSpecGroups>
+>["res"];
+export const getSpecGroups = async () => {
+  try {
+    const groups = await db.specGroup.findMany({
+      select: {
+        id: true,
+        title: true,
+        keys: true,
+      },
+      orderBy: {  
+        title: 'asc',
+      },
+    });
+    if (!groups || groups.length === 0) return { error: 'Not Found!' };
+    return { res: groups };
+  } catch (error) {
+    return { error: JSON.stringify(error) };
+  }
+};

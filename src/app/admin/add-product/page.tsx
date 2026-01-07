@@ -38,9 +38,9 @@
 // }
 
 // ProductCreationWizard.jsx
-import React, { useState, useEffect } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+
 import {
   Box,
   Stepper,
@@ -51,69 +51,89 @@ import {
   Typography,
   CircularProgress,
   Alert,
-  Snackbar
-} from '@mui/material';
-import CategoryStep from './_components/CategoryStep';
-import OptionSetsStep from './_components/OptionSetsStep';
-import BasicInfoStep from './_components/BasicInformationForm';
-import SpecificationsStep from './_components/SpecificationsStep';
-import VariantsStep from './_components/VariantsStep';
-import ReviewStep from './_components/ReviewStep';
+  Snackbar,
+} from "@mui/material";
+import CategoryStep from "./_components/CategoryStep";
+import OptionSetsStep from "./_components/OptionSetsStep";
+import BasicInfoStep from "./_components/BasicInformationForm";
+import SpecificationsStep from "./_components/SpecificationsStep";
+import VariantsStep from "./_components/VariantsStep";
+import ReviewStep from "./_components/ReviewStep";
+import { GetCategoryTree, getCategoryTree } from "@/actions/category/category";
+import {
+  GetCategoryOptionSets,
+  getCategoryOptionSets,
+} from "@/actions/category/categoryOptions";
+import {
+  GetSpecGroups,
+  getSpecGroups,
+} from "@/actions/category/specifications";
+import {
+  addProduct,
+  AddProductInput,
+  addProductSpecs,
+  addProductVariants,
+} from "@/actions/product/product";
+import { uploadImage } from "@/actions/product/product-image";
 
 const steps = [
-  'Category Selection',
-  'Option Sets',
-  'Basic Information',
-  'Specifications',
-  'Variants',
-  'Review & Create'
+  "Category Selection",
+  "Option Sets",
+  "Basic Information",
+  "Specifications",
+  "Variants",
+  "Review & Create",
 ];
 
 export default function ProductCreationWizard() {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [preloadedData, setPreloadedData] = useState({
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [preloadedData, setPreloadedData] = useState<{
+    categories: GetCategoryTree;
+    optionSets: GetCategoryOptionSets;
+    specGroups: GetSpecGroups;
+  }>({
     categories: [],
     optionSets: [],
-    specGroups: []
+    specGroups: [],
   });
 
   const methods = useForm({
     defaultValues: {
       // Step 1: Category
       selectedCategoryIds: [],
-      
+
       // Step 2: Option Sets
       selectedOptionSets: [],
-      
+
       // Step 3: Basic Info
-      title: '',
-      slug: '',
-      sku: '',
-      basePrice: '',
-      salePrice: '',
-      shortDescription: '',
-      longDescription: '',
-      status: 'DRAFT',
-      visibility: 'UNLISTED',
+      title: "",
+      slug: "",
+      sku: "",
+      basePrice: "",
+      salePrice: "",
+      shortDescription: "",
+      longDescription: "",
+      status: "DRAFT",
+      visibility: "UNLISTED",
       images: [],
       inventory: 0,
       lowStockThreshold: 5,
-      
+
       // Step 4: Specifications
       specifications: [],
-      
+
       // Step 5: Variants
       variants: [],
-      variantGenerationMethod: 'matrix', // 'matrix' or 'manual'
-      
+      variantGenerationMethod: "matrix", // 'matrix' or 'manual'
+
       // SEO
-      metaTitle: '',
-      metaDescription: '',
-      canonicalUrl: ''
-    }
+      metaTitle: "",
+      metaDescription: "",
+      canonicalUrl: "",
+    },
   });
 
   // Load pre-requisite data
@@ -125,18 +145,18 @@ export default function ProductCreationWizard() {
     try {
       setLoading(true);
       const [categoriesRes, optionSetsRes, specGroupsRes] = await Promise.all([
-        axios.get('/api/categories/tree'),
-        axios.get('/api/option-sets'),
-        axios.get('/api/spec-groups')
+        await getCategoryTree(),
+        await getCategoryOptionSets(),
+        await getSpecGroups(),
       ]);
-      
+
       setPreloadedData({
-        categories: categoriesRes.data,
-        optionSets: optionSetsRes.data,
-        specGroups: specGroupsRes.data
+        categories: categoriesRes.res,
+        optionSets: optionSetsRes.res,
+        specGroups: specGroupsRes.res,
       });
     } catch (err) {
-      setError('Failed to load required data');
+      setError("Failed to load required data");
     } finally {
       setLoading(false);
     }
@@ -154,60 +174,88 @@ export default function ProductCreationWizard() {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (
+    data: AddProductInput & {
+      images: { file: File }[];
+      selectedCategoryIds: string[];
+      selectedOptionSets: string[];
+      specifications: { groupId: string; value: string }[];
+      variants: { optionSetId: string; price: number; stock: number }[];
+    }
+  ) => {
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       // Step 1: Create basic product
-      const productRes = await axios.post('/api/products', {
+      const productRes = await addProduct({
         title: data.title,
-        categoryIds: data.selectedCategoryIds,
-        basePrice: parseFloat(data.basePrice),
-        salePrice: data.salePrice ? parseFloat(data.salePrice) : null,
+
+        basePrice: Number(data.basePrice),
+
+        salePrice: data.salePrice ? Number(data.salePrice) : null,
         slug: data.slug,
         sku: data.sku,
         shortDescription: data.shortDescription,
-        description: data.longDescription,
+        description: data.description,
         status: data.status,
         visibility: data.visibility,
-        inventory: parseInt(data.inventory),
-        lowStockThreshold: parseInt(data.lowStockThreshold),
+        inventory: data.inventory,
+        lowStockThreshold: data.lowStockThreshold,
         metaTitle: data.metaTitle,
         metaDescription: data.metaDescription,
-        canonicalUrl: data.canonicalUrl
+        canonicalUrl: data.canonicalUrl,
       });
 
-      const productId = productRes.data.id;
+      const productId = productRes.data?.id;
 
       // Step 2: Upload images
       if (data.images.length > 0) {
         await Promise.all(
           data.images.map(async (image: { file: File }) => {
             const formData = new FormData();
-            formData.append('file', image.file);
-            formData.append('productId', productId);
-            return axios.post('/api/uploads', formData);
+            formData.append("file", image.file);
+            formData.append("productId", productId!);
+            await uploadImage(
+              {
+                productId: productId!,
+                type: "PRODUCT",
+              },
+              formData.get("file") as File
+            );
           })
         );
       }
 
       // Step 3: Add specifications
       if (data.specifications.length > 0) {
-        await axios.post(`/api/products/${productId}/specs`, data.specifications);
+        await addProductSpecs(
+          productId!,
+          data.specifications.map((spec) => ({
+            groupTitle: spec.groupId,
+            keys: [spec.groupId],
+            values: [spec.value],
+          }))
+        );
       }
 
       // Step 4: Create variants
       if (data.variants.length > 0) {
-        await axios.post(`/api/products/${productId}/variants`, data.variants);
+        await addProductVariants(
+          productId!,
+          data.variants.map((variant) => ({
+            optionSetId: variant.optionSetId,
+            price: variant.price,
+            stock: variant.stock,
+          }))
+        );
       }
 
-      setSuccess('Product created successfully!');
+      setSuccess("Product created successfully!");
       methods.reset();
       setActiveStep(0);
-      
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create product');
+      setError(err.response?.data?.message || "Failed to create product");
     } finally {
       setLoading(false);
     }
@@ -216,25 +264,29 @@ export default function ProductCreationWizard() {
   const renderStep = (step: number) => {
     switch (step) {
       case 0:
-        return <CategoryStep 
-          categories={preloadedData.categories} 
-          loading={loading}
-        />;
+        return (
+          <CategoryStep
+            categories={preloadedData.categories!}
+            loading={loading}
+          />
+        );
       case 1:
-        return <OptionSetsStep 
-          optionSets={preloadedData.optionSets}
-          selectedCategoryIds={methods.watch('selectedCategoryIds')}
-        />;
+        return (
+          <OptionSetsStep
+            optionSets={preloadedData.optionSets!}
+            selectedCategoryIds={methods.watch("selectedCategoryIds")}
+          />
+        );
       case 2:
         return <BasicInfoStep />;
       case 3:
-        return <SpecificationsStep 
-          specGroups={preloadedData.specGroups}
-        />;
+        return <SpecificationsStep specGroups={preloadedData.specGroups!} />;
       case 4:
-        return <VariantsStep 
-          selectedOptionSets={methods.watch('selectedOptionSets')}
-        />;
+        return (
+          <VariantsStep
+            selectedOptionSets={methods.watch("selectedOptionSets")}
+          />
+        );
       case 5:
         return <ReviewStep />;
       default:
@@ -244,7 +296,7 @@ export default function ProductCreationWizard() {
 
   return (
     <FormProvider {...methods}>
-      <Box sx={{ maxWidth: 1200, margin: 'auto', p: 3 }}>
+      <Box sx={{ maxWidth: 1200, margin: "auto", p: 3 }}>
         <Typography variant="h4" gutterBottom>
           Create New Product
         </Typography>
@@ -258,10 +310,17 @@ export default function ProductCreationWizard() {
         </Stepper>
 
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-          <form onSubmit={methods.handleSubmit(handleSubmit)}>
+          <form onSubmit={methods.handleSubmit((data) => handleSubmit({
+            ...data,
+            images: data.images.map((image) => ({ file: image.file })),
+            basePrice: Number(data.basePrice),
+            salePrice: data.salePrice ? Number(data.salePrice) : null,
+          } ))}>
             {renderStep(activeStep)}
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
+            >
               <Button
                 disabled={activeStep === 0}
                 onClick={handleBack}
@@ -278,7 +337,7 @@ export default function ProductCreationWizard() {
                   disabled={loading}
                   startIcon={loading && <CircularProgress size={20} />}
                 >
-                  {loading ? 'Creating...' : 'Create Product'}
+                  {loading ? "Creating..." : "Create Product"}
                 </Button>
               ) : (
                 <Button
@@ -293,22 +352,22 @@ export default function ProductCreationWizard() {
           </form>
         </Paper>
 
-        <Snackbar 
-          open={!!error} 
+        <Snackbar
+          open={!!error}
           autoHideDuration={6000}
-          onClose={() => setError('')}
+          onClose={() => setError("")}
         >
-          <Alert severity="error" onClose={() => setError('')}>
+          <Alert severity="error" onClose={() => setError("")}>
             {error}
           </Alert>
         </Snackbar>
 
-        <Snackbar 
-          open={!!success} 
+        <Snackbar
+          open={!!success}
           autoHideDuration={6000}
-          onClose={() => setSuccess('')}
+          onClose={() => setSuccess("")}
         >
-          <Alert severity="success" onClose={() => setSuccess('')}>
+          <Alert severity="success" onClose={() => setSuccess("")}>
             {success}
           </Alert>
         </Snackbar>

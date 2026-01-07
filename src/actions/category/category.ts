@@ -1,10 +1,10 @@
-'use server';
-import { z } from 'zod';
-import { Category } from '@/shared/lib/generated/prisma/client';
-import db from '@/shared/lib/prisma';
-import { TCategory } from '@/shared/types/categories';
-import { generateCategorySlug } from '@/shared/lib/utils/category';
-import { authAdmin, authUser } from '@/shared/lib/utils/auth';
+"use server";
+import { z } from "zod";
+import { Category } from "@/shared/lib/generated/prisma/client";
+import db from "@/shared/lib/prisma";
+import { TCategory } from "@/shared/types/categories";
+import { generateCategorySlug } from "@/shared/lib/utils/category";
+import { authAdmin, authUser } from "@/shared/lib/utils/auth";
 
 //eslint-disable-next-line
 const GetAllCategories = z.object({
@@ -44,14 +44,14 @@ export const getCategories = async () => {
         parentId: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     if (!result) return { error: "Can't read categories" };
     return { res: result as Category[] };
   } catch {
-    return { error: 'Cant read Category Groups' };
+    return { error: "Cant read Category Groups" };
   }
 };
 
@@ -62,14 +62,14 @@ export const getSubCategoriesById = async (catId: string) => {
         parentId: catId,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     if (!result) return { error: "Can't read categories" };
     return { res: result as Category[] };
   } catch {
-    return { error: 'Cant read Category Groups' };
+    return { error: "Cant read Category Groups" };
   }
 };
 
@@ -80,7 +80,7 @@ export const getAllCategories = async (catId: string) => {
         parentId: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       include: {
         children: true,
@@ -100,14 +100,16 @@ export const getAllCategories = async (catId: string) => {
     //   });
     // }
 
-    const parentCategory = categories.find((category: Category) => category.id === catId);
+    const parentCategory = categories.find(
+      (category: Category) => category.id === catId
+    );
 
     return {
       categories,
       subCategories: parentCategory?.children ?? [],
     };
   } catch {
-    return { error: 'Cant read Category Groups' };
+    return { error: "Cant read Category Groups" };
   }
 };
 
@@ -115,7 +117,7 @@ export const getAllCategoriesFlat = async () => {
   try {
     const result = await db.category.findMany({
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       select: {
         id: true,
@@ -131,7 +133,7 @@ export const getAllCategoriesFlat = async () => {
     if (!result) return { error: "Can't read categories" };
     return { res: result as (Category & { parentId?: string | null })[] };
   } catch {
-    return { error: 'Cant read Category Groups' };
+    return { error: "Cant read Category Groups" };
   }
 };
 // export const getAllCategoriesJSON = async () => {
@@ -148,7 +150,7 @@ export const getAllCategoriesFlat = async () => {
 // };
 
 export const addCategory = async (data: TAddCategory) => {
-  if (!AddCategory.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!AddCategory.safeParse(data).success) return { error: "Invalid Data!" };
   try {
     const session = await authAdmin();
     if ((session as { error: string }).error)
@@ -165,7 +167,7 @@ export const addCategory = async (data: TAddCategory) => {
         updatedAt: data.updatedAt ?? null,
       },
     });
-    if (!result) return { error: 'cant add to database' };
+    if (!result) return { error: "cant add to database" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
@@ -173,7 +175,8 @@ export const addCategory = async (data: TAddCategory) => {
 };
 
 export const updateCategory = async (data: TUpdateCategory) => {
-  if (!UpdateCategory.safeParse(data).success) return { error: 'Data is no valid' };
+  if (!UpdateCategory.safeParse(data).success)
+    return { error: "Data is no valid" };
 
   const { id, ...values } = data;
 
@@ -210,8 +213,64 @@ export const deleteCategory = async (id: string) => {
     });
 
     if (!result) return { error: "Can't delete it!" };
-    return { res: result || null, message: 'Category deleted successfully' };
+    return { res: result || null, message: "Category deleted successfully" };
   } catch {
     return { error: "Can't delete it!" };
+  }
+};
+
+export type CategoryTreeNode = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  children: CategoryTreeNode[];
+};
+
+export type GetCategoryTree = Awaited<
+  ReturnType<typeof getCategoryTree>
+>["res"];
+export const getCategoryTree = async () => {
+  try {
+    const flat = await db.category.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        parentId: true,
+        children: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!flat) return { error: "Can't read categories" };
+
+    const map = new Map<string, CategoryTreeNode>();
+    const roots: CategoryTreeNode[] = [];
+
+    flat.forEach((c) =>
+      map.set(c.id, {
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description,
+        children: [],
+      })
+    );
+
+    flat.forEach((c) => {
+      const node = map.get(c.id)!;
+      if (c.parentId && map.has(c.parentId)) {
+        map.get(c.parentId)!.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    return { res: roots };
+  } catch {
+    return { error: "Cant read Category Groups" };
   }
 };

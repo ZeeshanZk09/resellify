@@ -1,5 +1,5 @@
-'use server';
-import prisma from '@/shared/lib/prisma';
+"use server";
+import prisma from "@/shared/lib/prisma";
 import {
   TAddProductFormValues,
   TCartListItemDB,
@@ -7,17 +7,17 @@ import {
   TProductListItem,
   TProductPageInfo,
   TSpecification,
-} from '@/shared/types/product';
+} from "@/shared/types/product";
 import {
   generateProductMetadata,
   generateProductStructuredData,
   validateRequiredFields,
-} from '@/shared/lib/utils/product';
-import { uploadImage } from './product-image';
-import { auth } from '@/auth';
+} from "@/shared/lib/utils/product";
+import { uploadImage } from "./product-image";
+import { auth } from "@/auth";
 
 const convertStringToFloat = (str: string | number) => {
-  (str as string).replace(/,/, '.');
+  (str as string).replace(/,/, ".");
   return str ? parseFloat(str as string) : 0.0;
 };
 
@@ -30,14 +30,14 @@ import {
   type VariantOption,
   type Visibility,
   Prisma,
-} from '@/shared/lib/generated/prisma/client';
-import { InputJsonValue } from '@prisma/client/runtime/client';
-import { NullableJsonNullValueInput } from '@/shared/lib/generated/prisma/internal/prismaNamespace';
-import { TRAFFIC_LIST_PAGE_SIZE } from '@/shared/constants/admin/trafficView';
+} from "@/shared/lib/generated/prisma/client";
+import { InputJsonValue } from "@prisma/client/runtime/client";
+import { NullableJsonNullValueInput } from "@/shared/lib/generated/prisma/internal/prismaNamespace";
+import { TRAFFIC_LIST_PAGE_SIZE } from "@/shared/constants/admin/trafficView";
 
 export type optionSets = {
   name: string;
-  type: OptionSet['type'];
+  type: OptionSet["type"];
   options: {
     name: string;
     value?: string | null;
@@ -72,45 +72,36 @@ export type category = {
   parentId?: string | null;
 };
 
-export type AddProductInput = {
-  title: string;
-  slug: string;
-  sku: string;
-  basePrice: number;
-  salePrice?: number | null;
-  description?: string | null;
-  shortDescription?: string | null;
-  currency?: string;
-  status?: Product['status'];
-  visibility?: Product['visibility'];
-  inventory?: number;
-  lowStockThreshold?: number;
-  images: File[] | File;
-  category: category;
-  optionSets: optionSets;
-  specs: specs;
-  tags: tags;
-  variants: variants;
-};
-
-export type GetAllProducts = Awaited<ReturnType<typeof getAllProducts>>['res'];
-export type GetRelatedProducts = Awaited<ReturnType<typeof getRelatedProducts>>['res'];
-export type GetInitialProducts = Awaited<ReturnType<typeof getInitialProducts>>['res'];
-export type LoadMoreProducts = Awaited<ReturnType<typeof loadMoreProducts>>['res'];
-export type GetProductBySlug = Awaited<ReturnType<typeof getProductBySlug>>['res'];
+export type GetAllProducts = Awaited<ReturnType<typeof getAllProducts>>["res"];
+export type GetRelatedProducts = Awaited<
+  ReturnType<typeof getRelatedProducts>
+>["res"];
+export type GetInitialProducts = Awaited<
+  ReturnType<typeof getInitialProducts>
+>["res"];
+export type LoadMoreProducts = Awaited<
+  ReturnType<typeof loadMoreProducts>
+>["res"];
+export type GetProductBySlug = Awaited<
+  ReturnType<typeof getProductBySlug>
+>["res"];
 
 function convertDecimals(obj: any): any {
   if (Array.isArray(obj)) {
     return obj.map(convertDecimals);
-  } else if (obj && typeof obj === 'object') {
+  } else if (obj && typeof obj === "object") {
     const result: any = {};
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
         // Prisma Decimal: check _isDecimal, or has toNumber
-        if (value && typeof value === 'object' && value._isDecimal) {
+        if (value && typeof value === "object" && value._isDecimal) {
           result[key] = Number(value);
-        } else if (value && typeof value === 'object' && typeof value.toNumber === 'function') {
+        } else if (
+          value &&
+          typeof value === "object" &&
+          typeof value.toNumber === "function"
+        ) {
           result[key] = value.toNumber();
         } else {
           result[key] = convertDecimals(value);
@@ -122,13 +113,37 @@ function convertDecimals(obj: any): any {
   return obj;
 }
 
+export type AddProductInput = {
+  title: string;
+  slug: string;
+  sku: string;
+  basePrice: number;
+  salePrice?: number | null;
+  description?: string | null;
+  shortDescription?: string | null;
+  currency?: string;
+  status?: Product["status"];
+  visibility?: Product["visibility"];
+  inventory?: number;
+  lowStockThreshold?: number;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  canonicalUrl?: string | null;
+};
+
 export async function addProduct(input: AddProductInput) {
   try {
-    console.log('[addProduct] Called with input:', JSON.stringify(input, null, 2));
+    console.log(
+      "[addProduct] Called with input:",
+      JSON.stringify(input, null, 2)
+    );
 
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-      return { error: 'Unauthorized' };
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return {
+        data: null,
+        error: "Unauthorized",
+      };
     }
 
     // Validate required fields
@@ -137,10 +152,12 @@ export async function addProduct(input: AddProductInput) {
       slug: input.slug,
       sku: input.sku,
       basePrice: input.basePrice,
-      categoryName: input.category.name,
-      categorySlug: input.category.slug,
     });
-    if (validationError) return validationError;
+    if (validationError)
+      return {
+        data: null,
+        error: validationError,
+      };
 
     // Check for duplicate slug/sku
     const existing = await prisma.product.findFirst({
@@ -149,306 +166,220 @@ export async function addProduct(input: AddProductInput) {
       },
     });
     if (existing) {
-      return { error: 'Product with this slug or SKU already exists' };
+      return {
+        data: null,
+        error: "Product with this slug or SKU already exists",
+      };
     }
 
-    // Start transaction
-    const result = await prisma.$transaction(
-      async (tx) => {
-        // 1. Handle Category
-        let category = await tx.category.findUnique({
-          where: { slug: input.category.slug },
-        });
-
-        if (!category) {
-          category = await tx.category.create({
-            data: {
-              name: input.category.name,
-              slug: input.category.slug,
-              description: input.category.description,
-              parentId: input.category.parentId,
-            },
-          });
-        }
-
-        // 2. Create Product first (needed for relationships)
-        const product = await tx.product.create({
-          data: {
-            title: input.title,
-            description: input.description,
-            shortDescription: input.shortDescription,
-            price: input.basePrice,
-            basePrice: input.basePrice,
-            salePrice: input.salePrice,
-            slug: input.slug,
-            sku: input.sku,
-            currency: input.currency || 'PKR',
-            status: input.status || 'DRAFT',
-            visibility: input.visibility || 'UNLISTED',
-            inventory: input.inventory || 0,
-            lowStockThreshold: input.lowStockThreshold || 5,
-            createdById: session.user.id,
-            publishedById: input.status === 'PUBLISHED' ? session.user.id : undefined,
-            publishedAt: input.status === 'PUBLISHED' ? new Date() : undefined,
-          },
-        });
-
-        // 3. Create ProductCategory link
-        await tx.productCategory.create({
-          data: {
-            productId: product.id,
-            categoryId: category.id,
-          },
-        });
-
-        // 4. Handle OptionSets and Options (if provided)
-        const optionNameToIdMap = new Map<string, string>();
-
-        if (input.optionSets && input.optionSets.length > 0) {
-          for (const optSet of input.optionSets) {
-            // Find or create OptionSet
-            let optionSet = await tx.optionSet.findFirst({
-              where: { name: optSet.name },
-              include: { options: true },
-            });
-
-            if (!optionSet) {
-              optionSet = await tx.optionSet.create({
-                data: {
-                  name: optSet.name,
-                  type: optSet.type,
-                  options: {
-                    create: optSet.options.map((opt, idx) => ({
-                      name: opt.name,
-                      value: opt.value,
-                      position: opt.position ?? idx,
-                    })),
-                  },
-                },
-                include: { options: true },
-              });
-            }
-
-            // Create CategoryOptionSet link
-            await tx.categoryOptionSet.upsert({
-              where: {
-                categoryId_optionSetId: {
-                  categoryId: category.id,
-                  optionSetId: optionSet.id,
-                },
-              },
-              create: {
-                categoryId: category.id,
-                optionSetId: optionSet.id,
-              },
-              update: {},
-            });
-
-            // Map option names to their IDs for variant creation
-            optionSet.options.forEach((opt) => {
-              optionNameToIdMap.set(opt.name, opt.id);
-            });
-          }
-        }
-
-        // 5. Handle Product Variants (if provided)
-        if (input.variants && input.variants.length > 0) {
-          for (const variant of input.variants) {
-            const createdVariant = await tx.productVariant.create({
-              data: {
-                productId: product.id,
-                sku: variant.sku || undefined,
-                title: variant.title || undefined,
-                price: variant.price,
-                salePrice: variant.salePrice,
-                stock: variant.stock ?? 0,
-                isDefault: variant.isDefault ?? false,
-                weightGram: variant.weightGram ?? undefined,
-              },
-            });
-
-            // Link variant options
-            if (variant.options && variant.options.length > 0) {
-              const variantOptionPromises = variant.options.map(async (optionName) => {
-                const optionId = optionNameToIdMap.get(optionName);
-                if (!optionId) {
-                  throw new Error(`Option "${optionName}" not found in any option set`);
-                }
-                return tx.variantOption.create({
-                  data: {
-                    variantId: createdVariant.id,
-                    optionId,
-                  },
-                });
-              });
-              await Promise.all(variantOptionPromises);
-            }
-          }
-        } else {
-          // Create a default variant if no variants provided
-          await tx.productVariant.create({
-            data: {
-              productId: product.id,
-              title: 'Default',
-              price: product.basePrice,
-              stock: product.inventory,
-              isDefault: true,
-            },
-          });
-        }
-
-        console.log('[addProduct] Creating product specs:', input.specs);
-        // 7. Create SpecGroup and ProductSpec
-        if (input.specs && input.specs.length > 0) {
-          for (const spec of input.specs) {
-            // Create SpecGroup
-            const specGroup = await tx.specGroup.create({
-              data: {
-                title: spec.groupTitle,
-                keys: spec.keys,
-                // Agar SpecGroup model mein values field nahi hai,
-                // to values ko alag se ProductSpec mein store karna hoga
-              },
-            });
-            console.log('[addProduct] Created specGroup:', specGroup);
-
-            // Create ProductSpec records for each key-value pair
-            if (spec.keys && spec.values && spec.keys.length === spec.values.length) {
-              for (let i = 0; i < spec.keys.length; i++) {
-                const key = spec.keys[i];
-                const values = spec.values;
-
-                await tx.productSpec.create({
-                  data: {
-                    specGroupId: specGroup.id,
-                    productId: product.id,
-                    values: values,
-                  },
-                });
-                console.log(
-                  `[addProduct] Created productSpec for group "${spec.groupTitle}": ${key} = ${values}`
-                );
-              }
-            } else {
-              console.warn(
-                `[addProduct] Keys and values count mismatch for spec group: ${spec.groupTitle}`
-              );
-            }
-          }
-        }
-
-        // 7. Handle Tags (if provided)
-        if (input.tags && input.tags.length > 0) {
-          const tagPromises = input.tags.map(async (tagInput) => {
-            let tag = await tx.tag.findUnique({
-              where: { slug: tagInput.slug },
-            });
-
-            if (!tag) {
-              tag = await tx.tag.create({
-                data: {
-                  name: tagInput.name,
-                  slug: tagInput.slug,
-                },
-              });
-            }
-
-            return tx.productTag.create({
-              data: {
-                productId: product.id,
-                tagId: tag.id,
-              },
-            });
-          });
-          await Promise.all(tagPromises);
-        }
-
-        return product;
-      },
-      {
-        maxWait: 5000, // Maximum time to wait for transaction
-        timeout: 10000, // Maximum time for transaction
-      }
-    );
-
-    // 8. Handle Image Upload (outside transaction for performance)
-    let uploadResult;
-    if (input.images && (input.images as File[]).length > 0) {
-      uploadResult = await uploadImage({ type: 'PRODUCT', productId: result.id }, input.images);
-
-      if (uploadResult.error) {
-        console.warn('Product created but image upload failed:', uploadResult.error);
-        // Don't fail the whole operation if image upload fails
-      } else {
-        // Update product with metadata and structured data
-        const primaryImage = uploadResult.images?.[0];
-        if (primaryImage) {
-          const metadata = generateProductMetadata(
-            {
-              ...result,
-              metaKeywords: result.metaKeywords as
-                | NullableJsonNullValueInput
-                | InputJsonValue
-                | undefined,
-              metadata: result.metadata as NullableJsonNullValueInput | InputJsonValue | undefined,
-            },
-            primaryImage.id
-          );
-          const structuredData = generateProductStructuredData({
-            ...result,
-            images: uploadResult.images,
-          });
-
-          await prisma.product.update({
-            where: { id: result.id },
-            data: {
-              ...metadata,
-              structuredData,
-            },
-          });
-        }
-      }
-    }
-
-    // 9. Return complete product with relations
-    const completeProduct = await prisma.product.findUnique({
-      where: { id: result.id },
-      include: {
-        categories: { include: { category: true } },
-        tags: { include: { tag: true } },
-        productVariants: {
-          include: {
-            options: { include: { option: { include: { optionSet: true } } } },
-          },
-        },
-        productSpecs: { include: { specGroup: true } },
-        images: true,
-        createdBy: { select: { id: true, name: true, email: true } },
+    const result = await prisma.product.create({
+      data: {
+        title: input.title,
+        description: input.description,
+        shortDescription: input.shortDescription,
+        price: input.basePrice,
+        basePrice: input.basePrice,
+        salePrice: input.salePrice,
+        slug: input.slug,
+        sku: input.sku,
+        currency: input.currency || "PKR",
+        status: input.status || "DRAFT",
+        visibility: input.visibility || "UNLISTED",
+        inventory: input.inventory || 0,
+        lowStockThreshold: input.lowStockThreshold || 5,
+        createdById: session.user.id,
+        publishedById:
+          input.status === "PUBLISHED" ? session.user.id : undefined,
+        publishedAt: input.status === "PUBLISHED" ? new Date() : undefined,
+        metaTitle: input.metaTitle ?? null,
+        metaDescription: input.metaDescription ?? null,
+        canonicalUrl: input.canonicalUrl ?? null,
       },
     });
 
     return {
-      success: true,
-      product: completeProduct,
+      data: { id: result.id },
+      error: null,
     };
   } catch (err) {
-    console.error('ADD_PRODUCT_ERROR', err);
+    console.error("ADD_PRODUCT_ERROR", err);
 
     // Provide more specific error messages
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === 'P2002') {
-        return { error: 'A product with this slug or SKU already exists' };
-      }
-      if (err.code === 'P2003') {
+      if (err.code === "P2002") {
         return {
-          error: 'Foreign key constraint failed. Please check your category references.',
+          data: null,
+          error: "A product with this slug or SKU already exists",
+        };
+      }
+      if (err.code === "P2003") {
+        return {
+          data: null,
+          error:
+            "Foreign key constraint failed. Please check your category references.",
         };
       }
     }
 
     return {
-      error: err instanceof Error ? err.message : 'Failed to create product',
+      data: null,
+      error: err instanceof Error ? err.message : "Failed to create product",
     };
+  }
+}
+
+export async function addProductSpecs(
+  productId: string,
+  specs: {
+    groupTitle: string;
+    keys: string[];
+    values: string[];
+  }[]
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return { error: "Unauthorized" };
+    }
+
+    if (!productId || !specs || specs.length === 0) {
+      return { error: "Invalid product ID or empty specifications" };
+    }
+
+    // Validate that product exists
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true },
+    });
+    if (!product) return { error: "Product not found" };
+
+    // Upsert spec groups and create product specs
+    for (const spec of specs) {
+      if (!spec.groupTitle || !spec.keys.length || !spec.values.length)
+        continue;
+
+      let specGroup = await prisma.specGroup.findFirst({
+        where: { title: spec.groupTitle },
+      });
+
+      if (!specGroup) {
+        specGroup = await prisma.specGroup.create({
+          data: {
+            title: spec.groupTitle,
+            keys: spec.keys,
+          },
+        });
+      } else {
+        // Merge keys if new ones are provided
+        const mergedKeys = Array.from(
+          new Set([...specGroup.keys, ...spec.keys])
+        );
+        if (mergedKeys.length > specGroup.keys.length) {
+          specGroup = await prisma.specGroup.update({
+            where: { id: specGroup.id },
+            data: { keys: mergedKeys },
+          });
+        }
+      }
+
+      await prisma.productSpec.create({
+        data: {
+          productId,
+          specGroupId: specGroup.id,
+          values: spec.values,
+        },
+      });
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("ADD_PRODUCT_SPECS_ERROR", err);
+    return { error: "Failed to add specifications" };
+  }
+}
+
+export async function addProductVariants(
+  productId: string,
+  variants: {
+    sku?: string | null;
+    title?: string | null;
+    price?: number;
+    salePrice?: number | null;
+    stock?: number;
+    isDefault?: boolean;
+    weightGram?: number | null;
+    options?: string[];
+  }[]
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return { error: "Unauthorized" };
+    }
+
+    if (!productId || !variants || variants.length === 0) {
+      return { error: "Invalid product ID or empty variants" };
+    }
+
+    // Validate that product exists
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true },
+    });
+    if (!product) return { error: "Product not found" };
+
+    // Create variants and their options
+    for (const variant of variants) {
+      const createdVariant = await prisma.productVariant.create({
+        data: {
+          productId,
+          sku: variant.sku,
+          title: variant.title,
+          price: variant.price ?? 0,
+          salePrice: variant.salePrice,
+          stock: variant.stock ?? 0,
+          isDefault: variant.isDefault ?? false,
+          weightGram: variant.weightGram,
+        },
+      });
+
+      if (variant.options && variant.options.length > 0) {
+        for (const optName of variant.options) {
+          // Find or create option set named "Default"
+          let optionSet = await prisma.optionSet.findFirst({
+            where: { name: "Default", type: "TEXT" },
+          });
+          if (!optionSet) {
+            optionSet = await prisma.optionSet.create({
+              data: { name: "Default", type: "TEXT" },
+            });
+          }
+
+          // Find or create option under this set
+          let option = await prisma.option.findFirst({
+            where: { name: optName, optionSetId: optionSet.id },
+          });
+          if (!option) {
+            option = await prisma.option.create({
+              data: { name: optName, optionSetId: optionSet.id },
+            });
+          }
+
+          // Link variant to option
+          await prisma.variantOption.create({
+            data: {
+              variantId: createdVariant.id,
+              optionId: option.id,
+            },
+          });
+        }
+      }
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("ADD_PRODUCT_VARIANTS_ERROR", err);
+    return { error: "Failed to add variants" };
   }
 }
 
@@ -462,14 +393,17 @@ export async function toggleStock(productId: string, visibility: Visibility) {
         visibility,
       },
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error("TOGGLE_STOCK_ERROR", error);
+    return { error: "Failed to toggle stock visibility" };
+  }
 }
 
 export const getAllProducts = async () => {
   try {
     const result = await prisma.product.findMany({
       where: {
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
       },
       include: {
         waitlists: true,
@@ -502,7 +436,7 @@ export const getAllProducts = async () => {
         },
       },
       orderBy: {
-        publishedAt: 'desc',
+        publishedAt: "desc",
       },
     });
 
@@ -517,7 +451,7 @@ export const getInitialProducts = async (limit: number = 10) => {
   try {
     const result = await prisma.product.findMany({
       where: {
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
       },
       include: {
         waitlists: true,
@@ -551,7 +485,7 @@ export const getInitialProducts = async (limit: number = 10) => {
       },
       take: limit,
       orderBy: {
-        publishedAt: 'desc',
+        publishedAt: "desc",
       },
     });
 
@@ -570,7 +504,7 @@ export const loadMoreProducts = async (
   try {
     const result = await prisma.product.findMany({
       where: {
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
       },
       include: {
         waitlists: true,
@@ -608,7 +542,7 @@ export const loadMoreProducts = async (
         id: cursorId,
       },
       orderBy: {
-        publishedAt: 'desc',
+        publishedAt: "desc",
       },
     });
 
@@ -632,13 +566,13 @@ export const loadMoreProducts = async (
 
 export const getProductBySlug = async (slug: string) => {
   try {
-    if (!slug || slug.trim() === '') return { error: 'Invalid Slug!' };
+    if (!slug || slug.trim() === "") return { error: "Invalid Slug!" };
 
     const result = await prisma.product.findFirst({
       where: {
         slug: slug,
-        visibility: 'PUBLIC',
-        status: 'PUBLISHED',
+        visibility: "PUBLIC",
+        status: "PUBLISHED",
       },
       include: {
         productOffers: true,
@@ -674,7 +608,7 @@ export const getProductBySlug = async (slug: string) => {
       },
     });
 
-    if (!result) return { error: 'Product Not Found!' };
+    if (!result) return { error: "Product Not Found!" };
 
     // Recursively convert all Decimals/BigInts to primitives
     const plainProduct = toPlain(result);
@@ -688,8 +622,11 @@ export const getProductBySlug = async (slug: string) => {
   }
 };
 
-export const getRelatedProducts = async (productID: string, categoryID: string) => {
-  if (!productID || productID === '') return { error: 'Invalid Product ID!' };
+export const getRelatedProducts = async (
+  productID: string,
+  categoryID: string
+) => {
+  if (!productID || productID === "") return { error: "Invalid Product ID!" };
   try {
     const result = await prisma.product.findMany({
       where: {
@@ -697,13 +634,13 @@ export const getRelatedProducts = async (productID: string, categoryID: string) 
           some: {
             category: {
               id: {
-                in: categoryID.split(','),
+                in: categoryID.split(","),
               },
             },
           },
         },
-        visibility: 'PUBLIC',
-        status: 'PUBLISHED',
+        visibility: "PUBLIC",
+        status: "PUBLISHED",
       },
       include: {
         productOffers: true,
@@ -717,7 +654,7 @@ export const getRelatedProducts = async (productID: string, categoryID: string) 
         orderItems: true,
       },
     });
-    if (!result) return { error: 'Invalid Data!' };
+    if (!result) return { error: "Invalid Data!" };
     return { res: result };
   } catch (error) {
     return { error };
@@ -726,11 +663,11 @@ export const getRelatedProducts = async (productID: string, categoryID: string) 
 
 // Utility to recursively convert Decimal and BigInt values to numbers/strings
 function toPlain(val: any): any {
-  if (val && typeof val === 'object') {
+  if (val && typeof val === "object") {
     // Decimal.js or Prisma Decimal support (has toNumber)
-    if (typeof val.toNumber === 'function') return val.toNumber();
+    if (typeof val.toNumber === "function") return val.toNumber();
     // Prisma BigInt (or JS BigInt): convert safely to string
-    if (typeof val === 'bigint') return val.toString();
+    if (typeof val === "bigint") return val.toString();
     if (Array.isArray(val)) return val.map(toPlain);
     const obj: any = {};
     for (const key in val) {
@@ -744,14 +681,14 @@ function toPlain(val: any): any {
 }
 
 export const getOneProduct = async (productID: string) => {
-  if (!productID || productID === '') return { error: 'Invalid Product ID!' };
+  if (!productID || productID === "") return { error: "Invalid Product ID!" };
 
   try {
     const result = await prisma.product.findFirst({
       where: {
         id: productID,
-        visibility: 'PUBLIC',
-        status: 'PUBLISHED',
+        visibility: "PUBLIC",
+        status: "PUBLISHED",
       },
       include: {
         productOffers: true,
@@ -774,20 +711,21 @@ export const getOneProduct = async (productID: string) => {
         },
       },
     });
-    if (!result) return { error: 'Invalid Data!' };
+    if (!result) return { error: "Invalid Data!" };
 
     const specifications = await generateSpecTable(result.productSpecs);
-    if (!specifications || specifications.length === 0) return { error: 'Invalid Date' };
+    if (!specifications || specifications.length === 0)
+      return { error: "Invalid Date" };
 
     // Get the first category (products can have multiple categories)
     const firstCategory = result.categories[0]?.category;
-    if (!firstCategory) return { error: 'Product has no category' };
+    if (!firstCategory) return { error: "Product has no category" };
 
     const pathArray: TPath[] | null = await getPathByCategoryID(
       firstCategory.id,
       firstCategory.parentId
     );
-    if (!pathArray || pathArray.length === 0) return { error: 'Invalid Date' };
+    if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
 
     // Transform Product to TProductPageInfo format
     const mergedResult: TProductPageInfo = {
@@ -811,7 +749,8 @@ export const getOneProduct = async (productID: string) => {
 };
 
 export const getCartProducts = async (productIDs: string[]) => {
-  if (!productIDs || productIDs.length === 0) return { error: 'Invalid Product List' };
+  if (!productIDs || productIDs.length === 0)
+    return { error: "Invalid Product List" };
 
   try {
     const result = await prisma.product.findMany({
@@ -849,7 +788,7 @@ export const getCartProducts = async (productIDs: string[]) => {
 };
 
 export const deleteProduct = async (productID: string) => {
-  if (!productID || productID === '') return { error: 'Invalid Data!' };
+  if (!productID || productID === "") return { error: "Invalid Data!" };
   try {
     const result = await prisma.product.delete({
       where: {
@@ -881,7 +820,10 @@ const generateSpecTable = async (
       // Use included specGroup data
       specGroups = rawSpec
         .map((spec) => spec.specGroup)
-        .filter((sg): sg is { id: string; title: string; keys: string[] } => sg !== undefined);
+        .filter(
+          (sg): sg is { id: string; title: string; keys: string[] } =>
+            sg !== undefined
+        );
     } else {
       // Fetch specGroups if not included
       const specGroupIDs = rawSpec.map((spec) => spec.specGroupId);
@@ -909,15 +851,15 @@ const generateSpecTable = async (
       // Map SpecGroup.keys to ProductSpec.values
       // values array is aligned with SpecGroup.keys order
       spec.values.forEach((value, index) => {
-        const keyName = groupSpec.keys[index] || ''; // Get key name from SpecGroup.keys array
+        const keyName = groupSpec.keys[index] || ""; // Get key name from SpecGroup.keys array
         tempSpecs.push({
           name: keyName,
-          value: value || '',
+          value: value || "",
         });
       });
 
       specifications.push({
-        groupName: groupSpec.title || '',
+        groupName: groupSpec.title || "",
         specs: tempSpecs,
       });
     });
@@ -952,24 +894,29 @@ export const getTrafficReport = async (skip: number = 0) => {
           },
         },
         orderBy: {
-          id: 'desc',
+          id: "desc",
         },
       }),
       prisma.visit.count(),
     ]);
-    if (!list) return { error: 'Can not read Data!' };
+    if (!list) return { error: "Can not read Data!" };
     return { res: { list, totalCount } };
   } catch (error) {
     return { error: JSON.stringify(error) };
   }
 };
 
-const getPathByCategoryID = async (categoryID: string, parentId: string | null) => {
+const getPathByCategoryID = async (
+  categoryID: string,
+  parentId: string | null
+) => {
   try {
-    if (!categoryID || categoryID === '') return null;
+    if (!categoryID || categoryID === "") return null;
 
     // Build OR condition - include category, parent, and root categories
-    const orConditions: Array<{ id: string } | { parentId: null }> = [{ id: categoryID }];
+    const orConditions: Array<{ id: string } | { parentId: null }> = [
+      { id: categoryID },
+    ];
     if (parentId) {
       orConditions.push({ id: parentId });
     }
@@ -1001,7 +948,7 @@ const getPathByCategoryID = async (categoryID: string, parentId: string | null) 
         id: foundCat.id,
         parentID: foundCat.parentId, // Map parentId to parentID for type compatibility
         name: foundCat.name,
-        url: foundCat.slug || '', // Map slug to url for type compatibility
+        url: foundCat.slug || "", // Map slug to url for type compatibility
       });
 
       tempCatID = foundCat.parentId; // Use camelCase 'parentId'

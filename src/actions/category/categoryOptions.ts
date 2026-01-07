@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { z } from 'zod';
+import { z } from "zod";
 
-import db from '@/shared/lib/prisma';
-import { TSingleOption } from '@/shared/types/common';
-import { OptionSetCreateInput } from '@/shared/lib/generated/prisma/models';
+import db from "@/shared/lib/prisma";
+import { TSingleOption } from "@/shared/types/common";
+import { OptionSetCreateInput } from "@/shared/lib/generated/prisma/models";
 
 // Validation Schemas
 const AddOptionSet = z.object({
@@ -32,8 +32,12 @@ const SingleSpec = z.object({
 // OPTION SETS
 
 export const getOptionSetByCatID = async (categoryID: string) => {
-  if (!categoryID || typeof categoryID !== 'string' || categoryID.trim() === '') {
-    return { error: 'Invalid Data!' };
+  if (
+    !categoryID ||
+    typeof categoryID !== "string" ||
+    categoryID.trim() === ""
+  ) {
+    return { error: "Invalid Data!" };
   }
 
   try {
@@ -49,7 +53,7 @@ export const getOptionSetByCatID = async (categoryID: string) => {
 
     // result will always be an array, so "if (!result)" is not a useful check.
     if (!result || !Array.isArray(result) || result.length === 0) {
-      return { error: 'Not Found!' };
+      return { error: "Not Found!" };
     }
 
     return { res: result };
@@ -58,9 +62,12 @@ export const getOptionSetByCatID = async (categoryID: string) => {
   }
 };
 
-export const addOptionSet = async (data: OptionSetCreateInput, categoryId: string) => {
+export const addOptionSet = async (
+  data: OptionSetCreateInput,
+  categoryId: string
+) => {
   // data: {name, type, categoryId}
-  if (!AddOptionSet.safeParse(data).success) return { error: 'Invalid Data' };
+  if (!AddOptionSet.safeParse(data).success) return { error: "Invalid Data" };
 
   try {
     // Create OptionSet and connect to category through CategoryOptionSet
@@ -87,13 +94,13 @@ export const addOptionSet = async (data: OptionSetCreateInput, categoryId: strin
 };
 
 export const deleteOptionSet = async (id: string) => {
-  if (!id || id === '') return { error: 'Invalid Data' };
+  if (!id || id === "") return { error: "Invalid Data" };
 
   try {
     const result = await db.optionSet.delete({
       where: { id },
     });
-    if (!result) return { error: 'failed' };
+    if (!result) return { error: "failed" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
@@ -103,7 +110,7 @@ export const deleteOptionSet = async (id: string) => {
 // ------------------------- SINGLE OPTION -------------------------
 export const addSingleOption = async (data: TSingleOption) => {
   // Expects: { optionSetID, name, value }
-  if (!SingleOption.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!SingleOption.safeParse(data).success) return { error: "Invalid Data!" };
 
   try {
     const result = await db.option.create({
@@ -121,7 +128,7 @@ export const addSingleOption = async (data: TSingleOption) => {
 };
 
 export const deleteSingleOption = async (data: TSingleOption) => {
-  if (!SingleOption.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!SingleOption.safeParse(data).success) return { error: "Invalid Data!" };
 
   try {
     // Find the option by all 3 keys (set, name, value) and delete
@@ -133,7 +140,7 @@ export const deleteSingleOption = async (data: TSingleOption) => {
       },
     });
 
-    if (!option) return { error: 'Option Not Found!' };
+    if (!option) return { error: "Option Not Found!" };
 
     const result = await db.option.delete({
       where: { id: option.id },
@@ -148,10 +155,12 @@ export const deleteSingleOption = async (data: TSingleOption) => {
 
 // ------------------------- SPECIFICATIONS -------------------------
 
-export type GetSpecGroupByCatID = Awaited<ReturnType<typeof getSpecGroupByCatID>>['res'];
+export type GetSpecGroupByCatID = Awaited<
+  ReturnType<typeof getSpecGroupByCatID>
+>["res"];
 
 export const getSpecGroupByCatID = async (categoryID: string) => {
-  if (!categoryID || categoryID === '') return { error: 'Invalid Data!' };
+  if (!categoryID || categoryID === "") return { error: "Invalid Data!" };
 
   try {
     // SpecGroup doesn't have direct categoryId, so we find through products
@@ -180,7 +189,7 @@ export const getSpecGroupByCatID = async (categoryID: string) => {
     });
 
     if (specGroupIds.size === 0) {
-      return { error: 'Not Found!' };
+      return { error: "Not Found!" };
     }
 
     const result = await db.specGroup.findMany({
@@ -203,17 +212,20 @@ export const getSpecGroupByCatID = async (categoryID: string) => {
       },
     });
 
-    if (!result || result.length === 0) return { error: 'Not Found!' };
+    if (!result || result.length === 0) return { error: "Not Found!" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
   }
 };
 
-export const addSpecGroup = async (data: { title: string; keys?: string[] }) => {
+export const addSpecGroup = async (data: {
+  title: string;
+  keys?: string[];
+}) => {
   // data: { title, keys? }
   const validation = AddSpecGroup.safeParse(data);
-  if (!validation.success) return { error: 'Invalid Data' };
+  if (!validation.success) return { error: "Invalid Data" };
 
   try {
     const result = await db.specGroup.create({
@@ -222,7 +234,7 @@ export const addSpecGroup = async (data: { title: string; keys?: string[] }) => 
         keys: data.keys || [],
       },
     });
-    if (!result) return { error: 'failed' };
+    if (!result) return { error: "failed" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
@@ -230,13 +242,13 @@ export const addSpecGroup = async (data: { title: string; keys?: string[] }) => 
 };
 
 export const deleteSpecGroup = async (id: string) => {
-  if (!id || id === '') return { error: 'Invalid Data' };
+  if (!id || id === "") return { error: "Invalid Data" };
 
   try {
     const result = await db.specGroup.delete({
       where: { id },
     });
-    if (!result) return { error: 'failed' };
+    if (!result) return { error: "failed" };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
@@ -246,9 +258,12 @@ export const deleteSpecGroup = async (id: string) => {
 // ------------------------- SINGLE SPEC (Key Management) -------------------------
 // Note: In the schema, SpecGroup has a 'keys' array (not a separate Spec model)
 // These functions manage the keys array in SpecGroup
-export const addSingleSpec = async (data: { specGroupID: string; key: string }) => {
+export const addSingleSpec = async (data: {
+  specGroupID: string;
+  key: string;
+}) => {
   // { specGroupID, key } - adds a key to the SpecGroup's keys array
-  if (!SingleSpec.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!SingleSpec.safeParse(data).success) return { error: "Invalid Data!" };
 
   try {
     // Get current spec group
@@ -257,11 +272,11 @@ export const addSingleSpec = async (data: { specGroupID: string; key: string }) 
       select: { keys: true },
     });
 
-    if (!specGroup) return { error: 'SpecGroup Not Found!' };
+    if (!specGroup) return { error: "SpecGroup Not Found!" };
 
     // Check if key already exists
     if (specGroup.keys.includes(data.key)) {
-      return { error: 'Key already exists!' };
+      return { error: "Key already exists!" };
     }
 
     // Add key to array
@@ -281,9 +296,12 @@ export const addSingleSpec = async (data: { specGroupID: string; key: string }) 
   }
 };
 
-export const deleteSingleSpec = async (data: { specGroupID: string; key: string }) => {
+export const deleteSingleSpec = async (data: {
+  specGroupID: string;
+  key: string;
+}) => {
   // { specGroupID, key } - removes a key from the SpecGroup's keys array
-  if (!SingleSpec.safeParse(data).success) return { error: 'Invalid Data!' };
+  if (!SingleSpec.safeParse(data).success) return { error: "Invalid Data!" };
 
   try {
     // Get current spec group
@@ -292,11 +310,11 @@ export const deleteSingleSpec = async (data: { specGroupID: string; key: string 
       select: { keys: true },
     });
 
-    if (!specGroup) return { error: 'SpecGroup Not Found!' };
+    if (!specGroup) return { error: "SpecGroup Not Found!" };
 
     // Check if key exists
     if (!specGroup.keys.includes(data.key)) {
-      return { error: 'Key Not Found!' };
+      return { error: "Key Not Found!" };
     }
 
     // Remove key from array
@@ -315,3 +333,34 @@ export const deleteSingleSpec = async (data: { specGroupID: string; key: string 
     return { error: JSON.stringify(error) };
   }
 };
+
+
+export type GetCategoryOptionSets = Awaited<
+  ReturnType<typeof getCategoryOptionSets>
+>['res'];
+
+export const getCategoryOptionSets = async () => {
+  try {
+    const result = await db.optionSet.findMany({
+      include: { options: true },
+      orderBy: { name: "asc" },
+    });
+    if (!result || result.length === 0) return { error: "Not Found!" };
+    return { res: result };
+  } catch (error) {
+    console.log(error);
+    return { error: "Can't read option sets" };
+  }
+};
+
+// export const getSpecGroups = async () => {
+//   try {
+//     const result = await db.specGroup.findMany({
+//       orderBy: { title: "asc" },
+//     });
+//     if (!result || result.length === 0) return { error: "Not Found!" };
+//     return { res: result };
+//   } catch (error) {
+//     return { error: JSON.stringify(error) };
+//   }
+// };
