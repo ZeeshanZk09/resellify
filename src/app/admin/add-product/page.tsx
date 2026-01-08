@@ -1,3 +1,4 @@
+"use client";
 // import { getCategories } from "@/actions/category/category";
 // import { Category } from "@/shared/lib/generated/prisma/browser";
 // import AddProductForm from "./components/add-product-client";
@@ -38,7 +39,7 @@
 // }
 
 // ProductCreationWizard.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 
 import {
@@ -75,6 +76,14 @@ import {
   addProductVariants,
 } from "@/actions/product/product";
 import { uploadImage } from "@/actions/product/product-image";
+import { OptionSet } from "@/shared/lib/generated/prisma/browser";
+import { Check, Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 
 const steps = [
   "Category Selection",
@@ -100,7 +109,19 @@ export default function ProductCreationWizard() {
     specGroups: [],
   });
 
-  const methods = useForm({
+  useEffect(() => {
+    console.log("[INIT] Product form mounted");
+  }, []);
+
+  const methods = useForm<
+    AddProductInput & {
+      images: { file: File }[];
+      selectedCategoryIds: string[];
+      selectedOptionSets: OptionSet[];
+      specifications: { groupId: string; value: string }[];
+      variants: { optionSetId: string; price: number; stock: number }[];
+    }
+  >({
     defaultValues: {
       // Step 1: Category
       selectedCategoryIds: [],
@@ -112,10 +133,10 @@ export default function ProductCreationWizard() {
       title: "",
       slug: "",
       sku: "",
-      basePrice: "",
-      salePrice: "",
+      basePrice: 0,
+      salePrice: 0,
       shortDescription: "",
-      longDescription: "",
+      description: "",
       status: "DRAFT",
       visibility: "UNLISTED",
       images: [],
@@ -127,7 +148,6 @@ export default function ProductCreationWizard() {
 
       // Step 5: Variants
       variants: [],
-      variantGenerationMethod: "matrix", // 'matrix' or 'manual'
 
       // SEO
       metaTitle: "",
@@ -136,49 +156,72 @@ export default function ProductCreationWizard() {
     },
   });
 
+  console.log("[FORM] Default values loaded", methods.getValues());
+
   // Load pre-requisite data
   useEffect(() => {
+    console.log("[FETCH] Loading prerequisite data...");
     fetchPreloadedData();
   }, []);
 
-  const fetchPreloadedData = async () => {
+  const fetchPreloadedData = useCallback(async () => {
     try {
       setLoading(true);
+
+      console.time("[FETCH] Preloaded Data");
       const [categoriesRes, optionSetsRes, specGroupsRes] = await Promise.all([
-        await getCategoryTree(),
-        await getCategoryOptionSets(),
-        await getSpecGroups(),
+        getCategoryTree(),
+        getCategoryOptionSets(),
+        getSpecGroups(),
       ]);
+      console.timeEnd("[FETCH] Preloaded Data");
 
       setPreloadedData({
         categories: categoriesRes.res,
         optionSets: optionSetsRes.res,
         specGroups: specGroupsRes.res,
       });
+
+      console.log("[FETCH] Categories:", categoriesRes.res);
+      console.log("[FETCH] Option Sets:", optionSetsRes.res);
+      console.log("[FETCH] Spec Groups:", specGroupsRes.res);
     } catch (err) {
+      console.error("[ERROR] Failed loading preloaded data", err);
       setError("Failed to load required data");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleNext = async () => {
-    // Validate current step
+    console.log(`[STEP] Trying to move forward from step ${activeStep}`);
+
     const isValid = await methods.trigger();
+
+    console.log(`[STEP] Validation result:`, isValid);
+
     if (isValid) {
-      setActiveStep((prevStep) => prevStep + 1);
+      setActiveStep((prev) => {
+        console.log(`[STEP] Moving to step ${prev + 1}`);
+        return prev + 1;
+      });
+    } else {
+      console.warn("[STEP] Validation failed", methods.formState.errors);
     }
   };
 
   const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
+    setActiveStep((prev) => {
+      console.log(`[STEP] Moving back to step ${prev - 1}`);
+      return prev - 1;
+    });
   };
 
   const handleSubmit = async (
     data: AddProductInput & {
       images: { file: File }[];
       selectedCategoryIds: string[];
-      selectedOptionSets: string[];
+      selectedOptionSets: OptionSet[];
       specifications: { groupId: string; value: string }[];
       variants: { optionSetId: string; price: number; stock: number }[];
     }
@@ -296,82 +339,108 @@ export default function ProductCreationWizard() {
 
   return (
     <FormProvider {...methods}>
-      <Box sx={{ maxWidth: 1200, margin: "auto", p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          Create New Product
-        </Typography>
+      <div className="max-w-6xl mx-auto p-6">
+        {/* Title */}
+        <h1 className="text-2xl font-semibold mb-6">Create New Product</h1>
 
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-          <form onSubmit={methods.handleSubmit((data) => handleSubmit({
-            ...data,
-            images: data.images.map((image) => ({ file: image.file })),
-            basePrice: Number(data.basePrice),
-            salePrice: data.salePrice ? Number(data.salePrice) : null,
-          } ))}>
-            {renderStep(activeStep)}
-
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
-            >
-              <Button
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                variant="outlined"
+        {/* Stepper */}
+        <div className="flex items-center gap-4 mb-8">
+          {steps.map((label, index) => (
+            <div key={label} className="flex items-center gap-2">
+              <div
+                className={`h-8 w-8 flex items-center justify-center rounded-full text-sm font-medium
+              ${
+                index <= activeStep
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-muted-foreground text-muted-foreground"
+              }
+            `}
               >
-                Back
-              </Button>
-
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={loading}
-                  startIcon={loading && <CircularProgress size={20} />}
-                >
-                  {loading ? "Creating..." : "Create Product"}
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  onClick={handleNext}
-                  disabled={loading}
-                >
-                  Next
-                </Button>
+                {index < activeStep ? <Check className="h-4 w-4" /> : index + 1}
+              </div>
+              <span
+                className={`text-sm ${
+                  index === activeStep ? "font-medium" : "text-muted-foreground"
+                }`}
+              >
+                {label}
+              </span>
+              {index !== steps.length - 1 && (
+                <div className="w-6 h-px bg-muted-foreground/30" />
               )}
-            </Box>
-          </form>
-        </Paper>
+            </div>
+          ))}
+        </div>
 
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError("")}
-        >
-          <Alert severity="error" onClose={() => setError("")}>
-            {error}
-          </Alert>
-        </Snackbar>
+        {/* Form Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>{steps[activeStep]}</CardTitle>
+          </CardHeader>
 
-        <Snackbar
-          open={!!success}
-          autoHideDuration={6000}
-          onClose={() => setSuccess("")}
-        >
-          <Alert severity="success" onClose={() => setSuccess("")}>
-            {success}
+          <CardContent>
+            <form
+              onSubmit={methods.handleSubmit((data) =>
+                handleSubmit({
+                  ...data,
+                  images: data.images.map((image) => ({ file: image.file })),
+                  basePrice: Number(data.basePrice),
+                  salePrice: data.salePrice ? Number(data.salePrice) : null,
+                  status: data.status!,
+                  visibility: data.visibility!,
+                  inventory: data.inventory,
+                  lowStockThreshold: data.lowStockThreshold,
+                  metaTitle: data.metaTitle,
+                  metaDescription: data.metaDescription,
+                  canonicalUrl: data.canonicalUrl,
+                })
+              )}
+              className="space-y-6"
+            >
+              {renderStep(activeStep)}
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between pt-6">
+                <Button
+                  type="button"
+                  variant={"outlined"}
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                >
+                  Back
+                </Button>
+
+                {activeStep === steps.length - 1 ? (
+                  <Button type="submit" disabled={loading}>
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {loading ? "Creating..." : "Create Product"}
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={handleNext} disabled={loading}>
+                    Next
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant={"standard"} className="mb-4">
+            <p>{error}</p>
           </Alert>
-        </Snackbar>
-      </Box>
+        )}
+
+        {/* Success Alert */}
+        {success && (
+          <Alert className="border-green-500 text-green-600">
+            <p>{success}</p>
+          </Alert>
+        )}
+      </div>
     </FormProvider>
   );
 }
