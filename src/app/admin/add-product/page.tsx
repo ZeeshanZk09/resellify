@@ -230,7 +230,17 @@ export default function ProductCreationWizard() {
       setLoading(true);
       setError("");
 
+      console.group("[SUBMIT] Product Data");
+      console.log("Raw Form Data:", data);
+      console.log("Images:", data.images);
+      console.log("Categories:", data.selectedCategoryIds);
+      console.log("Option Sets:", data.selectedOptionSets);
+      console.log("Specifications:", data.specifications);
+      console.log("Variants:", data.variants);
+      console.groupEnd();
+
       // Step 1: Create basic product
+      console.time("[API] addProduct");
       const productRes = await addProduct({
         title: data.title,
 
@@ -249,13 +259,18 @@ export default function ProductCreationWizard() {
         metaDescription: data.metaDescription,
         canonicalUrl: data.canonicalUrl,
       });
-
+      console.timeEnd("[API] addProduct");
       const productId = productRes.data?.id;
+      console.log("[API] Product created with ID:", productId);
 
       // Step 2: Upload images
       if (data.images.length > 0) {
+        console.log(`[UPLOAD] Uploading ${data.images.length} images`);
+
         await Promise.all(
-          data.images.map(async (image: { file: File }) => {
+          data.images.map(async (image: { file: File }, index: number) => {
+            console.log(`[UPLOAD] Image ${index + 1}`, image.file.name);
+
             const formData = new FormData();
             formData.append("file", image.file);
             formData.append("productId", productId!);
@@ -268,10 +283,12 @@ export default function ProductCreationWizard() {
             );
           })
         );
+        console.log("[UPLOAD] Images uploaded successfully");
       }
 
       // Step 3: Add specifications
       if (data.specifications.length > 0) {
+        console.log("[SPECS] Adding specifications", data.specifications);
         await addProductSpecs(
           productId!,
           data.specifications.map((spec) => ({
@@ -284,6 +301,8 @@ export default function ProductCreationWizard() {
 
       // Step 4: Create variants
       if (data.variants.length > 0) {
+        console.log("[VARIANTS] Creating variants", data.variants);
+
         await addProductVariants(
           productId!,
           data.variants.map((variant) => ({
@@ -293,11 +312,12 @@ export default function ProductCreationWizard() {
           }))
         );
       }
-
+      console.log("[SUCCESS] Product created successfully");
       setSuccess("Product created successfully!");
       methods.reset();
       setActiveStep(0);
     } catch (err: any) {
+      console.error("[ERROR] Product creation failed", err);
       setError(err.response?.data?.message || "Failed to create product");
     } finally {
       setLoading(false);

@@ -18,53 +18,90 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Label } from "@/shared/components/ui/label";
+import { GetCategoryOptionSets } from "@/actions/category/categoryOptions";
+import { OptionType } from "@/shared/lib/generated/prisma/enums";
+import { Option } from "@/shared/lib/generated/prisma/browser";
+
+// --- Local types (adapt to your real types if you have them) ---
+
+export interface OptionSet {
+  id: string;
+  name: string;
+  type: OptionType;
+  options?: Option[];
+  categories?: { id: string }[];
+}
+
+interface FormValues {
+  selectedOptionSets?: OptionSet[];
+}
 
 export default function OptionSetsStep({
   optionSets,
   selectedCategoryIds,
 }: {
-  optionSets: any[];
+  optionSets: GetCategoryOptionSets;
   selectedCategoryIds: string[];
 }) {
-  const { control, watch, setValue } = useFormContext();
-  const [newOptionSet, setNewOptionSet] = useState({
+  // properly type form context
+  const { control, watch, setValue, getValues } = useFormContext<FormValues>();
+
+  // typed local state for creating new sets and holding typed input values
+  const [newOptionSet, setNewOptionSet] = useState<
+    Pick<OptionSet, "name" | "type">
+  >({
     name: "",
     type: "TEXT",
   });
   const [optionValues, setOptionValues] = useState<Record<string, string>>({});
 
-  const selectedSets = watch("selectedOptionSets") || [];
+  // watch selected option sets (defaults to empty array)
+  const selectedSets = watch("selectedOptionSets") ?? [];
+
+  // cast incoming prop to our local OptionSet[] type so we can get auto-complete
+  const optionSetsTyped = (optionSets ?? []) as OptionSet[];
 
   // Filter option sets by selected categories
-  const filteredOptionSets = optionSets.filter((set) =>
-    set.categories.some((cat: any) => selectedCategoryIds.includes(cat.id))
-  );
+  const filteredOptionSets = optionSetsTyped.filter((set) => {
+    console.log("set: ", set);
+    const filterData = Boolean(
+      set.categories?.some((cat) => selectedCategoryIds.includes(cat.id))
+    );
+    console.log("filterData: ", filterData);
+    debugger;
+    return filterData;
+  });
 
   const handleAddOptionSet = () => {
-    if (!newOptionSet.name) return;
+    if (!newOptionSet.name?.trim()) return;
 
-    const newSet = {
-      ...newOptionSet,
+    const newSet: OptionSet = {
       id: `temp_${Date.now()}`,
+      name: newOptionSet.name.trim(),
+      type: newOptionSet.type as OptionType,
       options: [],
     };
 
-    setValue("selectedOptionSets", [...selectedSets, newSet]);
+    setValue("selectedOptionSets", [...(selectedSets || []), newSet]);
     setNewOptionSet({ name: "", type: "TEXT" });
   };
 
   const handleAddOptionValue = (setId: string, value: string) => {
-    if (!value?.trim()) return;
+    const val = value?.trim();
+    if (!val) return;
 
-    const updatedSets = selectedSets.map((set: any) => {
+    const current: OptionSet[] = getValues("selectedOptionSets") ?? [];
+
+    const updatedSets = current.map((set) => {
       if (set.id === setId) {
-        const newOption = {
+        const newOption: Option = {
           id: `opt_${Date.now()}`,
-          name: value.trim(),
-          value:
-            set.type === "COLOR" ? value.trim() : value.trim().toLowerCase(),
+          name: val,
+          value: set.type === "COLOR" ? val : val.toLowerCase(),
+          optionSetId: set.id,
+          position: set.options?.length ?? 0,
         };
-        return { ...set, options: [...(set.options || []), newOption] };
+        return { ...set, options: [...(set.options ?? []), newOption] };
       }
       return set;
     });
@@ -73,7 +110,20 @@ export default function OptionSetsStep({
     setOptionValues((prev) => ({ ...prev, [setId]: "" }));
   };
 
-  const renderOptionInput = (set: any) => {
+  const handleRemoveOption = (setId: string, optionId: string) => {
+    const current: OptionSet[] = getValues("selectedOptionSets") ?? [];
+    const updated = current.map((s) =>
+      s.id === setId
+        ? { ...s, options: s.options?.filter((o) => o.id !== optionId) }
+        : s
+    );
+    setValue("selectedOptionSets", updated);
+  };
+
+  const renderOptionInput = (set: OptionSet) => {
+    console.log("set2: ", set);
+    const value = optionValues[set.id] ?? "";
+
     switch (set.type) {
       case "COLOR":
         return (
@@ -84,7 +134,7 @@ export default function OptionSetsStep({
             <Input
               className="pl-9 h-9"
               placeholder="#000000 or Color Name"
-              value={optionValues[set.id] || ""}
+              value={value}
               onChange={(e) =>
                 setOptionValues((prev) => ({
                   ...prev,
@@ -101,7 +151,7 @@ export default function OptionSetsStep({
             className="w-full max-w-[200px] h-9"
             type="number"
             placeholder="Enter value"
-            value={optionValues[set.id] || ""}
+            value={value}
             onChange={(e) =>
               setOptionValues((prev) => ({ ...prev, [set.id]: e.target.value }))
             }
@@ -112,7 +162,7 @@ export default function OptionSetsStep({
           <Input
             className="w-full max-w-[200px] h-9"
             placeholder="Enter option value"
-            value={optionValues[set.id] || ""}
+            value={value}
             onChange={(e) =>
               setOptionValues((prev) => ({ ...prev, [set.id]: e.target.value }))
             }
@@ -147,7 +197,10 @@ export default function OptionSetsStep({
               <Select
                 value={newOptionSet.type}
                 onValueChange={(value) =>
-                  setNewOptionSet((prev) => ({ ...prev, type: value }))
+                  setNewOptionSet((prev) => ({
+                    ...prev,
+                    type: value as OptionType,
+                  }))
                 }
               >
                 <SelectTrigger>
@@ -162,7 +215,11 @@ export default function OptionSetsStep({
                 </SelectContent>
               </Select>
             </div>
-            <Button className="w-full sm:w-auto" onClick={handleAddOptionSet}>
+            <Button
+              className="w-full sm:w-auto"
+              onClick={handleAddOptionSet}
+              disabled={!newOptionSet.name.trim()}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Set
             </Button>
@@ -207,38 +264,52 @@ export default function OptionSetsStep({
                     <Controller
                       name="selectedOptionSets"
                       control={control}
-                      render={({ field }) => (
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                          checked={field.value?.some(
-                            (s: any) => s.id === set.id
-                          )}
-                          onChange={(e) => {
-                            const newValue = e.target.checked
-                              ? [...(field.value || []), set]
-                              : field.value.filter((s: any) => s.id !== set.id);
-                            field.onChange(newValue);
-                          }}
-                        />
-                      )}
+                      render={({ field }) => {
+                        const arr = Array.isArray(field.value)
+                          ? field.value
+                          : [];
+                        const checked = arr.some((s) => s.id === set.id);
+
+                        return (
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            checked={checked}
+                            onChange={(e) => {
+                              const next = e.target.checked
+                                ? [...arr, set]
+                                : arr.filter((s) => s.id !== set.id);
+                              field.onChange(next);
+                            }}
+                          />
+                        );
+                      }}
                     />
                   </td>
+
                   <td className="p-4 align-middle font-medium">{set.name}</td>
+
                   <td className="p-4 align-middle">
                     <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
                       {set.type}
                     </div>
                   </td>
+
                   <td className="p-4 align-middle">
                     <div className="flex flex-wrap gap-1.5">
-                      {set.options?.map((opt: any) => (
+                      {(
+                        selectedSets.find((s) => s.id === set.id)?.options ??
+                        set.options ??
+                        []
+                      ).map((opt: Option) => (
                         <div
                           key={opt.id}
                           className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1"
                           style={{
                             backgroundColor:
-                              set.type === "COLOR" ? opt.value : undefined,
+                              set.type === "COLOR"
+                                ? opt.value! && opt.value
+                                : undefined,
                             color: set.type === "COLOR" ? "#fff" : undefined,
                             borderColor:
                               set.type === "COLOR" ? "transparent" : undefined,
@@ -252,19 +323,7 @@ export default function OptionSetsStep({
                             {opt.name}
                           </span>
                           <button
-                            onClick={() => {
-                              const updatedSets = selectedSets.map((s: any) =>
-                                s.id === set.id
-                                  ? {
-                                      ...s,
-                                      options: s.options?.filter(
-                                        (o: any) => o.id !== opt.id
-                                      ),
-                                    }
-                                  : s
-                              );
-                              setValue("selectedOptionSets", updatedSets);
-                            }}
+                            onClick={() => handleRemoveOption(set.id, opt.id)}
                             className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -274,6 +333,7 @@ export default function OptionSetsStep({
                       ))}
                     </div>
                   </td>
+
                   <td className="p-4 align-middle">
                     <div className="flex gap-2 items-center">
                       {renderOptionInput(set)}
@@ -281,7 +341,10 @@ export default function OptionSetsStep({
                         size="sm"
                         variant="secondary"
                         onClick={() =>
-                          handleAddOptionValue(set.id, optionValues[set.id])
+                          handleAddOptionValue(
+                            set.id,
+                            optionValues[set.id] ?? ""
+                          )
                         }
                         disabled={!optionValues[set.id]}
                       >

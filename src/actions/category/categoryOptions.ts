@@ -334,22 +334,39 @@ export const deleteSingleSpec = async (data: {
   }
 };
 
-
 export type GetCategoryOptionSets = Awaited<
   ReturnType<typeof getCategoryOptionSets>
->['res'];
+>["res"];
 
 export const getCategoryOptionSets = async () => {
   try {
     const result = await db.optionSet.findMany({
-      include: { options: true },
+      include: {
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+        options: {
+          include: {
+            optionSet: true,
+          }
+        },
+      },
       orderBy: { name: "asc" },
     });
-    if (!result || result.length === 0) return { error: "Not Found!" };
+    if (!result || result.length === 0)
+      return {
+        res: [],
+        error: "Not Found!",
+      };
     return { res: result };
   } catch (error) {
     console.log(error);
-    return { error: "Can't read option sets" };
+    return {
+      res: [],
+      error: "Can't read option sets",
+    };
   }
 };
 
