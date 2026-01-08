@@ -1,4 +1,4 @@
-"use client";
+'use client';
 // import { getCategories } from "@/actions/category/category";
 // import { Category } from "@/shared/lib/generated/prisma/browser";
 // import AddProductForm from "./components/add-product-client";
@@ -39,8 +39,8 @@
 // }
 
 // ProductCreationWizard.jsx
-import React, { useState, useEffect, useCallback } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
 
 import {
   Box,
@@ -53,52 +53,42 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
-} from "@mui/material";
-import CategoryStep from "./_components/CategoryStep";
-import OptionSetsStep from "./_components/OptionSetsStep";
-import BasicInfoStep from "./_components/BasicInformationForm";
-import SpecificationsStep from "./_components/SpecificationsStep";
-import VariantsStep from "./_components/VariantsStep";
-import ReviewStep from "./_components/ReviewStep";
-import { GetCategoryTree, getCategoryTree } from "@/actions/category/category";
-import {
-  GetCategoryOptionSets,
-  getCategoryOptionSets,
-} from "@/actions/category/categoryOptions";
-import {
-  GetSpecGroups,
-  getSpecGroups,
-} from "@/actions/category/specifications";
+} from '@mui/material';
+import CategoryStep from './_components/CategoryStep';
+import OptionSetsStep from './_components/OptionSetsStep';
+import BasicInfoStep from './_components/BasicInformationForm';
+import SpecificationsStep from './_components/SpecificationsStep';
+import VariantsStep from './_components/VariantsStep';
+import ReviewStep from './_components/ReviewStep';
+import { GetCategoryTree, getCategoryTree } from '@/actions/category/category';
+import { GetCategoryOptionSets, getCategoryOptionSets } from '@/actions/category/categoryOptions';
+import { GetSpecGroups, getSpecGroups } from '@/actions/category/specifications';
 import {
   addProduct,
   AddProductInput,
   addProductSpecs,
   addProductVariants,
-} from "@/actions/product/product";
-import { uploadImage } from "@/actions/product/product-image";
-import { OptionSet } from "@/shared/lib/generated/prisma/browser";
-import { Check, Loader2 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+} from '@/actions/product/product';
+import { uploadImage } from '@/actions/product/product-image';
+import { OptionSet } from '@/shared/lib/generated/prisma/browser';
+import { Check, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { toast } from 'sonner';
 
 const steps = [
-  "Category Selection",
-  "Option Sets",
-  "Basic Information",
-  "Specifications",
-  "Variants",
-  "Review & Create",
+  'Category Selection',
+  'Option Sets',
+  'Basic Information',
+  'Specifications',
+  'Variants',
+  'Review & Create',
 ];
 
 export default function ProductCreationWizard() {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [preloadedData, setPreloadedData] = useState<{
     categories: GetCategoryTree;
     optionSets: GetCategoryOptionSets;
@@ -110,7 +100,7 @@ export default function ProductCreationWizard() {
   });
 
   useEffect(() => {
-    console.log("[INIT] Product form mounted");
+    console.log('[INIT] Product form mounted');
   }, []);
 
   const methods = useForm<
@@ -130,15 +120,15 @@ export default function ProductCreationWizard() {
       selectedOptionSets: [],
 
       // Step 3: Basic Info
-      title: "",
-      slug: "",
-      sku: "",
+      title: '',
+      slug: '',
+      sku: '',
       basePrice: 0,
       salePrice: 0,
-      shortDescription: "",
-      description: "",
-      status: "DRAFT",
-      visibility: "UNLISTED",
+      shortDescription: '',
+      description: '',
+      status: 'DRAFT',
+      visibility: 'UNLISTED',
       images: [],
       inventory: 0,
       lowStockThreshold: 5,
@@ -150,17 +140,17 @@ export default function ProductCreationWizard() {
       variants: [],
 
       // SEO
-      metaTitle: "",
-      metaDescription: "",
-      canonicalUrl: "",
+      metaTitle: '',
+      metaDescription: '',
+      canonicalUrl: '',
     },
   });
 
-  console.log("[FORM] Default values loaded", methods.getValues());
+  console.log('[FORM] Default values loaded', methods.getValues());
 
   // Load pre-requisite data
   useEffect(() => {
-    console.log("[FETCH] Loading prerequisite data...");
+    console.log('[FETCH] Loading prerequisite data...');
     fetchPreloadedData();
   }, []);
 
@@ -168,13 +158,17 @@ export default function ProductCreationWizard() {
     try {
       setLoading(true);
 
-      console.time("[FETCH] Preloaded Data");
+      console.time('[FETCH] Preloaded Data');
       const [categoriesRes, optionSetsRes, specGroupsRes] = await Promise.all([
-        getCategoryTree(),
+        getCategoryTree().then((res) => {
+          console.log('[FETCH] Categories:', res?.res);
+          methods.setValue('selectedCategoryIds', res?.res?.map((cat) => cat.id) || []);
+          return res;
+        }),
         getCategoryOptionSets(),
         getSpecGroups(),
       ]);
-      console.timeEnd("[FETCH] Preloaded Data");
+      console.timeEnd('[FETCH] Preloaded Data');
 
       setPreloadedData({
         categories: categoriesRes.res,
@@ -182,12 +176,12 @@ export default function ProductCreationWizard() {
         specGroups: specGroupsRes.res,
       });
 
-      console.log("[FETCH] Categories:", categoriesRes.res);
-      console.log("[FETCH] Option Sets:", optionSetsRes.res);
-      console.log("[FETCH] Spec Groups:", specGroupsRes.res);
+      console.log('[FETCH] Categories:', categoriesRes.res);
+      console.log('[FETCH] Option Sets:', optionSetsRes.res);
+      console.log('[FETCH] Spec Groups:', specGroupsRes.res);
     } catch (err) {
-      console.error("[ERROR] Failed loading preloaded data", err);
-      setError("Failed to load required data");
+      console.error('[ERROR] Failed loading preloaded data', err);
+      setError('Failed to load required data');
     } finally {
       setLoading(false);
     }
@@ -206,7 +200,7 @@ export default function ProductCreationWizard() {
         return prev + 1;
       });
     } else {
-      console.warn("[STEP] Validation failed", methods.formState.errors);
+      console.warn('[STEP] Validation failed', methods.formState.errors);
     }
   };
 
@@ -228,19 +222,19 @@ export default function ProductCreationWizard() {
   ) => {
     try {
       setLoading(true);
-      setError("");
+      setError('');
 
-      console.group("[SUBMIT] Product Data");
-      console.log("Raw Form Data:", data);
-      console.log("Images:", data.images);
-      console.log("Categories:", data.selectedCategoryIds);
-      console.log("Option Sets:", data.selectedOptionSets);
-      console.log("Specifications:", data.specifications);
-      console.log("Variants:", data.variants);
+      console.group('[SUBMIT] Product Data');
+      console.log('Raw Form Data:', data);
+      console.log('Images:', data.images);
+      console.log('Categories:', data.selectedCategoryIds);
+      console.log('Option Sets:', data.selectedOptionSets);
+      console.log('Specifications:', data.specifications);
+      console.log('Variants:', data.variants);
       console.groupEnd();
 
       // Step 1: Create basic product
-      console.time("[API] addProduct");
+      console.time('[API] addProduct');
       const productRes = await addProduct({
         title: data.title,
 
@@ -259,9 +253,9 @@ export default function ProductCreationWizard() {
         metaDescription: data.metaDescription,
         canonicalUrl: data.canonicalUrl,
       });
-      console.timeEnd("[API] addProduct");
+      console.timeEnd('[API] addProduct');
       const productId = productRes.data?.id;
-      console.log("[API] Product created with ID:", productId);
+      console.log('[API] Product created with ID:', productId);
 
       // Step 2: Upload images
       if (data.images.length > 0) {
@@ -272,23 +266,23 @@ export default function ProductCreationWizard() {
             console.log(`[UPLOAD] Image ${index + 1}`, image.file.name);
 
             const formData = new FormData();
-            formData.append("file", image.file);
-            formData.append("productId", productId!);
+            formData.append('file', image.file);
+            formData.append('productId', productId!);
             await uploadImage(
               {
                 productId: productId!,
-                type: "PRODUCT",
+                type: 'PRODUCT',
               },
-              formData.get("file") as File
+              formData.get('file') as File
             );
           })
         );
-        console.log("[UPLOAD] Images uploaded successfully");
+        console.log('[UPLOAD] Images uploaded successfully');
       }
 
       // Step 3: Add specifications
       if (data.specifications.length > 0) {
-        console.log("[SPECS] Adding specifications", data.specifications);
+        console.log('[SPECS] Adding specifications', data.specifications);
         await addProductSpecs(
           productId!,
           data.specifications.map((spec) => ({
@@ -301,7 +295,7 @@ export default function ProductCreationWizard() {
 
       // Step 4: Create variants
       if (data.variants.length > 0) {
-        console.log("[VARIANTS] Creating variants", data.variants);
+        console.log('[VARIANTS] Creating variants', data.variants);
 
         await addProductVariants(
           productId!,
@@ -312,13 +306,13 @@ export default function ProductCreationWizard() {
           }))
         );
       }
-      console.log("[SUCCESS] Product created successfully");
-      setSuccess("Product created successfully!");
+      console.log('[SUCCESS] Product created successfully');
+      setSuccess('Product created successfully!');
       methods.reset();
       setActiveStep(0);
     } catch (err: any) {
-      console.error("[ERROR] Product creation failed", err);
-      setError(err.response?.data?.message || "Failed to create product");
+      console.error('[ERROR] Product creation failed', err);
+      setError(err.response?.data?.message || 'Failed to create product');
     } finally {
       setLoading(false);
     }
@@ -327,17 +321,21 @@ export default function ProductCreationWizard() {
   const renderStep = (step: number) => {
     switch (step) {
       case 0:
-        return (
-          <CategoryStep
-            categories={preloadedData.categories!}
-            loading={loading}
-          />
-        );
+        return <CategoryStep categories={preloadedData.categories!} loading={loading} />;
       case 1:
         return (
           <OptionSetsStep
             optionSets={preloadedData.optionSets!}
-            selectedCategoryIds={methods.watch("selectedCategoryIds")}
+            selectedCategoryIds={(() => {
+              const ids = methods.watch('selectedCategoryIds');
+              console.log('[DEBUG] selectedCategoryIds in OptionSetsStep:', ids);
+              if (!ids) {
+                toast.warning('No categories selected');
+                debugger;
+                return [];
+              }
+              return ids.map((id) => id.toString());
+            })()}
           />
         );
       case 2:
@@ -345,11 +343,7 @@ export default function ProductCreationWizard() {
       case 3:
         return <SpecificationsStep specGroups={preloadedData.specGroups!} />;
       case 4:
-        return (
-          <VariantsStep
-            selectedOptionSets={methods.watch("selectedOptionSets")}
-          />
-        );
+        return <VariantsStep selectedOptionSets={methods.watch('selectedOptionSets')} />;
       case 5:
         return <ReviewStep />;
       default:
@@ -359,41 +353,39 @@ export default function ProductCreationWizard() {
 
   return (
     <FormProvider {...methods}>
-      <div className="max-w-6xl mx-auto p-6">
+      <div className='max-w-6xl mx-auto p-6 py-14'>
         {/* Title */}
-        <h1 className="text-2xl font-semibold mb-6">Create New Product</h1>
+        <h1 className='text-2xl font-semibold mb-6'>Create New Product</h1>
 
         {/* Stepper */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className='flex items-center gap-4 mb-8'>
           {steps.map((label, index) => (
-            <div key={label} className="flex items-center gap-2">
+            <div key={label} className='flex items-center gap-2'>
               <div
                 className={`h-8 w-8 flex items-center justify-center rounded-full text-sm font-medium
               ${
                 index <= activeStep
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-muted-foreground text-muted-foreground"
+                  ? 'bg-primary text-primary-foreground'
+                  : 'border border-muted-foreground text-muted-foreground'
               }
             `}
               >
-                {index < activeStep ? <Check className="h-4 w-4" /> : index + 1}
+                {index < activeStep ? <Check className='h-4 w-4' /> : index + 1}
               </div>
               <span
                 className={`text-sm ${
-                  index === activeStep ? "font-medium" : "text-muted-foreground"
+                  index === activeStep ? 'font-medium' : 'text-muted-foreground'
                 }`}
               >
                 {label}
               </span>
-              {index !== steps.length - 1 && (
-                <div className="w-6 h-px bg-muted-foreground/30" />
-              )}
+              {index !== steps.length - 1 && <div className='w-6 h-px bg-muted-foreground/30' />}
             </div>
           ))}
         </div>
 
         {/* Form Card */}
-        <Card className="mb-6">
+        <Card className='mb-6'>
           <CardHeader>
             <CardTitle>{steps[activeStep]}</CardTitle>
           </CardHeader>
@@ -415,15 +407,15 @@ export default function ProductCreationWizard() {
                   canonicalUrl: data.canonicalUrl,
                 })
               )}
-              className="space-y-6"
+              className='space-y-6'
             >
               {renderStep(activeStep)}
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between pt-6">
+              <div className='flex justify-between pt-6'>
                 <Button
-                  type="button"
-                  variant={"outlined"}
+                  type='button'
+                  variant={'outlined'}
                   disabled={activeStep === 0}
                   onClick={handleBack}
                 >
@@ -431,14 +423,12 @@ export default function ProductCreationWizard() {
                 </Button>
 
                 {activeStep === steps.length - 1 ? (
-                  <Button type="submit" disabled={loading}>
-                    {loading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {loading ? "Creating..." : "Create Product"}
+                  <Button type='submit' disabled={loading}>
+                    {loading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                    {loading ? 'Creating...' : 'Create Product'}
                   </Button>
                 ) : (
-                  <Button type="button" onClick={handleNext} disabled={loading}>
+                  <Button type='button' onClick={handleNext} disabled={loading}>
                     Next
                   </Button>
                 )}
@@ -449,14 +439,14 @@ export default function ProductCreationWizard() {
 
         {/* Error Alert */}
         {error && (
-          <Alert variant={"standard"} className="mb-4">
+          <Alert variant={'standard'} className='mb-4'>
             <p>{error}</p>
           </Alert>
         )}
 
         {/* Success Alert */}
         {success && (
-          <Alert className="border-green-500 text-green-600">
+          <Alert className='border-green-500 text-green-600'>
             <p>{success}</p>
           </Alert>
         )}
