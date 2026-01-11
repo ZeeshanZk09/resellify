@@ -1,15 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from './ui/input';
 import { useRouter } from 'next/navigation';
 
 export default function SearchInput() {
   const [query, setQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
+
+  useEffect(() => {
+    if (mounted) return;
+    setMounted(true);
+  }, []);
 
   const handleClear = () => {
     setQuery('');
@@ -22,6 +28,12 @@ export default function SearchInput() {
     // Navigate to a search results page with query params
     router.push(`/shop?query=${encodeURIComponent(query)}`);
   };
+
+  if (!mounted) {
+    return (
+      <div className='hidden sm:flex max-w-lg w-full h-10 bg-muted animate-pulse rounded-md' />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className='hidden sm:flex items-center max-w-lg w-full relative'>

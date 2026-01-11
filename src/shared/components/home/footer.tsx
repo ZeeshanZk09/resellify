@@ -2,6 +2,7 @@ import ThemeSwitch from "../theme-switch";
 import Link from "next/link";
 import { ChevronRight, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
+import { Input } from "../ui/input";
 
 const Footer = () => {
   return (
@@ -32,7 +33,7 @@ const Footer = () => {
             <div className="mt-2">
               <h3 className="text-sm font-semibold mb-2">Stay Updated</h3>
               <div className="flex flex-col sm:flex-row gap-2">
-                <input
+                <Input
                   type="email"
                   placeholder="Enter your email"
                   className="px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"

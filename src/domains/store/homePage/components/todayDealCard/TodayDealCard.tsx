@@ -16,7 +16,7 @@ type TProps = {
   productName: string;
   newPrice: number;
   oldPrice: number;
-  image: [Upload, Upload];
+  image?: [Upload, Upload];
   dealEndTime?: Date | string;
   spec?: { name: string; value: string }[];
   url: string;
@@ -106,8 +106,9 @@ const TodayDealCard = ({
   const { days, hours, minutes, seconds } = formatMsToDHMS(timeLeftMs);
   const saveAmount = Math.max(0, oldPrice - newPrice);
   console.log("saveAmount: ", saveAmount, "typeof: ", typeof saveAmount);
-  //   console.log('image in toadys deal card: ', image);
-  console.log("product-specs: ", spec);
+  console.log('image in toadys deal card: ', image);
+  // console.log("product: ", spec);
+
 
   return (
     <article
@@ -171,7 +172,7 @@ const TodayDealCard = ({
             {!!spec.length ? (
               <ul className="text-xs sm:text-sm text-foreground/70 space-y-1 line-clamp-3">
                 {spec.map((item, index) => (
-                  <li key={index}>
+                  <li key={index + Math.random()}>
                     <span className="font-medium">{item.name}:</span>{" "}
                     {item.value ? item.value : "N/A"}
                   </li>

@@ -39,21 +39,13 @@
 // }
 
 // ProductCreationWizard.jsx
-import React, { useState, useEffect, useCallback } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-
+import { useState, useEffect, useCallback } from "react";
 import {
-  Box,
-  Stepper,
-  Step,
-  StepLabel,
-  Button,
-  Paper,
-  Typography,
-  CircularProgress,
-  Alert,
-  Snackbar,
-} from "@mui/material";
+  useForm,
+  FormProvider,
+  FieldValues,
+  SubmitHandler,
+} from "react-hook-form";
 import CategoryStep from "./_components/CategoryStep";
 import OptionSetsStep from "./_components/OptionSetsStep";
 import BasicInfoStep from "./_components/BasicInformationForm";
@@ -76,7 +68,11 @@ import {
   addProductVariants,
 } from "@/actions/product/product";
 import { uploadImage } from "@/actions/product/product-image";
-import { OptionSet } from "@/shared/lib/generated/prisma/browser";
+import {
+  OptionSet,
+  ProductSpec,
+  ProductVariant,
+} from "@/shared/lib/generated/prisma/browser";
 import { Check, Loader2 } from "lucide-react";
 import {
   Card,
@@ -85,6 +81,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { toast } from "sonner";
+import { Button } from "@/shared/components/ui/button";
 
 const steps = [
   "Category Selection",
@@ -93,13 +90,44 @@ const steps = [
   "Specifications",
   "Variants",
   "Review & Create",
-];
+] as const;
+
+// Define complete form data type
+type ProductFormData = AddProductInput & {
+  images: File[] | File;
+  selectedCategoryIds: string[];
+  selectedOptionSets: OptionSet[];
+  specifications: ProductSpec[];
+  variants: ProductVariant[];
+};
+
+// Type for the API error response
+interface ApiError {
+  message: string;
+  statusCode?: number;
+  errors?: Record<string, string[]>;
+}
+
+// Type guard for ApiError
+function isApiError(error: unknown): error is ApiError {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as ApiError).message === "string"
+  );
+}
+
+// Type guard for Error
+function isError(error: unknown): error is Error {
+  return error instanceof Error;
+}
 
 export default function ProductCreationWizard() {
-  const [activeStep, setActiveStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const [preloadedData, setPreloadedData] = useState<{
     categories: GetCategoryTree;
     optionSets: GetCategoryOptionSets;
@@ -114,15 +142,7 @@ export default function ProductCreationWizard() {
     console.log("[INIT] Product form mounted");
   }, []);
 
-  const methods = useForm<
-    AddProductInput & {
-      images: { file: File }[];
-      selectedCategoryIds: string[];
-      selectedOptionSets: OptionSet[];
-      specifications: { groupId: string; value: string }[];
-      variants: { optionSetId: string; price: number; stock: number }[];
-    }
-  >({
+  const methods = useForm<ProductFormData>({
     defaultValues: {
       // Step 1: Category
       selectedCategoryIds: [],
@@ -151,9 +171,8 @@ export default function ProductCreationWizard() {
       variants: [],
 
       // SEO
-      metaTitle: "",
-      metaDescription: "",
-      canonicalUrl: "",
+      metaKeywords: [],
+      metadata: {},
     },
   });
 
@@ -162,21 +181,28 @@ export default function ProductCreationWizard() {
   // Load pre-requisite data
   useEffect(() => {
     console.log("[FETCH] Loading prerequisite data...");
-    fetchPreloadedData();
+    let timer: NodeJS.Timeout;
+    fetchPreloadedData().then(() => {
+      timer = setTimeout(() => {
+        setLoading(false);
+      }, 600);
+    });
+    return () => clearTimeout(timer);
   }, []);
 
-  const fetchPreloadedData = useCallback(async () => {
+  const fetchPreloadedData = useCallback(async (): Promise<void> => {
     try {
-      setLoading(true);
+      // setLoading(true);
+      setError("");
 
       console.time("[FETCH] Preloaded Data");
       const [categoriesRes, optionSetsRes, specGroupsRes] = await Promise.all([
         getCategoryTree().then((res) => {
           console.log("[FETCH] Categories:", res?.res);
-          methods.setValue(
-            "selectedCategoryIds",
-            res?.res?.map((cat) => cat.id) || []
-          );
+          // methods.setValue(
+          //   "selectedCategoryIds",
+          //   res?.res?.map((cat) => cat.id) || []
+          // );
           return res;
         }),
         getCategoryOptionSets(),
@@ -185,23 +211,27 @@ export default function ProductCreationWizard() {
       console.timeEnd("[FETCH] Preloaded Data");
 
       setPreloadedData({
-        categories: categoriesRes.res,
-        optionSets: optionSetsRes.res,
-        specGroups: specGroupsRes.res,
+        categories: categoriesRes.res ?? [],
+        optionSets: optionSetsRes.res ?? [],
+        specGroups: specGroupsRes.res ?? [],
       });
 
       console.log("[FETCH] Categories:", categoriesRes.res);
       console.log("[FETCH] Option Sets:", optionSetsRes.res);
       console.log("[FETCH] Spec Groups:", specGroupsRes.res);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("[ERROR] Failed loading preloaded data", err);
-      setError("Failed to load required data");
+      const errorMessage = isError(err)
+        ? err.message
+        : "Failed to load required data";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
-  }, []);
+  }, [methods]);
 
-  const handleNext = async () => {
+  const handleNext = async (): Promise<void> => {
     console.log(`[STEP] Trying to move forward from step ${activeStep}`);
 
     const isValid = await methods.trigger();
@@ -210,36 +240,44 @@ export default function ProductCreationWizard() {
 
     if (isValid) {
       setActiveStep((prev) => {
-        console.log(`[STEP] Moving to step ${prev + 1}`);
-        return prev + 1;
+        const nextStep = prev + 1;
+        console.log(`[STEP] Moving to step ${nextStep}`);
+        return nextStep;
       });
     } else {
-      console.warn("[STEP] Validation failed", methods.formState.errors);
+      const errors = methods.formState.errors;
+      console.warn("[STEP] Validation failed", errors);
+
+      // Show first validation error
+      const firstError = Object.values(errors)[0];
+      if (firstError?.message) {
+        toast.error(firstError.message as string);
+      } else {
+        toast.error("Please fill in all required fields");
+      }
     }
   };
 
-  const handleBack = () => {
+  const handleBack = (): void => {
     setActiveStep((prev) => {
-      console.log(`[STEP] Moving back to step ${prev - 1}`);
-      return prev - 1;
+      const prevStep = prev - 1;
+      console.log(`[STEP] Moving back to step ${prevStep}`);
+      return prevStep;
     });
   };
 
-  const handleSubmit = async (
-    data: AddProductInput & {
-      images: { file: File }[];
-      selectedCategoryIds: string[];
-      selectedOptionSets: OptionSet[];
-      specifications: { groupId: string; value: string }[];
-      variants: { optionSetId: string; price: number; stock: number }[];
-    }
-  ) => {
+  const processProductSubmission = async (
+    data: ProductFormData,
+    isDraft: boolean = false
+  ): Promise<void> => {
     try {
       setLoading(true);
       setError("");
+      setSuccess("");
 
       console.group("[SUBMIT] Product Data");
       console.log("Raw Form Data:", data);
+      console.log("Is Draft:", isDraft);
       console.log("Images:", data.images);
       console.log("Categories:", data.selectedCategoryIds);
       console.log("Option Sets:", data.selectedOptionSets);
@@ -251,93 +289,88 @@ export default function ProductCreationWizard() {
       console.time("[API] addProduct");
       const productRes = await addProduct({
         title: data.title,
-
         basePrice: Number(data.basePrice),
-
         salePrice: data.salePrice ? Number(data.salePrice) : null,
         slug: data.slug,
         sku: data.sku,
         shortDescription: data.shortDescription,
         description: data.description,
-        status: data.status,
-        visibility: data.visibility,
+        status: isDraft ? "DRAFT" : data.status,
+        visibility: isDraft ? "PRIVATE" : data.visibility,
         inventory: Number(data.inventory),
         lowStockThreshold: data.lowStockThreshold,
-        metaTitle: data.metaTitle,
-        metaDescription: data.metaDescription,
-        canonicalUrl: data.canonicalUrl,
+        metaKeywords: data.metaKeywords,
+        metadata: data.metadata,
+        images: data.images,
+        specifications: data.specifications,
+        variants: data.variants,
       });
       console.timeEnd("[API] addProduct");
-      const productId = productRes.data?.id;
-      console.log("[API] Product created with ID:", productId);
 
       if (productRes.error) {
-        toast.error(productRes.error.message);
+        const errorMessage =
+          typeof productRes.error === "string"
+            ? productRes.error
+            : "Failed to create product";
+        toast.error(errorMessage);
         return;
       }
 
-      // Step 2: Upload images
-      if (data.images.length > 0) {
-        console.log(`[UPLOAD] Uploading ${data.images.length} images`);
-
-        await Promise.all(
-          data.images.map(async (image: { file: File }, index: number) => {
-            console.log(`[UPLOAD] Image ${index + 1}`, image.file.name);
-
-            const formData = new FormData();
-            formData.append("file", image.file);
-            formData.append("productId", productId!);
-            await uploadImage(
-              {
-                productId: productId!,
-                type: "PRODUCT",
-              },
-              formData.get("file") as File
-            );
-          })
-        );
-        console.log("[UPLOAD] Images uploaded successfully");
-      }
-
-      // Step 3: Add specifications
-      if (data.specifications.length > 0) {
-        console.log("[SPECS] Adding specifications", data.specifications);
-        await addProductSpecs(
-          productId!,
-          data.specifications.map((spec) => ({
-            groupTitle: spec.groupId,
-            keys: [spec.groupId],
-            values: [spec.value],
-          }))
-        );
-      }
-
-      // Step 4: Create variants
-      if (data.variants.length > 0) {
-        console.log("[VARIANTS] Creating variants", data.variants);
-
-        await addProductVariants(
-          productId!,
-          data.variants.map((variant) => ({
-            optionSetId: variant.optionSetId,
-            price: variant.price,
-            stock: variant.stock,
-          }))
-        );
-      }
       console.log("[SUCCESS] Product created successfully");
-      setSuccess("Product created successfully!");
+      const successMessage = isDraft
+        ? "Product saved as draft successfully!"
+        : "Product created successfully!";
+      setSuccess(successMessage);
+      toast.success(successMessage);
+
       methods.reset();
       setActiveStep(0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[ERROR] Product creation failed", err);
-      setError(err.response?.data?.message || "Failed to create product");
+
+      let errorMessage: string;
+
+      if (isApiError(err)) {
+        errorMessage = err.message;
+      } else if (isError(err)) {
+        errorMessage = err.message;
+      } else if (typeof err === "string") {
+        errorMessage = err;
+      } else {
+        errorMessage = "Failed to create product";
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderStep = (step: number) => {
+  const saveAsDraft = async (): Promise<void> => {
+    console.log("[STEP] Saving as draft...");
+    const data = methods.getValues();
+    await processProductSubmission(data, true);
+  };
+
+  const handleSubmit: SubmitHandler<ProductFormData> = async (
+    data
+  ): Promise<void> => {
+    console.log("[SUBMIT] Product Data", data);
+
+    // await processProductSubmission(
+    //   {
+    //     ...data,
+    //     status: "PUBLISHED",
+    //     visibility: "PUBLIC",
+    //   },
+    //   false
+    // );
+  };
+
+  const renderStep = (step: number): React.ReactNode => {
+    const watchedCategoryIds = methods.watch("selectedCategoryIds");
+
     switch (step) {
       case 0:
         return (
@@ -347,22 +380,24 @@ export default function ProductCreationWizard() {
           />
         );
       case 1:
+        const selectedCategoryIds =
+          watchedCategoryIds?.map((id: string) => id.toString()) ?? [];
+
+        if (selectedCategoryIds.length === 0) {
+          toast.warning(
+            "No categories selected. Please go back and select at least one category."
+          );
+          return (
+            <div className="p-4 text-center text-muted-foreground">
+              Please select categories in the previous step first.
+            </div>
+          );
+        }
+
         return (
           <OptionSetsStep
-            optionSets={preloadedData.optionSets!}
-            selectedCategoryIds={(() => {
-              const ids = methods.watch("selectedCategoryIds");
-              console.log(
-                "[DEBUG] selectedCategoryIds in OptionSetsStep:",
-                ids
-              );
-              if (!ids) {
-                toast.warning("No categories selected");
-                debugger;
-                return [];
-              }
-              return ids.map((id) => id.toString());
-            })()}
+            optionSets={preloadedData.optionSets}
+            selectedCategoryIds={selectedCategoryIds}
           />
         );
       case 2:
@@ -419,28 +454,23 @@ export default function ProductCreationWizard() {
 
         {/* Form Card */}
         <Card className="mb-6">
-          <CardHeader>
+          <CardHeader className="flex justify-between items-start">
             <CardTitle>{steps[activeStep]}</CardTitle>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={saveAsDraft}
+              disabled={loading || activeStep < 3}
+            >
+              Save as Draft
+            </Button>
           </CardHeader>
 
           <CardContent>
             <form
-              onSubmit={methods.handleSubmit((data) =>
-                handleSubmit({
-                  ...data,
-                  images: data.images.map((image) => ({ file: image.file })),
-                  basePrice: Number(data.basePrice),
-                  salePrice: data.salePrice ? Number(data.salePrice) : null,
-                  status: data.status!,
-                  visibility: data.visibility!,
-                  inventory: data.inventory,
-                  lowStockThreshold: data.lowStockThreshold,
-                  metaTitle: data.metaTitle,
-                  metaDescription: data.metaDescription,
-                  canonicalUrl: data.canonicalUrl,
-                })
-              )}
+              onSubmit={methods.handleSubmit(handleSubmit)}
               className="space-y-6"
+              noValidate
             >
               {renderStep(activeStep)}
 
@@ -448,7 +478,7 @@ export default function ProductCreationWizard() {
               <div className="flex justify-between pt-6">
                 <Button
                   type="button"
-                  variant={"outlined"}
+                  variant={"outline"}
                   disabled={activeStep === 0}
                   onClick={handleBack}
                 >
@@ -456,7 +486,11 @@ export default function ProductCreationWizard() {
                 </Button>
 
                 {activeStep === steps.length - 1 ? (
-                  <Button type="submit" disabled={loading}>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="min-w-[140px]"
+                  >
                     {loading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
@@ -474,16 +508,18 @@ export default function ProductCreationWizard() {
 
         {/* Error Alert */}
         {error && (
-          <Alert variant={"standard"} className="mb-4">
-            <p>{error}</p>
-          </Alert>
+          <div className="p-4 mb-4 text-red-700 bg-red-50 border border-red-200 rounded-md">
+            <p className="font-medium">Error</p>
+            <p className="text-sm">{error}</p>
+          </div>
         )}
 
         {/* Success Alert */}
         {success && (
-          <Alert className="border-green-500 text-green-600">
-            <p>{success}</p>
-          </Alert>
+          <div className="p-4 mb-4 text-green-700 bg-green-50 border border-green-200 rounded-md">
+            <p className="font-medium">Success</p>
+            <p className="text-sm">{success}</p>
+          </div>
         )}
       </div>
     </FormProvider>

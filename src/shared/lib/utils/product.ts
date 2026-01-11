@@ -56,9 +56,9 @@ function generateProductStructuredData(
 function generateProductMetadata(
   product: {
     shortDescription: string | null | undefined;
-    description: string | null | undefined;
-    metaKeywords: NullableJsonNullValueInput | InputJsonValue | undefined;
+    description?: string | null | undefined;
     title: string;
+    metaKeywords: NullableJsonNullValueInput | InputJsonValue | undefined;
     metadata: NullableJsonNullValueInput | InputJsonValue | undefined;
   },
   imageId: string

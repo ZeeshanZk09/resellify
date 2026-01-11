@@ -224,12 +224,12 @@ export const HomeSlider = ({
     >
       {totalSlides > 1 && showArrows && (
         <>
-          <div className="absolute z-[2] left-7 top-0 bottom-0 flex justify-center items-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+          <div className="absolute z-2 left-7 top-0 bottom-0 flex justify-center items-center opacity-0 group-hover:opacity-100 transition-all duration-500">
             {renderArrowLeft
               ? renderArrowLeft(() => handleSliding(activeSlideNum - 1))
               : defaultArrowLeft()}
           </div>
-          <div className="absolute z-[2] right-7 top-0 bottom-0 flex justify-center items-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+          <div className="absolute z-2 right-7 top-0 bottom-0 flex justify-center items-center opacity-0 group-hover:opacity-100 transition-all duration-500">
             {renderArrowRight
               ? renderArrowRight(() => handleSliding(activeSlideNum + 1))
               : defaultArrowRight()}

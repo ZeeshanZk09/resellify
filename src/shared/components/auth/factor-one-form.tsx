@@ -85,7 +85,7 @@ const FactorOneForm = ({ email }: Props) => {
   return (
     <Card className="w-full max-w-sm ">
       <CardHeader className="text-center">
-        <CardTitle className="text-xl"> Enter your password</CardTitle>
+        <CardTitle className="text-xl">Enter your password</CardTitle>
         <CardDescription>
           <span>Enter the password associated with your account {email}</span>
           <button
@@ -121,7 +121,7 @@ const FactorOneForm = ({ email }: Props) => {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        placeholder="shadcn"
+                        placeholder="password"
                         className="pr-10"
                         type={seePassword ? "text" : "password"}
                         {...field}

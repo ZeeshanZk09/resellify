@@ -4,6 +4,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Sparkles, Plus, Trash2 } from "lucide-react";
+import { ProductVariant } from "@/shared/lib/generated/prisma/browser";
 
 type Option = {
   id: string;
@@ -18,15 +19,13 @@ type OptionSet = {
   options?: Option[];
 };
 
-type Variant = {
-  title: string;
-  sku: string;
-  price: string | number;
-  salePrice?: string | number;
-  stock: string | number;
-  isDefault?: boolean;
-  options?: { optionSetId: string; optionId: string }[];
-  weightGram?: number | null;
+// Define a type for the variant in the form state
+type FormVariant = Omit<
+  ProductVariant,
+  "id" | "productId" | "createdAt" | "updatedAt" | "options"
+> & {
+  id?: string;
+  options: { optionSetId: string; optionId: string }[];
 };
 
 type ManualVariantState = {
@@ -59,7 +58,7 @@ export default function VariantsStep({
     options: [],
   });
 
-  const variants = (watch("variants") as Variant[]) || [];
+  const variants = (watch("variants") as FormVariant[]) || [];
 
   // Initialize selected options from option sets
   useEffect(() => {
@@ -71,19 +70,17 @@ export default function VariantsStep({
   }, [selectedOptionSets]);
 
   const generateVariants = () => {
-    // Get selected option values
-    const selectedOptionArrays = Object.values(selectedOptions);
+    const selectedOptionArrays = Object.values(selectedOptions).filter(
+      (arr) => arr.length > 0
+    );
+    if (selectedOptionArrays.length === 0) return;
 
-    // Generate all combinations (cartesian product)
     const generateCombinations = (
       arrays: string[][],
       index = 0,
       current: string[] = []
     ): string[][] => {
-      if (index === arrays.length) {
-        return [current];
-      }
-
+      if (index === arrays.length) return [current];
       const result: string[][] = [];
       for (const optionId of arrays[index]) {
         result.push(
@@ -94,54 +91,55 @@ export default function VariantsStep({
     };
 
     const combinations = generateCombinations(selectedOptionArrays);
+    const basePrice = Number(watch("basePrice")) || 0;
+    const salePrice = watch("salePrice") ? Number(watch("salePrice")) : null;
 
-    // Convert combinations to variants
-    const generatedVariants: Variant[] = combinations.map((combo, index) => {
-      // Find option objects
-      const optionObjects = combo
-        .map((optionId) => {
-          for (const set of selectedOptionSets) {
-            const option = set.options?.find((opt) => opt.id === optionId);
-            if (option) return { optionSetId: set.id, optionId, option };
-          }
-          return null;
-        })
-        .filter(
-          (
-            obj
-          ): obj is { optionSetId: string; optionId: string; option: Option } =>
-            obj !== null
+    const generatedVariants: FormVariant[] = combinations.map(
+      (combo, index) => {
+        const optionObjects = combo
+          .map((optionId) => {
+            for (const set of selectedOptionSets) {
+              const option = set.options?.find((opt) => opt.id === optionId);
+              if (option) return { optionSetId: set.id, optionId, option };
+            }
+            return null;
+          })
+          .filter(
+            (
+              obj
+            ): obj is {
+              optionSetId: string;
+              optionId: string;
+              option: Option;
+            } => obj !== null
+          );
+
+        const variantTitle = optionObjects
+          .map((opt) => opt.option.name)
+          .join(" / ");
+        const skuParts = optionObjects.map((opt) =>
+          opt.option.name
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toUpperCase()
+            .substring(0, 3)
         );
+        const baseSku = (watch("sku") as string) || "PROD";
 
-      // Generate variant title
-      const variantTitle = optionObjects
-        .map((opt) => opt.option.name)
-        .join(" / ");
-
-      // Generate SKU
-      const skuParts = optionObjects.map((opt) =>
-        opt.option.name
-          .replace(/[^a-zA-Z0-9]/g, "")
-          .toUpperCase()
-          .substring(0, 3)
-      );
-      const baseSku = (watch("sku") as string) || "PROD";
-      const variantSku = `${baseSku}-${skuParts.join("-")}`;
-
-      return {
-        title: variantTitle,
-        sku: variantSku,
-        price: (watch("basePrice") as string) || "",
-        salePrice: (watch("salePrice") as string) || "",
-        stock: 0,
-        isDefault: index === 0,
-        options: optionObjects.map((obj) => ({
-          optionSetId: obj.optionSetId,
-          optionId: obj.optionId,
-        })),
-        weightGram: null,
-      };
-    });
+        return {
+          title: variantTitle,
+          sku: `${baseSku}-${skuParts.join("-")}`,
+          price: basePrice,
+          salePrice: salePrice,
+          stock: 0,
+          isDefault: index === 0,
+          options: optionObjects.map((obj) => ({
+            optionSetId: obj.optionSetId,
+            optionId: obj.optionId,
+          })),
+          weightGram: null,
+        };
+      }
+    );
 
     setValue("variants", generatedVariants);
   };
@@ -152,30 +150,25 @@ export default function VariantsStep({
       return;
     }
 
-    const newVariant: Variant = {
-      ...manualVariant,
-      price: parseFloat(manualVariant.price) || (watch("basePrice") as number),
+    const newVariant: FormVariant = {
+      title: manualVariant.title,
+      sku: manualVariant.sku,
+      price: parseFloat(manualVariant.price) || Number(watch("basePrice")) || 0,
+      salePrice: watch("salePrice") ? Number(watch("salePrice")) : null,
       stock: parseInt(manualVariant.stock, 10) || 0,
-      options: manualVariant.options.map((opt) => ({
-        optionSetId: opt.optionSetId,
-        optionId: opt.optionId,
-      })),
+      isDefault: variants.length === 0,
+      options: manualVariant.options,
+      weightGram: null,
     };
 
     setValue("variants", [...variants, newVariant]);
-    setManualVariant({
-      title: "",
-      sku: "",
-      price: "",
-      stock: "",
-      options: [],
-    });
+    setManualVariant({ title: "", sku: "", price: "", stock: "", options: [] });
   };
 
   const updateVariantField = (
     index: number,
-    field: keyof Variant,
-    value: string | number | boolean
+    field: keyof FormVariant,
+    value: any
   ) => {
     const updated = [...variants];
     updated[index] = { ...updated[index], [field]: value };
@@ -191,7 +184,6 @@ export default function VariantsStep({
     setSelectedOptions((prev) => {
       const currentOptions = prev[setId] || [];
       const isSelected = currentOptions.includes(optionId);
-
       return {
         ...prev,
         [setId]: isSelected
@@ -202,54 +194,48 @@ export default function VariantsStep({
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-2">Manage Product Variants</h2>
-
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold">Manage Product Variants</h2>
       <div className="mb-4">
         <p className="text-sm font-medium mb-2">Variant Generation Method</p>
         <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="variantMethod"
-              value="matrix"
-              checked={variantMethod === "matrix"}
-              onChange={(e) =>
-                setVariantMethod(e.target.value as "matrix" | "manual")
-              }
-            />
-            <span>Auto-Generate from Options</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="variantMethod"
-              value="manual"
-              checked={variantMethod === "manual"}
-              onChange={(e) =>
-                setVariantMethod(e.target.value as "matrix" | "manual")
-              }
-            />
-            <span>Create Variants Manually</span>
-          </label>
+          {(["matrix", "manual"] as const).map((method) => (
+            <label
+              key={method}
+              className="flex items-center gap-2 cursor-pointer capitalize"
+            >
+              <input
+                type="radio"
+                name="variantMethod"
+                value={method}
+                checked={variantMethod === method}
+                onChange={(e) =>
+                  setVariantMethod(e.target.value as "matrix" | "manual")
+                }
+              />
+              <span>
+                {method === "matrix"
+                  ? "Auto-Generate from Options"
+                  : "Create Variants Manually"}
+              </span>
+            </label>
+          ))}
         </div>
       </div>
 
       {variantMethod === "matrix" ? (
-        <Card className="mb-3">
+        <Card>
           <CardContent className="pt-6 space-y-4">
             <h3 className="text-lg font-medium">
               Select Options to Generate Variants
             </h3>
-
             {selectedOptionSets.length === 0 ? (
-              <p className="text-muted-foreground">
-                No option sets selected. Please go back to Step 2 to add option
-                sets.
+              <p className="text-muted-foreground text-sm">
+                No option sets selected. Please go back to Step 2.
               </p>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {selectedOptionSets.map((set) => (
                     <div key={set.id} className="border rounded-md p-3">
                       <p className="text-sm font-medium mb-2">{set.name}</p>
@@ -268,18 +254,14 @@ export default function VariantsStep({
                                   ? "bg-primary text-primary-foreground border-transparent"
                                   : "bg-secondary text-secondary-foreground"
                               }`}
-                              style={{
-                                backgroundColor:
-                                  set.type === "COLOR"
-                                    ? option.value
-                                    : undefined,
-                                color:
-                                  set.type === "COLOR" ? "#fff" : undefined,
-                                borderColor:
-                                  set.type === "COLOR"
-                                    ? "transparent"
-                                    : undefined,
-                              }}
+                              style={
+                                set.type === "COLOR"
+                                  ? {
+                                      backgroundColor: option.value,
+                                      color: "#fff",
+                                    }
+                                  : {}
+                              }
                             >
                               {option.name}
                             </button>
@@ -289,94 +271,56 @@ export default function VariantsStep({
                     </div>
                   ))}
                 </div>
-
                 <Button
                   onClick={generateVariants}
                   disabled={Object.values(selectedOptions).every(
                     (arr) => arr.length === 0
                   )}
                 >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Variants
+                  <Sparkles className="h-4 w-4 mr-2" /> Generate Variants
                 </Button>
-
-                <p className="text-xs text-muted-foreground mt-1">
-                  {(() => {
-                    const optionCounts = Object.values(selectedOptions).map(
-                      (arr) => arr.length
-                    );
-                    const totalCombinations = optionCounts.reduce(
-                      (a, b) => a * b,
-                      1
-                    );
-                    return `Will generate ${totalCombinations} variants`;
-                  })()}
-                </p>
               </>
             )}
           </CardContent>
         </Card>
       ) : (
-        <Card className="mb-3">
+        <Card>
           <CardContent className="pt-6 space-y-4">
             <h3 className="text-lg font-medium">Add Variant Manually</h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
-              <div className="space-y-1">
-                <Input
-                  placeholder="Variant Title"
-                  value={manualVariant.title}
-                  onChange={(e) =>
-                    setManualVariant((prev) => ({
-                      ...prev,
-                      title: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Input
-                  placeholder="SKU"
-                  value={manualVariant.sku}
-                  onChange={(e) =>
-                    setManualVariant((prev) => ({
-                      ...prev,
-                      sku: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Input
-                  type="number"
-                  placeholder="Price"
-                  value={manualVariant.price}
-                  onChange={(e) =>
-                    setManualVariant((prev) => ({
-                      ...prev,
-                      price: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Input
-                  type="number"
-                  placeholder="Stock"
-                  value={manualVariant.stock}
-                  onChange={(e) =>
-                    setManualVariant((prev) => ({
-                      ...prev,
-                      stock: e.target.value,
-                    }))
-                  }
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                placeholder="Variant Title"
+                value={manualVariant.title}
+                onChange={(e) =>
+                  setManualVariant((p) => ({ ...p, title: e.target.value }))
+                }
+              />
+              <Input
+                placeholder="SKU"
+                value={manualVariant.sku}
+                onChange={(e) =>
+                  setManualVariant((p) => ({ ...p, sku: e.target.value }))
+                }
+              />
+              <Input
+                type="number"
+                placeholder="Price"
+                value={manualVariant.price}
+                onChange={(e) =>
+                  setManualVariant((p) => ({ ...p, price: e.target.value }))
+                }
+              />
+              <Input
+                type="number"
+                placeholder="Stock"
+                value={manualVariant.stock}
+                onChange={(e) =>
+                  setManualVariant((p) => ({ ...p, stock: e.target.value }))
+                }
+              />
             </div>
-
             <Button onClick={addManualVariant}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Variant
+              <Plus className="h-4 w-4 mr-2" /> Add Variant
             </Button>
           </CardContent>
         </Card>
@@ -385,106 +329,57 @@ export default function VariantsStep({
       {variants.length > 0 && (
         <Card>
           <CardContent className="pt-6">
-            <h3 className="text-lg font-medium">
+            <h3 className="text-lg font-medium mb-4">
               Product Variants ({variants.length})
             </h3>
-
-            <div className="rounded-md border mt-3">
-              <table className="w-full caption-bottom text-sm">
-                <thead className="[&_tr]:border-b">
-                  <tr className="border-b transition-colors hover:bg-muted/50">
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[60px]">
-                      Default
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Variant
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      SKU
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Price
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Stock
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px]">
-                      Actions
-                    </th>
+            <div className="rounded-md border overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 border-b">
+                  <tr>
+                    <th className="p-3 text-left w-[60px]">Default</th>
+                    <th className="p-3 text-left">Variant</th>
+                    <th className="p-3 text-left">SKU</th>
+                    <th className="p-3 text-left">Price</th>
+                    <th className="p-3 text-left">Stock</th>
+                    <th className="p-3 text-left w-[80px]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="[&_tr:last-child]:border-0">
+                <tbody>
                   {variants.map((variant, index) => (
                     <tr
                       key={index}
-                      className="border-b transition-colors hover:bg-muted/50"
+                      className="border-b last:border-0 hover:bg-muted/50"
                     >
-                      <td className="p-4 align-middle">
-                        <Controller
-                          name={`variants[${index}].isDefault`}
-                          control={control}
-                          render={({ field }) => (
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                              checked={!!field.value}
-                              onChange={(e) => {
-                                field.onChange(e.target.checked);
-                                if (e.target.checked) {
-                                  variants.forEach((_, i) => {
-                                    if (i !== index) {
-                                      updateVariantField(i, "isDefault", false);
-                                    }
-                                  });
-                                }
-                              }}
-                            />
-                          )}
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4"
+                          checked={!!variant.isDefault}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            const updated = variants.map((v, i) => ({
+                              ...v,
+                              isDefault:
+                                i === index
+                                  ? isChecked
+                                  : isChecked
+                                  ? false
+                                  : v.isDefault,
+                            }));
+                            setValue("variants", updated);
+                          }}
                         />
                       </td>
-                      <td className="p-4 align-middle">
-                        <Input
-                          value={variant.title}
-                          onChange={(e) =>
-                            updateVariantField(index, "title", e.target.value)
-                          }
-                        />
-                      </td>
-                      <td className="p-4 align-middle">
-                        <Input
-                          value={variant.sku}
-                          onChange={(e) =>
-                            updateVariantField(index, "sku", e.target.value)
-                          }
-                        />
-                      </td>
-                      <td className="p-4 align-middle">
-                        <Input
-                          type="number"
-                          value={variant.price}
-                          onChange={(e) =>
-                            updateVariantField(index, "price", e.target.value)
-                          }
-                          className="w-[100px]"
-                        />
-                      </td>
-                      <td className="p-4 align-middle">
-                        <Input
-                          type="number"
-                          value={variant.stock}
-                          onChange={(e) =>
-                            updateVariantField(index, "stock", e.target.value)
-                          }
-                          className="w-[80px]"
-                        />
-                      </td>
-                      <td className="p-4 align-middle">
+                      <td className="p-3">{variant.title}</td>
+                      <td className="p-3">{variant.sku}</td>
+                      <td className="p-3">{variant.price}</td>
+                      <td className="p-3">{variant.stock}</td>
+                      <td className="p-3">
                         <Button
-                          size="sm"
-                          variant="destructive"
+                          variant="ghost"
                           onClick={() => removeVariant(index)}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </td>
                     </tr>

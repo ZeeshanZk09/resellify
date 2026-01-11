@@ -25,16 +25,23 @@ export const TodayDealCards = ({
         {TodayDeals?.map((deal) => {
           const path1 = deal.images?.[0];
           const path2 = deal.images?.[1];
-          console.log("TodayDealCard", path1, path2, deal?.productVariants[0]);
+          console.log('image in toadys deal card: ', path1, path2);
+          console.log('deals: ', TodayDeals);
+
+          // console.log("TodayDealCard", path1, path2, deal?.productVariants[0]);
+          console.log('productDescription: ', deal?.description || undefined, deal?.shortDescription!);
+
           return (
             <TodayDealCard
               className="w-[18rem] shrink-0"
-              visibility={deal.visibility}
-              productDescription={deal.description ?? ""}
-              productName={deal.title}
-              oldPrice={+deal.basePrice!}
+              locale={deal?.locale! || "en"}
+              currencySymbol={deal?.currency! || "PKR"}
+              visibility={deal?.visibility || "PRIVATE"}
+              productDescription={deal?.description || deal?.shortDescription!}
+              productName={deal?.title}
+              oldPrice={+deal?.basePrice!}
               newPrice={deal?.salePrice!}
-              image={[path1!, path2!]}
+              image={path1 && path2 ? [path1!, path2!] : undefined}
               spec={
                 deal?.productVariants[deal?.id as any]?.options.map(
                   (option) => ({

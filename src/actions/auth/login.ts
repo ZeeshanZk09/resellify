@@ -1,44 +1,50 @@
-'use server';
+"use server";
 
-import { signIn } from '@/auth';
-import prisma from '@/shared/lib/prisma';
-import { sendVerification } from '../send-verification';
-import { cookies } from 'next/headers';
+import { signIn } from "@/auth";
+import prisma from "@/shared/lib/prisma";
+import { sendVerification } from "../send-verification";
+import { cookies } from "next/headers";
 
 export const checkEmail = async (email: string) => {
   if (!email) {
-    return { error: 'Please enter email' };
+    return { error: "Please enter email" };
   }
 
   // Combine checks and return required fields only
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { email: true },
+    select: { email: true, emailVerified: true, name: true },
   });
 
   if (!user) {
     return {
-      error: 'No account found with this email. Please check and try again.',
+      error: "No account found with this email. Please check and try again.",
     };
   }
 
   // Set the login email in cookies
   const cookie = await cookies();
-  cookie.set('login_email', email, { httpOnly: true, maxAge: 300 });
+  cookie.set("login_email", email, { httpOnly: true, maxAge: 300 });
+
+  if (user.emailVerified) {
+    return {
+      success: `Welcome back ${user.name}`,
+    };
+  }
 
   return { success: `OTP sent to the email: ${email}` };
 };
 
 export const login = async (password: string) => {
   if (!password) {
-    return { error: 'Please enter password' };
+    return { error: "Please enter password" };
   }
 
   const cookie = await cookies();
-  const email = cookie.get('login_email')?.value;
+  const email = cookie.get("login_email")?.value;
 
   if (!email) {
-    return { error: 'Please enter email' };
+    return { error: "Please enter email" };
   }
 
   const user = await prisma.user.findUnique({
@@ -47,20 +53,20 @@ export const login = async (password: string) => {
   });
 
   if (!user) {
-    return { error: 'No account found with this email.' };
+    return { error: "No account found with this email." };
   }
 
   if (!user.password) {
     return {
       error:
-        'This account does not have a password set. Try signing in with Google or another provider.',
+        "This account does not have a password set. Try signing in with Google or another provider.",
     };
   }
 
   if (!user.emailVerified) {
     await sendVerification(email);
-    cookie.set('login_password', password, { httpOnly: true, maxAge: 300 });
-    return { error: 'EmailNotVerified' };
+    cookie.set("login_password", password, { httpOnly: true, maxAge: 300 });
+    return { error: "EmailNotVerified" };
   }
 
   try {
@@ -76,10 +82,10 @@ export const login = async (password: string) => {
         },
       });
     }
-    (await cookies()).set('cartId', cart.id);
+    (await cookies()).set("cartId", cart.id);
 
     // 🔐 NextAuth credentials login
-    await signIn('credentials', { email, password, redirect: false });
+    await signIn("credentials", { email, password, redirect: false });
 
     const now = new Date();
 
@@ -93,7 +99,7 @@ export const login = async (password: string) => {
         },
       },
       orderBy: {
-        expires: 'desc',
+        expires: "desc",
       },
     });
 
@@ -134,7 +140,7 @@ export const login = async (password: string) => {
 
     return { success: true };
   } catch (error) {
-    console.error('Login error:', error);
-    return { error: 'Invalid email or password' };
+    console.error("Login error:", error);
+    return { error: "Invalid email or password" };
   }
 };

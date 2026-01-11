@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
+  Copy,
   HomeIcon,
   LayoutListIcon,
   Menu,
@@ -27,6 +28,11 @@ export default function AdminSidebar() {
       name: "Manage Product",
       href: "/admin/manage-product",
       icon: SquarePenIcon,
+    },
+    {
+      name: "Manage Category",
+      href: "/admin/manage-categories",
+      icon: Copy,
     },
     { name: "Orders", href: "/admin/orders", icon: LayoutListIcon },
   ];

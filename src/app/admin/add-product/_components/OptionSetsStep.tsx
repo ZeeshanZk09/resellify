@@ -1,256 +1,345 @@
-import React, { useState } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
-import { Plus, Trash2, Palette } from 'lucide-react';
-
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Input } from '@/shared/components/ui/input';
+import React, { useState, useCallback, useMemo } from "react";
+import { useFormContext, Controller, useWatch } from "react-hook-form";
+import { Plus, Trash2, Palette } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { Label } from '@/shared/components/ui/label';
-import { GetCategoryOptionSets } from '@/actions/category/categoryOptions';
-import { OptionType } from '@/shared/lib/generated/prisma/enums';
-import { Option } from '@/shared/lib/generated/prisma/browser';
+} from "@/shared/components/ui/select";
+import { Label } from "@/shared/components/ui/label";
+import { GetCategoryOptionSets } from "@/actions/category/categoryOptions";
+import { OptionType } from "@/shared/lib/generated/prisma/enums";
+import {
+  Option,
+  OptionSet as PrismaOptionSet,
+} from "@/shared/lib/generated/prisma/browser";
+import { cn } from "@/shared/lib/utils";
 
-// --- Local types (adapt to your real types if you have them) ---
+// --- Local types ---
+interface OptionSetCategory {
+  categoryId: string;
+}
 
-export interface OptionSet {
+interface LocalOptionSet
+  extends Omit<PrismaOptionSet, "options" | "categories"> {
   id: string;
   name: string;
   type: OptionType;
   options?: Option[];
-  categories?: { categoryId: string }[];
+  categories?: OptionSetCategory[];
 }
 
 interface FormValues {
-  selectedOptionSets?: OptionSet[];
+  selectedOptionSets?: LocalOptionSet[];
 }
 
-export default function OptionSetsStep({
-  optionSets,
-  selectedCategoryIds,
-}: {
+interface OptionSetsStepProps {
   optionSets: GetCategoryOptionSets;
   selectedCategoryIds: string[];
-}) {
-  // properly type form context
-  const { control, watch, setValue, getValues } = useFormContext<FormValues>();
+}
 
-  // typed local state for creating new sets and holding typed input values
-  const [newOptionSet, setNewOptionSet] = useState<Pick<OptionSet, 'name' | 'type'>>({
-    name: '',
-    type: 'TEXT',
+interface NewOptionSetState {
+  name: string;
+  type: OptionType;
+}
+
+// Helper function to safely check and trim strings
+const safeTrim = (value: unknown): string => {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  return "";
+};
+
+const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
+  optionSets,
+  selectedCategoryIds,
+}) => {
+  const { control, setValue } = useFormContext<FormValues>();
+
+  // Local state with proper typing
+  const [newOptionSet, setNewOptionSet] = useState<NewOptionSetState>({
+    name: "",
+    type: "TEXT",
   });
+
   const [optionValues, setOptionValues] = useState<Record<string, string>>({});
 
-  // watch selected option sets (defaults to empty array)
-  const selectedSets = watch('selectedOptionSets') ?? [];
+  // Watch selected option sets with proper typing
+  const selectedSets = useWatch({ control, name: "selectedOptionSets" }) || [];
 
-  // cast incoming prop to our local OptionSet[] type so we can get auto-complete
-  const optionSetsTyped = (optionSets ?? []) as OptionSet[];
+  // Safely cast optionSets to LocalOptionSet[]
+  const optionSetsTyped = useMemo((): LocalOptionSet[] => {
+    if (!Array.isArray(optionSets)) {
+      console.warn("[WARNING] optionSets is not an array:", optionSets);
+      return [];
+    }
+    return optionSets as LocalOptionSet[];
+  }, [optionSets]);
 
-  // [DEBUG] selectedCategoryIds
-  // NOTE: The IDs may contain whitespace, so explicitly trim them when filtering.
-  React.useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG] selectedCategoryIds in OptionSetsStep:', selectedCategoryIds);
-  }, [selectedCategoryIds]);
+  // Filter option sets by selected categories
+  const filteredOptionSets = useMemo(() => {
+    if (
+      !Array.isArray(selectedCategoryIds) ||
+      selectedCategoryIds.length === 0
+    ) {
+      return [];
+    }
 
-  // Filter option sets by selected categories (accounting for whitespace in IDs)
-  const selectedCategoryIdsTrimmed = selectedCategoryIds.map((id) =>
-    typeof id === 'string' ? id.trim() : id
-  );
-  const filteredOptionSets = optionSetsTyped.filter((set) => {
-    // Defensive: do not match on categoryId with whitespace or inconsistent typing
-    if (!Array.isArray(set.categories)) return false;
-    const matches = set.categories.some(
-      (cat) =>
-        typeof cat === 'object' &&
-        typeof cat.categoryId === 'string' &&
-        selectedCategoryIdsTrimmed.includes(cat.categoryId.trim())
-    );
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG] Filtering optionSet %s: matched=%s', set.id, matches);
-    return matches;
-  });
+    const trimmedCategoryIds = selectedCategoryIds.map((id) => safeTrim(id));
 
-  // [DEBUG] Log internal state.
-  React.useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] filteredOptionSets:', filteredOptionSets);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] optionSets:', optionSets);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] selectedSets:', selectedSets);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] newOptionSet:', newOptionSet);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] optionValues:', optionValues);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] control:', control);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] watch:', watch);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] setValue:', setValue);
-    // eslint-disable-next-line no-console
-    console.debug('[DEBUG/RENDER] getValues:', getValues);
-  }, [
-    filteredOptionSets,
-    optionSets,
-    selectedSets,
-    newOptionSet,
-    optionValues,
-    control,
-    watch,
-    setValue,
-    getValues,
-  ]);
+    return optionSetsTyped.filter((set): boolean => {
+      // Check if set has categories array
+      if (!Array.isArray(set.categories) || set.categories.length === 0) {
+        return false;
+      }
 
-  const handleAddOptionSet = () => {
-    if (!newOptionSet.name?.trim()) return;
+      return set.categories.some((category: OptionSetCategory): boolean => {
+        const categoryId = category?.categoryId;
+        if (typeof categoryId !== "string") {
+          return false;
+        }
+        return trimmedCategoryIds.includes(safeTrim(categoryId));
+      });
+    });
+  }, [optionSetsTyped, selectedCategoryIds]);
 
-    const newSet: OptionSet = {
+  const handleAddOptionSet = useCallback((): void => {
+    const trimmedName = newOptionSet.name.trim();
+    if (!trimmedName) {
+      return;
+    }
+
+    const newSet: LocalOptionSet = {
       id: `temp_${Date.now()}`,
-      name: newOptionSet.name.trim(),
-      type: newOptionSet.type as OptionType,
+      name: trimmedName,
+      type: newOptionSet.type,
       options: [],
+      categories: [],
     };
 
-    setValue('selectedOptionSets', [...(selectedSets || []), newSet]);
-    setNewOptionSet({ name: '', type: 'TEXT' });
-  };
+    setValue("selectedOptionSets", [...selectedSets, newSet]);
+    setNewOptionSet({ name: "", type: "TEXT" });
+  }, [newOptionSet, selectedSets, setValue]);
 
-  const handleAddOptionValue = (setId: string, value: string) => {
-    const val = value?.trim();
-    if (!val) return;
-
-    const current: OptionSet[] = getValues('selectedOptionSets') ?? [];
-
-    const updatedSets = current.map((set) => {
-      if (set.id === setId) {
-        const newOption: Option = {
-          id: `opt_${Date.now()}`,
-          name: val,
-          value: set.type === 'COLOR' ? val : val.toLowerCase(),
-          optionSetId: set.id,
-          position: set.options?.length ?? 0,
-        };
-        return { ...set, options: [...(set.options ?? []), newOption] };
+  const handleAddOptionValue = useCallback(
+    (setId: string, value: string): void => {
+      const trimmedValue = value.trim();
+      if (!trimmedValue) {
+        return;
       }
-      return set;
-    });
 
-    setValue('selectedOptionSets', updatedSets);
-    setOptionValues((prev) => ({ ...prev, [setId]: '' }));
-  };
+      const currentSets: LocalOptionSet[] = selectedSets;
+      const updatedSets = currentSets.map(
+        (set: LocalOptionSet): LocalOptionSet => {
+          if (set.id !== setId) {
+            return set;
+          }
 
-  const handleRemoveOption = (setId: string, optionId: string) => {
-    const current: OptionSet[] = getValues('selectedOptionSets') ?? [];
-    const updated = current.map((s) =>
-      s.id === setId ? { ...s, options: s.options?.filter((o) => o.id !== optionId) } : s
-    );
-    setValue('selectedOptionSets', updated);
-  };
+          const newOption: Option = {
+            id: `opt_${Date.now()}`,
+            name: trimmedValue,
+            value:
+              set.type === "COLOR" ? trimmedValue : trimmedValue.toLowerCase(),
+            optionSetId: set.id,
+            position: set.options?.length ?? 0,
+          };
 
-  const renderOptionInput = (set: OptionSet) => {
-    const value = optionValues[set.id] ?? '';
+          return {
+            ...set,
+            options: [...(set.options || []), newOption],
+          };
+        }
+      );
+
+      setValue("selectedOptionSets", updatedSets);
+      setOptionValues((prev: Record<string, string>) => ({
+        ...prev,
+        [setId]: "",
+      }));
+    },
+    [selectedSets, setValue]
+  );
+
+  const handleRemoveOption = useCallback(
+    (setId: string, optionId: string): void => {
+      const currentSets: LocalOptionSet[] = selectedSets;
+      const updatedSets = currentSets.map(
+        (set: LocalOptionSet): LocalOptionSet => {
+          if (set.id !== setId) {
+            return set;
+          }
+          return {
+            ...set,
+            options: (set.options || []).filter(
+              (opt: Option) => opt.id !== optionId
+            ),
+          };
+        }
+      );
+
+      setValue("selectedOptionSets", updatedSets);
+    },
+    [selectedSets, setValue]
+  );
+
+  const handleOptionValueChange = useCallback(
+    (setId: string, value: string): void => {
+      setOptionValues((prev: Record<string, string>) => ({
+        ...prev,
+        [setId]: value,
+      }));
+    },
+    []
+  );
+
+  const handleNewOptionSetChange = useCallback(
+    (field: keyof NewOptionSetState, value: string): void => {
+      setNewOptionSet((prev: NewOptionSetState) => ({
+        ...prev,
+        [field]: value,
+      }));
+    },
+    []
+  );
+
+  const handleSetSelection = useCallback(
+    (set: LocalOptionSet, checked: boolean): void => {
+      const updatedSets = checked
+        ? [...selectedSets, set]
+        : selectedSets.filter((s: LocalOptionSet) => s.id !== set.id);
+
+      setValue("selectedOptionSets", updatedSets);
+    },
+    [selectedSets, setValue]
+  );
+
+  const renderOptionInput = (set: LocalOptionSet): React.ReactNode => {
+    const value = optionValues[set.id] ?? "";
 
     switch (set.type) {
-      case 'COLOR':
+      case "COLOR":
         return (
-          <div className='relative w-full max-w-[200px]'>
-            <div className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground'>
-              <Palette className='h-4 w-4' />
+          <div className="relative w-full max-w-[200px]">
+            <div className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground">
+              <Palette className="h-4 w-4" />
             </div>
             <Input
-              className='pl-9 h-9'
-              placeholder='#000000 or Color Name'
+              className="pl-9 h-9"
+              placeholder="#000000 or Color Name"
               value={value}
-              onChange={(e) =>
-                setOptionValues((prev) => ({
-                  ...prev,
-                  [set.id]: e.target.value,
-                }))
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleOptionValueChange(set.id, e.target.value)
               }
             />
           </div>
         );
-      case 'NUMBER':
-      case 'MEASURE':
+      case "NUMBER":
+      case "MEASURE":
         return (
           <Input
-            className='w-full max-w-[200px] h-9'
-            type='number'
-            placeholder='Enter value'
+            className="w-full max-w-[200px] h-9"
+            type="number"
+            placeholder="Enter value"
             value={value}
-            onChange={(e) => setOptionValues((prev) => ({ ...prev, [set.id]: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleOptionValueChange(set.id, e.target.value)
+            }
           />
         );
       default:
         return (
           <Input
-            className='w-full max-w-[200px] h-9'
-            placeholder='Enter option value'
+            className="w-full max-w-[200px] h-9"
+            placeholder="Enter option value"
             value={value}
-            onChange={(e) => setOptionValues((prev) => ({ ...prev, [set.id]: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              handleOptionValueChange(set.id, e.target.value)
+            }
           />
         );
     }
   };
 
+  if (!Array.isArray(selectedCategoryIds) || selectedCategoryIds.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold">Manage Option Sets</h2>
+        <div className="p-6 text-center border rounded-lg bg-muted/50">
+          <p className="text-muted-foreground">
+            Please select categories in the previous step to see available
+            option sets.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className='space-y-6'>
-      <h2 className='text-xl font-semibold'>Manage Option Sets</h2>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Manage Option Sets</h2>
+        <p className="text-muted-foreground text-sm">
+          Add option sets or select from available ones for the selected
+          categories.
+        </p>
+      </div>
 
       {/* Add New Option Set */}
       <Card>
         <CardHeader>
-          <CardTitle className='text-base'>Add New Option Set</CardTitle>
+          <CardTitle className="text-base">Add New Option Set</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className='flex flex-col sm:flex-row gap-4 items-end'>
-            <div className='flex-1 space-y-2 w-full'>
-              <Label>Option Set Name</Label>
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1 space-y-2 w-full">
+              <Label htmlFor="option-set-name">Option Set Name</Label>
               <Input
-                placeholder='Option Set Name'
+                id="option-set-name"
+                placeholder="e.g., Color, Size, Material"
                 value={newOptionSet.name}
-                onChange={(e) => setNewOptionSet((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleNewOptionSetChange("name", e.target.value)
+                }
               />
             </div>
-            <div className='w-full sm:w-[150px] space-y-2'>
-              <Label>Type</Label>
+            <div className="w-full sm:w-[150px] space-y-2">
+              <Label htmlFor="option-set-type">Type</Label>
               <Select
                 value={newOptionSet.type}
-                onValueChange={(value) =>
-                  setNewOptionSet((prev) => ({
-                    ...prev,
-                    type: value as OptionType,
-                  }))
+                onValueChange={(value: string) =>
+                  handleNewOptionSetChange("type", value as OptionType)
                 }
               >
-                <SelectTrigger>
-                  <SelectValue placeholder='Type' />
+                <SelectTrigger className="m-0" id="option-set-type">
+                  <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='TEXT'>Text</SelectItem>
-                  <SelectItem value='COLOR'>Color</SelectItem>
-                  <SelectItem value='SIZE'>Size</SelectItem>
-                  <SelectItem value='NUMBER'>Number</SelectItem>
-                  <SelectItem value='MEASURE'>Measure</SelectItem>
+                  <SelectItem value="TEXT">Text</SelectItem>
+                  <SelectItem value="COLOR">Color</SelectItem>
+                  <SelectItem value="SIZE">Size</SelectItem>
+                  <SelectItem value="NUMBER">Number</SelectItem>
+                  <SelectItem value="MEASURE">Measure</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Button
-              className='w-full sm:w-auto'
+              className="w-full sm:w-auto m-0"
               onClick={handleAddOptionSet}
               disabled={!newOptionSet.name.trim()}
+              type="button"
             >
-              <Plus className='h-4 w-4 mr-2' />
+              <Plus className="h-4 w-4 " />
               Add Set
             </Button>
           </div>
@@ -258,134 +347,174 @@ export default function OptionSetsStep({
       </Card>
 
       {/* Available Option Sets */}
-      <div className='space-y-4'>
-        <h3 className='text-lg font-medium'>Available Option Sets for Selected Categories</h3>
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Available Option Sets</h3>
+        <p className="text-sm text-muted-foreground">
+          Option sets available for the selected categories (
+          {filteredOptionSets.length} found)
+        </p>
 
-        <div className='rounded-md border'>
-          <table className='w-full caption-bottom text-sm'>
-            <thead className='[&_tr]:border-b'>
-              <tr className='border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted'>
-                <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[60px]'>
-                  Use
-                </th>
-                <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground'>
-                  Option Set
-                </th>
-                <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground'>
-                  Type
-                </th>
-                <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground'>
-                  Options
-                </th>
-                <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[300px]'>
-                  Add Option
-                </th>
-              </tr>
-            </thead>
-            <tbody className='[&_tr:last-child]:border-0'>
-              {filteredOptionSets.map((set) => {
-                // [DEBUG] for each row
-                // eslint-disable-next-line no-console
-                console.debug('[DEBUG/ROW] set:', set);
-                // eslint-disable-next-line no-console
-                console.debug('[DEBUG/ROW] selectedSets:', selectedSets);
+        <div className="rounded-md border overflow-hidden">
+          {filteredOptionSets.length > 0 ? (
+            <table className="w-full caption-bottom text-sm">
+              <thead className="[&_tr]:border-b">
+                <tr className="border-b transition-colors hover:bg-muted/50">
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[60px]">
+                    Use
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    Option Set
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    Type
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    Options
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[300px]">
+                    Add Option
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr:last-child]:border-0">
+                {filteredOptionSets.map((set: LocalOptionSet) => {
+                  const isSelected = selectedSets.some(
+                    (s: LocalOptionSet) => s.id === set.id
+                  );
+                  const currentSet = isSelected
+                    ? selectedSets.find((s: LocalOptionSet) => s.id === set.id)
+                    : set;
 
-                const selected = selectedSets.find((s) => s.id === set.id);
-                const currentOptions =
-                  (selected ? selected.options : undefined) ?? set.options ?? [];
+                  const currentOptions = currentSet?.options || [];
 
-                return (
-                  <tr
-                    key={set.id}
-                    className='border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted'
-                  >
-                    <td className='p-4 align-middle'>
-                      <Controller
-                        name='selectedOptionSets'
-                        control={control}
-                        render={({ field }) => {
-                          const arr = Array.isArray(field.value) ? field.value : [];
-                          const checked = arr.some((s) => s.id === set.id);
+                  return (
+                    <tr
+                      key={set.id}
+                      className="border-b transition-colors hover:bg-muted/50"
+                    >
+                      <td className="p-4 align-middle">
+                        <Controller<FormValues, "selectedOptionSets">
+                          name="selectedOptionSets"
+                          control={control}
+                          render={({ field }) => {
+                            const currentValue: LocalOptionSet[] =
+                              Array.isArray(field.value) ? field.value : [];
 
-                          return (
-                            <input
-                              type='checkbox'
-                              className='h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary'
-                              checked={checked}
-                              onChange={(e) => {
-                                const next = e.target.checked
-                                  ? [...arr, set]
-                                  : arr.filter((s) => s.id !== set.id);
-                                field.onChange(next);
-                              }}
-                              data-testid={`option-set-checkbox-${set.id}`}
-                            />
-                          );
-                        }}
-                      />
-                    </td>
+                            return (
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                checked={currentValue.some(
+                                  (s: LocalOptionSet) => s.id === set.id
+                                )}
+                                onChange={(
+                                  e: React.ChangeEvent<HTMLInputElement>
+                                ) => {
+                                  handleSetSelection(set, e.target.checked);
+                                }}
+                                aria-label={`Select ${set.name} option set`}
+                              />
+                            );
+                          }}
+                        />
+                      </td>
 
-                    <td className='p-4 align-middle font-medium'>{set.name}</td>
-
-                    <td className='p-4 align-middle'>
-                      <div className='inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80'>
-                        {set.type}
-                      </div>
-                    </td>
-
-                    <td className='p-4 align-middle'>
-                      <div className='flex flex-wrap gap-1.5'>
-                        {currentOptions.map((opt: Option) => (
-                          <div
-                            key={opt.id}
-                            className='inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1'
-                            style={{
-                              backgroundColor:
-                                set.type === 'COLOR' ? opt.value! && opt.value : undefined,
-                              color: set.type === 'COLOR' ? '#fff' : undefined,
-                              borderColor: set.type === 'COLOR' ? 'transparent' : undefined,
-                            }}
-                          >
-                            <span className={set.type === 'COLOR' ? 'mix-blend-difference' : ''}>
-                              {opt.name}
-                            </span>
-                            <button
-                              onClick={() => handleRemoveOption(set.id, opt.id)}
-                              className='ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
-                            >
-                              <Trash2 className='h-3 w-3' />
-                              <span className='sr-only'>Remove</span>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-
-                    <td className='p-4 align-middle'>
-                      <div className='flex gap-2 items-center'>
-                        {renderOptionInput(set)}
-                        <Button
-                          size='sm'
-                          variant='secondary'
-                          onClick={() => handleAddOptionValue(set.id, optionValues[set.id] ?? '')}
-                          disabled={!optionValues[set.id]}
+                      <td className="p-4 align-middle font-medium">
+                        <span
+                          className={cn(
+                            isSelected && "font-semibold text-primary"
+                          )}
                         >
-                          Add
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {set.name}
+                        </span>
+                      </td>
+
+                      <td className="p-4 align-middle">
+                        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-secondary text-secondary-foreground">
+                          {set.type}
+                        </div>
+                      </td>
+
+                      <td className="p-4 align-middle">
+                        <div className="flex flex-wrap gap-1.5">
+                          {currentOptions.map((opt: Option) => {
+                            return (
+                              <div
+                                key={opt.id}
+                                className={cn(
+                                  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors gap-1",
+                                  set.type === "COLOR" && "text-white"
+                                )}
+                                style={{
+                                  backgroundColor:
+                                    set.type === "COLOR"
+                                      ? opt.name?.toLowerCase() || "transparent"
+                                      : undefined,
+                                  borderColor:
+                                    set.type === "COLOR"
+                                      ? "transparent"
+                                      : undefined,
+                                }}
+                              >
+                                <span>{opt.name || opt.value}</span>
+                                {/* <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRemoveOption(set.id, opt.id)
+                                  }
+                                  className="ml-1 rounded-full outline-none focus:ring-2 focus:ring-ring"
+                                  aria-label={`Remove ${
+                                    opt.name || opt.value
+                                  } option`}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button> */}
+                              </div>
+                            );
+                          })}
+                          {currentOptions.length === 0 && (
+                            <span className="text-xs text-muted-foreground italic">
+                              No options added
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="p-4 align-middle">
+                        <div className="flex gap-2 items-center">
+                          {renderOptionInput(set)}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() =>
+                              handleAddOptionValue(
+                                set.id,
+                                optionValues[set.id] || ""
+                              )
+                            }
+                            disabled={!optionValues[set.id]?.trim()}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="p-6 text-center text-muted-foreground">
+              No option sets found for the selected categories.
+            </div>
+          )}
         </div>
-        {filteredOptionSets.length === 0 && (
-          <div className='text-muted-foreground text-sm p-4'>
-            No option sets found for the selected categories.
-          </div>
-        )}
       </div>
     </div>
   );
-}
+};
+
+OptionSetsStep.displayName = "OptionSetsStep";
+
+export default OptionSetsStep;

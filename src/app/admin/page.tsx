@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <section className="w-full min-h-screen flex flex-col items-start gap-6 sm:gap-10 py-14">
+    <section className="w-full min-h-screen flex flex-col items-start gap-6 sm:gap-10 p-3">
       <div className="w-full flex flex-col items-start text-foreground/80">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl mb-6 sm:mb-10">
           Admin <span className="text-foreground font-medium">Dashboard</span>

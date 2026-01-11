@@ -126,9 +126,18 @@ export type AddProductInput = {
   visibility?: Product["visibility"];
   inventory?: number;
   lowStockThreshold?: number;
-  metaTitle?: string | null;
-  metaDescription?: string | null;
-  canonicalUrl?: string | null;
+  metaKeywords?: NullableJsonNullValueInput | InputJsonValue | undefined;
+  metadata?: NullableJsonNullValueInput | InputJsonValue | undefined;
+  images: File | File[];
+  specifications: Array<{
+    groupId: string;
+    value: string;
+  }>;
+  variants: Array<{
+    optionSetId: string;
+    price: number;
+    stock: number;
+  }>;
 };
 
 export async function addProduct(input: AddProductInput) {
@@ -153,11 +162,19 @@ export async function addProduct(input: AddProductInput) {
       sku: input.sku,
       basePrice: input.basePrice,
     });
+
     if (validationError)
       return {
         data: null,
         error: validationError,
       };
+
+    if (input.basePrice <= input?.salePrice!) {
+      return {
+        data: null,
+        error: "Sale price cannot be higher than base price",
+      };
+    }
 
     // Check for duplicate slug/sku
     const existing = await prisma.product.findFirst({
@@ -172,6 +189,7 @@ export async function addProduct(input: AddProductInput) {
       };
     }
 
+    // Step 1: Create product
     const result = await prisma.product.create({
       data: {
         title: input.title,
@@ -191,9 +209,117 @@ export async function addProduct(input: AddProductInput) {
         publishedById:
           input.status === "PUBLISHED" ? session.user.id : undefined,
         publishedAt: input.status === "PUBLISHED" ? new Date() : undefined,
-        metaTitle: input.metaTitle ?? null,
-        metaDescription: input.metaDescription ?? null,
-        canonicalUrl: input.canonicalUrl ?? null,
+      },
+      include: {
+        images: true,
+      },
+    });
+
+    const productId = result.id;
+
+    if (!productId) {
+      return {
+        data: null,
+        error: "Product ID not returned from server",
+      };
+    }
+
+    // Step 2: Upload images
+    if ((input.images as File[])?.length > 0 || (input.images as File)) {
+      console.log(
+        `[UPLOAD] Uploading ${
+          (input.images as File[]).length || (input.images as File).name
+        } images`
+      );
+      const uploadResult = await uploadImage(
+        {
+          type: "PRODUCT",
+          productId,
+        },
+        input.images
+      );
+      if (uploadResult.error) {
+        return {
+          data: null,
+          error: uploadResult.error,
+        };
+      }
+      console.log("[UPLOAD] Images uploaded successfully");
+    }
+
+    // Step 3: Add specifications
+    if (input.specifications?.length > 0) {
+      console.log("[SPECS] Adding specifications", input.specifications);
+      const specResult = await addProductSpecs(
+        productId,
+        input.specifications.map((spec) => ({
+          groupTitle: spec.groupId,
+          keys: [spec.groupId],
+          values: [spec.value],
+        }))
+      );
+
+      if (specResult.error) {
+        return {
+          data: null,
+          error: specResult.error,
+        };
+      }
+    }
+
+    // Step 4: Create variants
+    if (input.variants?.length > 0) {
+      console.log("[VARIANTS] Creating variants", input.variants);
+
+      const variantResult = await addProductVariants(
+        productId,
+        input.variants.map((variant) => ({
+          optionSetId: variant.optionSetId,
+          price: variant.price,
+          stock: variant.stock,
+        }))
+      );
+
+      if (variantResult.error) {
+        return {
+          data: null,
+          error: variantResult.error,
+        };
+      }
+    }
+
+    const structuredData = generateProductStructuredData(result);
+
+    if (!result.images![0].id!)
+      return {
+        error: "Failed to generate metadata.",
+      };
+
+    const metadata = generateProductMetadata(
+      {
+        ...result,
+        shortDescription: result.shortDescription ?? result.description,
+        metadata: result.metadata as
+          | NullableJsonNullValueInput
+          | InputJsonValue
+          | undefined,
+        metaKeywords: result.metaKeywords as
+          | NullableJsonNullValueInput
+          | InputJsonValue
+          | undefined,
+      },
+      result.images![0].id!
+    );
+
+    await prisma.product.update({
+      where: {
+        id: result.id,
+      },
+      data: {
+        metadata: metadata as NullableJsonNullValueInput | InputJsonValue,
+        structuredData: structuredData as
+          | NullableJsonNullValueInput
+          | InputJsonValue,
       },
     });
 
@@ -440,10 +566,12 @@ export const getAllProducts = async () => {
       },
     });
 
+    const plainProducts = convertDecimals(result);
+
     if (!result) return { error: "Can't Get Data from Database!" };
-    return { res: result };
+    return { res: plainProducts as typeof result };
   } catch (error) {
-    return { error: JSON.stringify(error) };
+    return { error: error instanceof Error ? error.message : "Unknown error" };
   }
 };
 
