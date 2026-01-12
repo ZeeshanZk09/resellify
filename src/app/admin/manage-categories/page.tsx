@@ -1,7 +1,6 @@
 "use client";
 /* ================= CLIENT COMPONENT ================= */
-
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Select,
   SelectContent,
@@ -10,34 +9,28 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { createCategoryWithOptionSets } from "@/actions/category/categoryOptions";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardContent } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { generateCategorySlug } from "@/shared/lib/utils/category";
-
+import { OptionType } from "@/shared/lib/generated/prisma/enums";
+import { toast } from "sonner";
 export default function CategoryManagerPage() {
   // Category
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categorySlug, setCategorySlug] = useState("");
-
   // Subcategories
   const [subcategories, setSubcategories] = useState<
     Array<{ name: string; description: string; slug: string; id: string }>
   >([]);
-
   // OptionSets
   const [optionSets, setOptionSets] = useState<
     Array<{
       id: string;
       name: string;
-      type: string;
+      type: OptionType;
       options: Array<{
         name: string;
         value?: string | null;
@@ -46,7 +39,9 @@ export default function CategoryManagerPage() {
       }>;
     }>
   >([]);
-
+  // Refs for debouncing
+  const categoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const subcategoryTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   // Keep a serialized hidden payload in sync with state for server action form submit
   const payload = useMemo(() => {
     return JSON.stringify({
@@ -77,22 +72,58 @@ export default function CategoryManagerPage() {
     subcategories,
     optionSets,
   ]);
-
+  // Debounced category name handler
+  const handleCategoryNameChange = (value: string) => {
+    setCategoryName(value);
+    // Clear existing timeout
+    if (categoryTimeoutRef.current) {
+      clearTimeout(categoryTimeoutRef.current);
+    }
+    // Set new timeout - wait 500ms after user stops typing
+    categoryTimeoutRef.current = setTimeout(async () => {
+      if (value.trim()) {
+        const slug = await generateCategorySlug(value);
+        setCategorySlug(slug);
+      }
+    }, 500);
+  };
+  // Debounced subcategory name handler
+  const handleSubcategoryNameChange = (id: string, value: string) => {
+    // Clear existing timeout for this subcategory
+    const existingTimeout = subcategoryTimeoutsRef.current.get(id);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+    // Set new timeout - wait 500ms after user stops typing
+    const newTimeout = setTimeout(async () => {
+      if (value.trim()) {
+        const slug = await generateCategorySlug(value);
+        setSubcategories((prev) =>
+          prev.map((s) => (s.id === id ? { ...s, slug } : s))
+        );
+      }
+    }, 500);
+    subcategoryTimeoutsRef.current.set(id, newTimeout);
+  };
+  // Cleanup timeouts on unmount
   useEffect(() => {
-    // auto-generate slug when categoryName changes
-    generateCategorySlug(categoryName || "").then((slug) => {
-      setCategorySlug(slug);
-    });
-  }, [categoryName]);
-
+    return () => {
+      if (categoryTimeoutRef.current) {
+        clearTimeout(categoryTimeoutRef.current);
+      }
+      subcategoryTimeoutsRef.current.forEach((timeout) =>
+        clearTimeout(timeout)
+      );
+    };
+  }, []);
   // helpers
   const addSubcategory = () => {
+    const newId = cryptoRandomId();
     setSubcategories((prev) => [
       ...prev,
-      { id: cryptoRandomId(), name: "", description: "", slug: "" },
+      { id: newId, name: "", description: "", slug: "" },
     ]);
   };
-
   const updateSubcategory = (
     id: string,
     patch: Partial<{ name: string; description: string }>
@@ -101,35 +132,37 @@ export default function CategoryManagerPage() {
       prev.map((s) => {
         if (s.id !== id) return s;
         const updated = { ...s, ...patch };
-        if (patch.name !== undefined)
-          generateCategorySlug(updated.name || "").then((slug) => {
-            updated.slug = slug;
-          });
+        // If name is being updated, trigger debounced slug generation
+        if (patch.name !== undefined) {
+          handleSubcategoryNameChange(id, patch.name);
+        }
         return updated;
       })
     );
   };
-
-  const removeSubcategory = (id: string) =>
+  const removeSubcategory = (id: string) => {
+    // Clean up timeout for removed subcategory
+    const timeout = subcategoryTimeoutsRef.current.get(id);
+    if (timeout) {
+      clearTimeout(timeout);
+      subcategoryTimeoutsRef.current.delete(id);
+    }
     setSubcategories((prev) => prev.filter((s) => s.id !== id));
-
+  };
   const addOptionSet = () =>
     setOptionSets((prev) => [
       ...prev,
-      { id: cryptoRandomId(), name: "", type: "GENERAL", options: [] },
+      { id: cryptoRandomId(), name: "", type: OptionType.TEXT, options: [] },
     ]);
-
   const updateOptionSet = (
     id: string,
-    patch: Partial<{ name: string; type: string }>
+    patch: Partial<{ name: string; type: OptionType }>
   ) =>
     setOptionSets((prev) =>
       prev.map((os) => (os.id === id ? { ...os, ...patch } : os))
     );
-
   const removeOptionSet = (id: string) =>
     setOptionSets((prev) => prev.filter((os) => os.id !== id));
-
   const addOptionToSet = (optionSetId: string) => {
     setOptionSets((prev) =>
       prev.map((os) => {
@@ -185,14 +218,25 @@ export default function CategoryManagerPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
+      <h1 className="text-4xl text-slate-500 mb-5">
+        Create <span className="text-slate-800 font-medium">Categories</span>
+      </h1>
+
       <Card>
-        <CardHeader>
-          <CardTitle>Category & OptionSet Manager</CardTitle>
-        </CardHeader>
         <CardContent>
           <form
             action={async (formData) => {
-              await createCategoryWithOptionSets(formData);
+              try {
+                await createCategoryWithOptionSets(formData);
+                setCategoryName("");
+                setCategoryDescription("");
+                setCategorySlug("");
+                setSubcategories([]);
+                setOptionSets([]);
+              } catch (error) {
+                console.error("Error creating category:", error);
+                toast.error("Failed to create category. Please try again.");
+              }
             }}
           >
             <input type="hidden" name="payload" value={payload} />
@@ -205,7 +249,7 @@ export default function CategoryManagerPage() {
                     <Input
                       required
                       value={categoryName}
-                      onChange={(e) => setCategoryName(e.target.value)}
+                      onChange={(e) => handleCategoryNameChange(e.target.value)}
                       name="categoryName"
                     />
                   </label>
@@ -213,7 +257,6 @@ export default function CategoryManagerPage() {
                   <label className="block">
                     <div className="text-sm mb-1">Description</div>
                     <Textarea
-                      required
                       value={categoryDescription}
                       onChange={(e) => setCategoryDescription(e.target.value)}
                       name="categoryDescription"
@@ -224,16 +267,6 @@ export default function CategoryManagerPage() {
                     <div className="text-sm mb-1">Slug (auto)</div>
                     <Input readOnly value={categorySlug} name="categorySlug" />
                   </label>
-
-                  <div className="mt-2">
-                    <Button
-                      type="button"
-                      onClick={addSubcategory}
-                      className="mr-2"
-                    >
-                      Add Subcategory
-                    </Button>
-                  </div>
                 </div>
               </section>
 
@@ -282,7 +315,12 @@ export default function CategoryManagerPage() {
                   </div>
                 </section>
               )}
-
+              <div className="mt-2 justify-end flex">
+                <Button type="button" onClick={addSubcategory}>
+                  Add Subcategory
+                </Button>
+              </div>
+              <hr />
               <section>
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium">Option Sets</h3>
@@ -319,7 +357,7 @@ export default function CategoryManagerPage() {
                         <div className="text-xs mb-1">Type</div>
                         <Select
                           value={os.type}
-                          onValueChange={(v) =>
+                          onValueChange={(v: OptionType) =>
                             updateOptionSet(os.id, { type: v })
                           }
                         >
@@ -327,10 +365,27 @@ export default function CategoryManagerPage() {
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="GENERAL">GENERAL</SelectItem>
-                            <SelectItem value="COLOR">COLOR</SelectItem>
-                            <SelectItem value="SIZE">SIZE</SelectItem>
-                            <SelectItem value="MATERIAL">MATERIAL</SelectItem>
+                            <SelectItem value={OptionType.TEXT}>
+                              TEXT
+                            </SelectItem>
+                            <SelectItem value={OptionType.COLOR}>
+                              COLOR
+                            </SelectItem>
+                            <SelectItem value={OptionType.SIZE}>
+                              SIZE
+                            </SelectItem>
+                            <SelectItem value={OptionType.MEASURE}>
+                              MEASURE
+                            </SelectItem>
+                            <SelectItem value={OptionType.BOOLEAN}>
+                              BOOLEAN
+                            </SelectItem>
+                            <SelectItem value={OptionType.NUMBER}>
+                              NUMBER
+                            </SelectItem>
+                            <SelectItem value={OptionType.RANGE}>
+                              RANGE
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </label>
@@ -397,8 +452,10 @@ export default function CategoryManagerPage() {
               {/* Hidden payload that server action will parse */}
               <input type="hidden" name="payload" value={payload} />
 
-              <div className="pt-4">
-                <Button type="submit">Create Category + OptionSets</Button>
+              <div className="pt-4 flex justify-end">
+                <Button type="submit" className="px-16 py-4 text-md">
+                  Create
+                </Button>
               </div>
             </div>
           </form>

@@ -287,16 +287,16 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
+      {/* <div>
         <h2 className="text-xl font-semibold mb-2">Manage Option Sets</h2>
         <p className="text-muted-foreground text-sm">
           Add option sets or select from available ones for the selected
           categories.
         </p>
-      </div>
+      </div> */}
 
       {/* Add New Option Set */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="text-base">Add New Option Set</CardTitle>
         </CardHeader>
@@ -344,7 +344,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Available Option Sets */}
       <div className="space-y-4">
@@ -371,9 +371,9 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
                   <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                     Options
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[300px]">
+                  {/* <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[300px]">
                     Add Option
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -448,7 +448,22 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
                                 style={{
                                   backgroundColor:
                                     set.type === "COLOR"
-                                      ? opt.name?.toLowerCase() || "transparent"
+                                      ? (() => {
+                                          const colorName = opt.name?.toLowerCase().trim();
+                                          if (colorName && /^#[0-9a-f]{6}$/.test(colorName)) {
+                                            return colorName;
+                                          }
+                                          if (colorName && /^[a-z]+$/.test(colorName)) {
+                                            const hash = colorName
+                                              .split("")
+                                              .reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
+                                            const hex = (hash & 0xffffff).toString(16).padStart(6, "0");
+                                            return `#${hex}`;
+                                          }
+                                          return `#${Math.floor(Math.random() * 16777215)
+                                            .toString(16)
+                                            .padStart(6, "0")}`;
+                                        })()
                                       : undefined,
                                   borderColor:
                                     set.type === "COLOR"
@@ -480,7 +495,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
                         </div>
                       </td>
 
-                      <td className="p-4 align-middle">
+                      {/* <td className="p-4 align-middle">
                         <div className="flex gap-2 items-center">
                           {renderOptionInput(set)}
                           <Button
@@ -498,7 +513,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
                             Add
                           </Button>
                         </div>
-                      </td>
+                      </td> */}
                     </tr>
                   );
                 })}

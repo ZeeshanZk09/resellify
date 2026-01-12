@@ -6,11 +6,12 @@ import db from "@/shared/lib/prisma";
 import { TSingleOption } from "@/shared/types/common";
 import { OptionSetCreateInput } from "@/shared/lib/generated/prisma/models";
 import { revalidatePath } from "next/cache";
+import { OptionType } from "@/shared/lib/generated/prisma/enums";
 
 // Validation Schemas
 const AddOptionSet = z.object({
   name: z.string().min(3),
-  type: z.string().min(1), // OptionSetType string, adjust as needed
+  type: z.nativeEnum(OptionType), // OptionSetType enum
   categoryId: z.string().min(6),
 });
 
@@ -402,101 +403,111 @@ export const getCategoryOptionSets = async () => {
 /* ================= SERVER ACTION ================= */
 
 export async function createCategoryWithOptionSets(formData: FormData) {
-  "use server";
-
-  const raw = formData.get("payload") as string | null;
-  if (!raw) {
-    throw new Error("Missing payload");
-  }
-
-  const payload = JSON.parse(raw) as {
-    category: { name: string; description: string; slug: string };
-    subcategories: Array<{ name: string; description: string; slug: string }>;
-    optionSets: Array<{
-      name: string;
-      type: string;
-      options: Array<{
-        name: string;
-        value?: string | null;
-        position?: number;
-      }>;
-    }>;
-  };
-
-  // Validate (lightweight) - you can replace with zod/yup server-side validation
-  if (!payload.category?.name || !payload.category?.description) {
-    throw new Error("Category name and description are required");
-  }
-
-  // Use a transaction to create all dependent records atomically and efficiently.
-  const result = await db.$transaction(async (tx) => {
-    // 1) Create root category
-    const createdCategory = await tx.category.create({
-      data: {
-        name: payload.category.name,
-        description: payload.category.description,
-        slug: payload.category.slug,
-      },
-    });
-
-    // 2) Create subcategories (if any) using createMany for performance
-    if (payload.subcategories && payload.subcategories.length > 0) {
-      const subcatsData = payload.subcategories.map((s) => ({
-        id: undefined, // prisma will generate
-        name: s.name,
-        description: s.description,
-        slug: s.slug,
-        parentId: createdCategory.id,
-        createdAt: undefined,
-      }));
-
-      // createMany doesn't return created rows; that's fine for subcategories
-      await tx.category.createMany({ data: subcatsData });
+  try {
+    const raw = formData.get("payload") as string | null;
+    if (!raw) {
+      return {
+        error: "Missing payload",
+        success: false,
+      };
     }
 
-    // 3) For each optionSet: create optionSet, create options (createMany), and create categoryOptionSet link
-    for (const os of payload.optionSets ?? []) {
-      if (!os.name) continue;
+    const payload = JSON.parse(raw) as {
+      category: { name: string; description: string; slug: string };
+      subcategories: Array<{ name: string; description: string; slug: string }>;
+      optionSets: Array<{
+        name: string;
+        type: OptionType;
+        options: Array<{
+          name: string;
+          value?: string | null;
+          position?: number;
+        }>;
+      }>;
+    };
 
-      const createdOptionSet = await tx.optionSet.create({
+    // Validate (lightweight) - you can replace with zod/yup server-side validation
+    if (!payload.category?.name) {
+      return {
+        error: "Category name and description are required",
+        success: false,
+      };
+    }
+
+    // Use a transaction to create all dependent records atomically and efficiently.
+    const result = await db.$transaction(async (tx) => {
+      // 1) Create root category
+      const createdCategory = await tx.category.create({
         data: {
-          name: os.name,
-          type: os.type as any,
+          name: payload.category.name,
+          description: payload.category.description,
+          slug: payload.category.slug,
         },
       });
 
-      if (os.options && os.options.length > 0) {
-        const optionsData = os.options.map((opt, idx) => ({
-          name: opt.name,
-          value: opt.value ?? null,
-          position: typeof opt.position === "number" ? opt.position : idx + 1,
-          optionSetId: createdOptionSet.id,
+      // 2) Create subcategories (if any) using createMany for performance
+      if (payload.subcategories && payload.subcategories.length > 0) {
+        const subcatsData = payload.subcategories.map((s) => ({
+          name: s.name,
+          description: s.description,
+          slug: s.slug,
+          parentId: createdCategory.id,
         }));
 
-        // createMany to insert options in bulk
-        await tx.option.createMany({ data: optionsData });
+        // createMany doesn't return created rows; that's fine for subcategories
+        await tx.category.createMany({ data: subcatsData });
       }
 
-      // link category <-> optionSet
-      await tx.categoryOptionSet.create({
-        data: {
-          categoryId: createdCategory.id,
-          optionSetId: createdOptionSet.id,
-        },
-      });
+      // 3) For each optionSet: create optionSet, create options (createMany), and create categoryOptionSet link
+      for (const os of payload.optionSets ?? []) {
+        if (!os.name) continue;
+
+        const createdOptionSet = await tx.optionSet.create({
+          data: {
+            name: os.name,
+            type: os.type,
+          },
+        });
+
+        if (os.options && os.options.length > 0) {
+          const optionsData = os.options.map((opt, idx) => ({
+            name: opt.name,
+            value: opt.value ?? null,
+            position: typeof opt.position === "number" ? opt.position : idx + 1,
+            optionSetId: createdOptionSet.id,
+          }));
+
+          // createMany to insert options in bulk
+          await tx.option.createMany({ data: optionsData });
+        }
+
+        // link category <-> optionSet
+        await tx.categoryOptionSet.create({
+          data: {
+            categoryId: createdCategory.id,
+            optionSetId: createdOptionSet.id,
+          },
+        });
+      }
+
+      return { categoryId: createdCategory.id };
+    });
+
+    // OPTIONAL: revalidate path or route cache where categories are listed
+    try {
+      revalidatePath("/admin/manage-categories");
+    } catch (e) {
+      // ignore if revalidation not configured
+      console.log(e);
+      return { error: "Failed to revalidate path" };
     }
 
-    return { categoryId: createdCategory.id };
-  });
-
-  // OPTIONAL: revalidate path or route cache where categories are listed
-  try {
-    revalidatePath("/admin/manage-categories");
-  } catch (e) {
-    // ignore if revalidation not configured
-    console.log(e);
-    return { error: "Failed to revalidate path" };
+    return result;
+  } catch (error) {
+    console.log(error);
+    return {
+      error: "Failed to create category with option sets",
+      success: false,
+    };
   }
-
-  return result;
 }

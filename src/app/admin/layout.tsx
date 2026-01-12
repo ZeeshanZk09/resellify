@@ -22,7 +22,7 @@ export default async function AdminLayout({
       <div className="w-full flex flex-1 items-start h-full">
         <div className="flex justify-between flex-1 h-full">
           <AdminSidebar />
-          <div className="relative left-12 max-w-[90vw] w-full px-6 border-l border-foreground/05">
+          <div className="relative left-12 max-w-[90vw] w-full px-6 border-l border-foreground/05 py-14">
             {children}
           </div>
         </div>

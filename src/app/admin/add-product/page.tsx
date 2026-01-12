@@ -358,14 +358,14 @@ export default function ProductCreationWizard() {
   ): Promise<void> => {
     console.log("[SUBMIT] Product Data", data);
 
-    // await processProductSubmission(
-    //   {
-    //     ...data,
-    //     status: "PUBLISHED",
-    //     visibility: "PUBLIC",
-    //   },
-    //   false
-    // );
+    await processProductSubmission(
+      {
+        ...data,
+        status: "PUBLISHED",
+        visibility: "PUBLIC",
+      },
+      false
+    );
   };
 
   const renderStep = (step: number): React.ReactNode => {

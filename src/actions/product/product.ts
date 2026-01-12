@@ -225,7 +225,7 @@ export async function addProduct(input: AddProductInput) {
     }
 
     // Step 2: Upload images
-    if ((input.images as File[])?.length > 0 || (input.images as File)) {
+    if (Array.isArray(input?.images) || input?.images instanceof File) {
       console.log(
         `[UPLOAD] Uploading ${
           (input.images as File[]).length || (input.images as File).name
@@ -333,19 +333,30 @@ export async function addProduct(input: AddProductInput) {
     // Provide more specific error messages
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === "P2002") {
+        console.log(err);
         return {
           data: null,
           error: "A product with this slug or SKU already exists",
         };
       }
       if (err.code === "P2003") {
+        console.log(err);
         return {
           data: null,
           error:
             "Foreign key constraint failed. Please check your category references.",
         };
       }
+      if (err.code === "P2025") {
+        console.log(err);
+        return {
+          data: null,
+          error: "Product not found or already deleted",
+        };
+      }
+      console.log(err);
     }
+    console.log(err);
 
     return {
       data: null,
