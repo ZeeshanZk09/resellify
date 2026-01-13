@@ -62,7 +62,10 @@ const CategoryItem = memo(
     );
 
     return (
-      <div className={cn("ml-4", level > 0 && `ml-${level * 4}`)}>
+      <li
+        className={cn("ml-4", level > 0 && `ml-${level * 4}`)}
+        aria-level={level + 1}
+      >
         <div className="flex items-center mb-1">
           {hasChildren ? (
             <Button
@@ -71,6 +74,8 @@ const CategoryItem = memo(
               variant="ghost"
               onClick={() => onToggle(category.id)}
               className="min-w-[30px] h-8 p-1"
+              aria-expanded={isExpanded}
+              aria-controls={`category-${category.id}-children`}
               aria-label={
                 isExpanded
                   ? `Collapse ${category.name}`
@@ -87,19 +92,26 @@ const CategoryItem = memo(
             <div className="w-[30px]" /> // Spacer for alignment
           )}
 
-          <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors">
+          <div className="flex items-center gap-2 px-2 py-1 rounded transition-colors hover:bg-gray-50">
             <input
+              id={`category-${category.id}-checkbox`}
+              name={field.name}
               type="checkbox"
+              value={category.id}
               checked={isChecked}
               onChange={handleCheckboxChange}
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
               aria-checked={isChecked}
+              aria-describedby="category-error selection-status"
               aria-label={`Select ${category.name} category`}
             />
-            <span className="select-none text-sm font-medium">
+            <Label
+              htmlFor={`category-${category.id}-checkbox`}
+              className="select-none text-sm font-medium cursor-pointer"
+            >
               {category.name}
-            </span>
-          </label>
+            </Label>
+          </div>
         </div>
 
         {isExpanded && hasChildren && category.children && (
@@ -109,9 +121,10 @@ const CategoryItem = memo(
             expandedCategories={{ [category.id]: isExpanded }}
             onToggle={onToggle}
             field={field}
+            treeId={`category-${category.id}-children`}
           />
         )}
-      </div>
+      </li>
     );
   }
 );
@@ -126,15 +139,23 @@ const CategoryTree = memo(
     expandedCategories,
     onToggle,
     field,
+    treeId,
   }: {
     categories: Category[];
     level: number;
     expandedCategories: Record<string, boolean>;
     onToggle: (categoryId: string) => void;
     field: ControllerRenderProps<CategoryFormValues, "selectedCategoryIds">;
+    treeId?: string;
   }) => {
     return (
-      <>
+      <ul
+        id={treeId!}
+        className="space-y-2 "
+        role="tree"
+        aria-labelledby={treeId}
+        aria-multiselectable="true"
+      >
         {categories.map((category) => (
           <CategoryItem
             key={category.id}
@@ -145,7 +166,7 @@ const CategoryTree = memo(
             field={field}
           />
         ))}
-      </>
+      </ul>
     );
   }
 );
@@ -186,7 +207,11 @@ const CategoryStep: React.FC<CategoryStepProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 space-y-4">
+      <div
+        className="flex flex-col items-center justify-center p-8 space-y-4"
+        role="status"
+        aria-live="polite"
+      >
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         <p className="text-muted-foreground">Loading categories...</p>
       </div>
@@ -206,24 +231,38 @@ const CategoryStep: React.FC<CategoryStepProps> = ({
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Select Categories</h2>
+    <section className="space-y-4" aria-labelledby="category-heading">
+      <header>
+        <h2 id="category-heading" className="text-xl font-semibold mb-2">
+          Select Categories
+        </h2>
         <p className="text-muted-foreground mb-4">
           Choose one or more categories for your product
         </p>
 
         {selectedCategoryIds && selectedCategoryIds.length > 0 && (
-          <div className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-md">
-            <p className="text-sm font-medium text-primary">
-              Selected: {selectedCategoryIds.length} category
-              {selectedCategoryIds.length !== 1 ? "s" : ""}
+          <div
+            className="mb-4 p-3 bg-primary/5 border border-primary/20 rounded-md"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <p
+              id="selection-status"
+              className="text-sm font-medium text-primary"
+            >
+              Selected: {selectedCategoryIds.length}{" "}
+              {selectedCategoryIds.length === 1 ? "category" : "categories"}
             </p>
           </div>
         )}
-      </div>
+      </header>
 
-      <Card className="max-h-[400px] overflow-auto border-muted">
+      <Card
+        className="max-h-[400px] overflow-auto [&::-webkit-scrollbar]:w-1
+  [&::-webkit-scrollbar-track]:bg-gray-100
+  [&::-webkit-scrollbar-thumb]:bg-gray-300 border-muted"
+      >
         <CardContent className="pt-6">
           <Controller<CategoryFormValues, "selectedCategoryIds">
             name="selectedCategoryIds"
@@ -238,33 +277,43 @@ const CategoryStep: React.FC<CategoryStepProps> = ({
               },
             }}
             render={({ field }) => (
-              <div className="space-y-1">
-                <Label htmlFor="category-tree" className="sr-only">
-                  Category selection
-                </Label>
-                <div id="category-tree" className="mt-2 space-y-2">
+              <fieldset
+                className="space-y-1"
+                aria-describedby="category-help category-error"
+                aria-invalid={Boolean(categoryError)}
+              >
+                <legend className="sr-only">Category selection</legend>
+                <p id="category-help" className="sr-only">
+                  You can select multiple categories.
+                </p>
+                <div className="mt-2 space-y-2 ">
                   <CategoryTree
                     categories={categories}
                     level={0}
                     expandedCategories={expandedCategories}
                     onToggle={toggleCategory}
                     field={field}
+                    treeId="category-tree"
                   />
                 </div>
 
                 {categoryError && (
-                  <p className="text-sm text-destructive mt-2 flex items-center gap-1">
+                  <p
+                    id="category-error"
+                    role="alert"
+                    className="text-sm text-destructive mt-2 flex items-center gap-1"
+                  >
                     <AlertCircle className="h-4 w-4" />
                     {categoryError}
                   </p>
                 )}
-              </div>
+              </fieldset>
             )}
           />
         </CardContent>
       </Card>
 
-      <div className="text-sm text-muted-foreground pt-2">
+      <footer className="text-sm text-muted-foreground pt-2">
         <p>Tips:</p>
         <ul className="list-disc pl-5 mt-1 space-y-1">
           <li>
@@ -276,8 +325,8 @@ const CategoryStep: React.FC<CategoryStepProps> = ({
           </li>
           <li>Use the arrow buttons to expand/collapse subcategories</li>
         </ul>
-      </div>
-    </div>
+      </footer>
+    </section>
   );
 };
 
