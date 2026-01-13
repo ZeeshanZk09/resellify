@@ -1,14 +1,15 @@
-import React, { useState, useCallback, memo, useEffect } from "react";
+import { AlertCircle, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import type React from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import {
-  useFormContext,
   Controller,
-  ControllerRenderProps,
+  type ControllerRenderProps,
+  useFormContext,
   useWatch,
 } from "react-hook-form";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Label } from "@/shared/components/ui/label";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 // Define Category interface matching the expected structure
@@ -45,7 +46,7 @@ const CategoryItem = memo(
     field: ControllerRenderProps<CategoryFormValues, "selectedCategoryIds">;
   }) => {
     const hasChildren = Boolean(
-      category.children && category.children.length > 0
+      category.children && category.children.length > 0,
     );
     const isChecked =
       Array.isArray(field.value) && field.value.includes(category.id);
@@ -58,7 +59,7 @@ const CategoryItem = memo(
           : currentValue.filter((id: string) => id !== category.id);
         field.onChange(newValue);
       },
-      [category.id, field]
+      [category.id, field],
     );
 
     return (
@@ -126,7 +127,7 @@ const CategoryItem = memo(
         )}
       </li>
     );
-  }
+  },
 );
 
 CategoryItem.displayName = "CategoryItem";
@@ -168,7 +169,7 @@ const CategoryTree = memo(
         ))}
       </ul>
     );
-  }
+  },
 );
 
 CategoryTree.displayName = "CategoryTree";

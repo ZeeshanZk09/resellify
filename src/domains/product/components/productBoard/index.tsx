@@ -5,13 +5,24 @@ import { useState } from "react";
 
 import AddToCartButton from "@/domains/store/shoppingCard/components/addToCartButton";
 import Quantity from "@/domains/store/shoppingCard/components/quantity";
-import { StarIcon, HeartIcon } from "@/shared/components/icons/svgIcons";
-import { TProductBoard } from "@/shared/types/product";
-import { TCartItem } from "@/shared/types/shoppingCart";
+import { HeartIcon, StarIcon } from "@/shared/components/icons/svgIcons";
+import type { TProductBoard } from "@/shared/types/product";
+import type { TCartItem } from "@/shared/types/shoppingCart";
 
 const ProductBoard = ({ boardData }: { boardData: TProductBoard }) => {
-  const { name, id, isAvailable, specialFeatures, price, shortDesc, dealPrice, defaultQuantity } = boardData;
-  const [quantity, setQuantity] = useState(defaultQuantity > 1 ? defaultQuantity : 1);
+  const {
+    name,
+    id,
+    isAvailable,
+    specialFeatures,
+    price,
+    shortDesc,
+    dealPrice,
+    defaultQuantity,
+  } = boardData;
+  const [quantity, setQuantity] = useState(
+    defaultQuantity > 1 ? defaultQuantity : 1,
+  );
 
   const handleQuantityChange = (isReducing: boolean) => {
     setQuantity((prev) => {
@@ -46,11 +57,16 @@ const ProductBoard = ({ boardData }: { boardData: TProductBoard }) => {
           </Link>
         </div>
       </section>
-      <h1 className="block text-2xl leading-9 font-medium my-2.5 mt-8 text-gray-700">{name}</h1>
+      <h1 className="block text-2xl leading-9 font-medium my-2.5 mt-8 text-gray-700">
+        {name}
+      </h1>
       <span className="block text-xs text-gray-700 mb-4">{shortDesc}</span>
       <hr className="w-full border-t border-gray-300 mb-5" />
       <div className="flex flex-col gap-3 text-sm text-gray-500 mb-12">
-        {specialFeatures && specialFeatures?.map((feature, index) => <span key={index}>{feature}</span>)}
+        {specialFeatures &&
+          specialFeatures?.map((feature, index) => (
+            <span key={index}>{feature}</span>
+          ))}
       </div>
       <h2 className="text-3xl font-medium text-gray-800 mb-5">
         {(dealPrice ? dealPrice : price).toLocaleString("en-us", {

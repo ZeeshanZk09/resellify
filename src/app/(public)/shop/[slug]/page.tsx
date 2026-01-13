@@ -1,37 +1,37 @@
 import {
+  AlertCircle,
+  ArrowBigUpDash,
+  BoxIcon,
+  CheckCircle,
+  Heart,
+  RefreshCw,
+  ShareIcon,
+  Shield,
+  StarIcon,
+  Truck,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import React from "react";
+import {
   getAllProducts,
   getProductBySlug,
   getRelatedProducts,
 } from "@/actions/product/product";
-import { notFound } from "next/navigation";
-import React from "react";
-import { Metadata } from "next";
-import Image from "next/image";
-import { Product } from "@/shared/lib/generated/prisma/client";
 import { HomeSlider } from "@/domains/store/homePage/components";
-import {
-  ArrowBigUpDash,
-  BoxIcon,
-  Heart,
-  ShareIcon,
-  StarIcon,
-  Truck,
-  Shield,
-  RefreshCw,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
-import FavBtn from "./_components/fav-btn";
+import type { Product } from "@/shared/lib/generated/prisma/client";
 import AddToCartButton from "./_components/add-to-cart-button";
-import ProductVariantSelector from "./_components/product-variant-selector";
 import Breadcrumbs from "./_components/breadcrumbs";
+import FavBtn from "./_components/fav-btn";
+import ProductGallery from "./_components/product-gallery";
 import ProductReviews from "./_components/product-reviews";
 import ProductSpecifications from "./_components/product-specifications";
-import ProductGallery from "./_components/product-gallery";
-import StockIndicator from "./_components/stock-indicator";
-import SocialShare from "./_components/social-share";
-import RelatedProducts from "./_components/related-products";
 import ProductStructuredData from "./_components/product-structured-data";
+import ProductVariantSelector from "./_components/product-variant-selector";
+import RelatedProducts from "./_components/related-products";
+import SocialShare from "./_components/social-share";
+import StockIndicator from "./_components/stock-indicator";
 
 interface ProductPageProps {
   params: Promise<{
@@ -129,7 +129,7 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
   const relatedProducts = (
     await getRelatedProducts(
       product?.id!,
-      product?.categories?.map((cat) => cat.category.id).join(",") || ""
+      product?.categories?.map((cat) => cat.category.id).join(",") || "",
     )
   ).res;
   if (!product) {
@@ -140,7 +140,7 @@ export default async function ProductBySlug({ params }: ProductPageProps) {
   const price = product.salePrice || product.basePrice;
   const discount = product.salePrice
     ? Math.round(
-        ((product.basePrice - product.salePrice) / product.basePrice) * 100
+        ((product.basePrice - product.salePrice) / product.basePrice) * 100,
       )
     : 0;
 

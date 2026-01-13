@@ -1,34 +1,27 @@
-import React, {
-  useState,
-  ChangeEvent,
-  useEffect,
-  useRef,
-  useCallback,
-} from "react";
-import { useFormContext } from "react-hook-form";
-import { ImagePlus, Trash2 } from "lucide-react";
-
-import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
-import { Textarea } from "@/shared/components/ui/textarea";
+import { ImagePlus, Trash2 } from 'lucide-react';
+import React, { type ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/shared/components/ui/form";
-import { generateProductSlug } from "@/shared/lib/utils/category";
-import { toast } from "sonner";
+} from '@/shared/components/ui/select';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { generateProductSlug } from '@/shared/lib/utils/category';
 
 type ImageFile = {
   file: File;
@@ -41,13 +34,13 @@ export default function BasicInfoStep() {
   const [images, setImages] = useState<ImageFile[]>([]);
 
   // Watch title and slug
-  const title = watch<string>("title");
-  const slug = watch<string>("slug");
+  const title = watch<string>('title');
+  const slug = watch<string>('slug');
 
   // Debug: log current values
-  console.log("[DEBUG] Current title:", title);
-  console.log("[DEBUG] Current slug:", slug);
-  console.log("[DEBUG] Form values:", getValues());
+  console.log('[DEBUG] Current title:', title);
+  console.log('[DEBUG] Current slug:', slug);
+  console.log('[DEBUG] Form values:', getValues());
 
   // Ref to hold debounce timer for slug generation
   const slugDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -56,22 +49,22 @@ export default function BasicInfoStep() {
   const generateSlug = useCallback(
     async (titleText: string) => {
       try {
-        console.log("[Slug Generation] Generating slug for:", titleText);
+        console.log('[Slug Generation] Generating slug for:', titleText);
         const newSlug = (await generateProductSlug(titleText)) as string;
-        console.log("[Slug Generation] Generated slug:", newSlug);
+        console.log('[Slug Generation] Generated slug:', newSlug);
 
         // Set the slug value
-        setValue("slug", newSlug, {
+        setValue('slug', newSlug, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
         });
         // dlnsak
         // Trigger validation to clear any errors
-        trigger("slug");
+        trigger('slug');
       } catch (error) {
-        console.error("[Slug Generation] Failed to generate slug", error);
-        toast.error("Failed to generate slug");
+        console.error('[Slug Generation] Failed to generate slug', error);
+        toast.error('Failed to generate slug');
       }
     },
     [setValue, trigger]
@@ -79,7 +72,7 @@ export default function BasicInfoStep() {
 
   // Debounced slug generation
   useEffect(() => {
-    console.log("[Effect] Title changed:", title);
+    console.log('[Effect] Title changed:', title);
 
     // Clear previous timeout
     if (slugDebounceRef.current) {
@@ -88,9 +81,9 @@ export default function BasicInfoStep() {
     }
 
     // If title is empty, clear slug
-    if (!title || title.trim() === "") {
-      console.log("[Effect] Title is empty, clearing slug");
-      setValue("slug", "", {
+    if (!title || title.trim() === '') {
+      console.log('[Effect] Title is empty, clearing slug');
+      setValue('slug', '', {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -98,16 +91,14 @@ export default function BasicInfoStep() {
     }
 
     // Don't generate slug if user manually edited it
-    const currentSlug = getValues("slug");
+    const currentSlug = getValues('slug');
     const isSlugManuallyEdited =
       currentSlug &&
-      currentSlug !== "" &&
-      !currentSlug.includes(title.toLowerCase().replace(/\s+/g, "-"));
+      currentSlug !== '' &&
+      !currentSlug.includes(title.toLowerCase().replace(/\s+/g, '-'));
 
     if (isSlugManuallyEdited) {
-      console.log(
-        "[Effect] Slug was manually edited, skipping auto-generation"
-      );
+      console.log('[Effect] Slug was manually edited, skipping auto-generation');
       return;
     }
 
@@ -135,7 +126,7 @@ export default function BasicInfoStep() {
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (images.length >= 4) {
-      toast.error("You can upload maximum 4 images");
+      toast.error('You can upload maximum 4 images');
       return;
     }
     const files = Array.from(e.target.files || []);
@@ -144,36 +135,42 @@ export default function BasicInfoStep() {
       preview: URL.createObjectURL(file),
       name: file.name,
     }));
-    setValue("images", (prev: string[]) => [...prev, ...newImages]);
+    // Store File objects in the form, not ImageFile objects
+    const currentImages = (getValues('images') as File[]) || [];
+    const newFiles = newImages.map((img) => img.file);
+    setValue('images', [...currentImages, ...newFiles]);
     setImages((prev) => [...prev, ...newImages]);
   };
 
   const handleRemoveImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
-    setValue("images", (prev: string[]) => prev.filter((_, i) => i !== index));
+    // Remove the corresponding File from form values
+    const currentImages = (getValues('images') as File[]) || [];
+    const updatedImages = currentImages.filter((_, i) => i !== index);
+    setValue('images', updatedImages);
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Basic Product Information</h2>
+    <div className='space-y-6'>
+      <h2 className='text-xl font-semibold'>Basic Product Information</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         {/* Left Column - Basic Info */}
-        <div className="space-y-6 h-full">
-          <Card className="h-full">
-            <CardContent className="pt-6 space-y-4">
+        <div className='space-y-6 h-full'>
+          <Card className='h-full'>
+            <CardContent className='pt-6 space-y-4'>
               <FormField
                 control={control}
-                name="title"
-                rules={{ required: "Product title is required" }}
+                name='title'
+                rules={{ required: 'Product title is required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Product Title <span className="text-destructive">*</span>
+                      Product Title <span className='text-destructive'>*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Product Title"
+                        placeholder='Product Title'
                         {...field}
                         onChange={(e) => {
                           field.onChange(e);
@@ -195,20 +192,15 @@ export default function BasicInfoStep() {
 
               <FormField
                 control={control}
-                name="slug"
-                rules={{ required: "Slug is required" }}
+                name='slug'
+                rules={{ required: 'Slug is required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Slug <span className="text-destructive">*</span>
+                      Slug <span className='text-destructive'>*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Slug"
-                        {...field}
-                        value={field.value ?? ""}
-                        disabled
-                      />
+                      <Input placeholder='Slug' {...field} value={field.value ?? ''} disabled />
                     </FormControl>
                     <FormDescription>URL-friendly identifier</FormDescription>
                     <FormMessage />
@@ -216,18 +208,18 @@ export default function BasicInfoStep() {
                 )}
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <FormField
                   control={control}
-                  name="sku"
-                  rules={{ required: "SKU is required" }}
+                  name='sku'
+                  rules={{ required: 'SKU is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        SKU <span className="text-destructive">*</span>
+                        SKU <span className='text-destructive'>*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="SKU" {...field} />
+                        <Input placeholder='SKU' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -236,27 +228,22 @@ export default function BasicInfoStep() {
 
                 <FormField
                   control={control}
-                  name="basePrice"
+                  name='basePrice'
                   rules={{
-                    required: "Price is required",
-                    min: { value: 0, message: "Price must be positive" },
+                    required: 'Price is required',
+                    min: { value: 0, message: 'Price must be positive' },
                   }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Base Price <span className="text-destructive">*</span>
+                        Base Price <span className='text-destructive'>*</span>
                       </FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                        <div className='relative'>
+                          <span className='absolute left-3 top-2.5 text-muted-foreground text-sm'>
                             PKR
                           </span>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            className="pl-12"
-                            {...field}
-                          />
+                          <Input type='number' placeholder='0' className='pl-12' {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -265,24 +252,19 @@ export default function BasicInfoStep() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <FormField
                   control={control}
-                  name="salePrice"
+                  name='salePrice'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Sale Price (Optional)</FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                        <div className='relative'>
+                          <span className='absolute left-3 top-2.5 text-muted-foreground text-sm'>
                             PKR
                           </span>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            className="pl-12"
-                            {...field}
-                          />
+                          <Input type='number' placeholder='0' className='pl-12' {...field} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -292,16 +274,12 @@ export default function BasicInfoStep() {
 
                 <FormField
                   control={control}
-                  name="inventory"
+                  name='inventory'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Initial Stock</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Initial Stock"
-                          {...field}
-                        />
+                        <Input type='number' placeholder='Initial Stock' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -309,7 +287,7 @@ export default function BasicInfoStep() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 {/* <FormField
                   control={control}
                   name='status'
@@ -363,21 +341,19 @@ export default function BasicInfoStep() {
 
               <FormField
                 control={control}
-                name="shortDescription"
+                name='shortDescription'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Short Description</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Brief description for product listings"
-                        className="resize-none"
+                        placeholder='Brief description for product listings'
+                        className='resize-none'
                         rows={3}
                         {...field}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Brief description for product listings
-                    </FormDescription>
+                    <FormDescription>Brief description for product listings</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -387,65 +363,64 @@ export default function BasicInfoStep() {
         </div>
 
         {/* Right Column - Images & SEO */}
-        <div className="space-y-6">
+        <div className='space-y-6'>
           {/* Image Upload */}
           <Card>
-            <CardContent className="pt-6">
-              <h3 className="text-lg font-medium mb-2">Product Images</h3>
-              <p className="text-xs text-muted-foreground mb-4">
-                Upload up to 4 images for your product (minimum 2 images
-                required)
+            <CardContent className='pt-6'>
+              <h3 className='text-lg font-medium mb-2'>Product Images</h3>
+              <p className='text-xs text-muted-foreground mb-4'>
+                Upload up to 4 images for your product (minimum 2 images required)
               </p>
               <input
-                accept="image/*"
-                className="hidden"
-                id="product-images"
-                type="file"
+                accept='image/*'
+                className='hidden'
+                id='product-images'
+                type='file'
                 disabled={images.length >= 4}
                 multiple
                 onChange={handleImageUpload}
               />
 
-              <label htmlFor="product-images" className="block mb-4">
+              <label htmlFor='product-images' className='block mb-4'>
                 <Button
-                  variant="outline"
+                  variant='outline'
                   className={
                     images.length >= 4
-                      ? "w-full cursor-not-allowed opacity-70"
-                      : "w-full cursor-pointer"
+                      ? 'w-full cursor-not-allowed opacity-70'
+                      : 'w-full cursor-pointer'
                   }
                   disabled={images.length >= 4}
                   asChild
                 >
                   <span>
-                    <ImagePlus className="mr-2 h-4 w-4" />
+                    <ImagePlus className='mr-2 h-4 w-4' />
                     Upload Images
                   </span>
                 </Button>
               </label>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className='grid grid-cols-3 gap-2'>
                 {images && images.length > 0 ? (
                   images.map((img, index) => (
-                    <div key={index} className="relative aspect-square">
+                    <div key={index} className='relative aspect-square'>
                       <img
                         src={img.preview}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover rounded-md border"
+                        className='w-full h-full object-cover rounded-md border'
                       />
                       <Button
-                        size="icon"
-                        variant="destructive"
-                        className="absolute top-1 right-1 h-6 w-6"
+                        size='icon'
+                        variant='destructive'
+                        className='absolute top-1 right-1 h-6 w-6'
                         onClick={() => handleRemoveImage(index)}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className='h-3 w-3' />
                       </Button>
                     </div>
                   ))
                 ) : (
-                  <div className="aspect-square rounded-md border-2 border-dashed flex items-center justify-center bg-muted/50">
-                    <ImagePlus className="h-8 w-8 text-muted-foreground/50" />
+                  <div className='aspect-square rounded-md border-2 border-dashed flex items-center justify-center bg-muted/50'>
+                    <ImagePlus className='h-8 w-8 text-muted-foreground/50' />
                   </div>
                 )}
               </div>
@@ -454,21 +429,20 @@ export default function BasicInfoStep() {
 
           {/* SEO Fields */}
           <Card>
-            <CardContent className=" pt-6 space-y-4">
-              <h3 className="text-lg font-medium">SEO Settings</h3>
+            <CardContent className=' pt-6 space-y-4'>
+              <h3 className='text-lg font-medium'>SEO Settings</h3>
 
               <FormField
                 control={control}
-                name="metaKeywords"
+                name='metaKeywords'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Meta Keywords</FormLabel>
                     <FormControl>
-                      <Input placeholder="Meta Keywords" {...field} />
+                      <Input placeholder='Meta Keywords' {...field} />
                     </FormControl>
                     <FormDescription>
-                      Separate keywords with commas (e.g., electronics, gadgets,
-                      smartphone)
+                      Separate keywords with commas (e.g., electronics, gadgets, smartphone)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 
 import { DeleteIcon } from "@/shared/components/icons/svgIcons";
-import { TCartItemData } from "@/shared/types/shoppingCart";
+import type { TCartItemData } from "@/shared/types/shoppingCart";
 import { modifyQuantity, remove } from "@/store/shoppingCart";
 
 import Quantity from "../../../quantity";
@@ -15,7 +15,14 @@ type TProps = {
 };
 
 const CartItem = ({ data, onLinkClicked }: TProps) => {
-  const { productName, productId, imgUrl, price, dealPrice = 0, quantity } = data;
+  const {
+    productName,
+    productId,
+    imgUrl,
+    price,
+    dealPrice = 0,
+    quantity,
+  } = data;
 
   const dispatch = useDispatch();
   const router = useRouter();
@@ -31,7 +38,10 @@ const CartItem = ({ data, onLinkClicked }: TProps) => {
 
   return (
     <div className="flex md:flex-row flex-col mt-5 mx-7 pb-5 justify-between gap-4 border-b border-gray-200">
-      <div className={"w-[120px] h-[110px] relative cursor-pointer"} onClick={handleGoToPage}>
+      <div
+        className={"w-[120px] h-[110px] relative cursor-pointer"}
+        onClick={handleGoToPage}
+      >
         <Image
           src={imgUrl}
           fill
@@ -40,7 +50,10 @@ const CartItem = ({ data, onLinkClicked }: TProps) => {
         />
       </div>
       <div className={"flex flex-grow flex-col"}>
-        <h2 className={"mb-3 text-sm text-gray-600 md:mb-6"} onClick={handleGoToPage}>
+        <h2
+          className={"mb-3 text-sm text-gray-600 md:mb-6"}
+          onClick={handleGoToPage}
+        >
           {productName}
         </h2>
         <div className={"flex items-center justify-start"}>
@@ -59,7 +72,11 @@ const CartItem = ({ data, onLinkClicked }: TProps) => {
           </span>
         </div>
         <div className={"flex justify-between items-center mt-3"}>
-          <Quantity onChange={handleQuantityChange} quantity={quantity} iconWidth={8} />
+          <Quantity
+            onChange={handleQuantityChange}
+            quantity={quantity}
+            iconWidth={8}
+          />
           <button
             onClick={() => dispatch(remove(productId))}
             className="size-10 cursor-pointer rounded-md flex items-center justify-center transition-all duration-300 border border-white hover:border-gray-200 hover:bg-gray-100 active:border-gray-300 active:bg-gray-200"

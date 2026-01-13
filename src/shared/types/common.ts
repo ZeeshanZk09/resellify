@@ -1,6 +1,12 @@
 // import { NameValue, OptionSetType, PageType } from '@prisma/client';
-import { ProductSpec, Upload, Visibility, Visit } from '../lib/generated/prisma/client';
-import { Decimal } from '@prisma/client/runtime/client';
+
+import type { Decimal } from "@prisma/client/runtime/client";
+import type {
+  ProductSpec,
+  Upload,
+  Visibility,
+  Visit,
+} from "../lib/generated/prisma/client";
 
 export type TProductCard = {
   name: string;

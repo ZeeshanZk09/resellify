@@ -1,8 +1,7 @@
 // next-auth.d.ts
 import 'next-auth';
-import { DefaultSession } from 'next-auth';
-import { User as u } from '@/shared/lib/generated/prisma/client';
-import { Session as s } from '@/shared/lib/generated/prisma/client';
+import type { DefaultSession } from 'next-auth';
+import type { Session as s, User as u } from '@/shared/lib/generated/prisma/client';
 
 declare module 'next-auth' {
   interface User extends u {}

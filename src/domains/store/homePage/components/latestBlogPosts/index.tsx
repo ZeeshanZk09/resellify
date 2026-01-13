@@ -10,7 +10,13 @@ export const LatestBlogPosts = () => {
       </div>
       <div className="flex gap-6 flex-col md:flex-row">
         {BlogCardData.map((blog, index) => (
-          <HomeBlogCard key={index} imgUrl={blog.imgUrl} title={blog.title} shortText={blog.shortText} url={blog.url} />
+          <HomeBlogCard
+            key={index}
+            imgUrl={blog.imgUrl}
+            title={blog.title}
+            shortText={blog.shortText}
+            url={blog.url}
+          />
         ))}
       </div>
     </div>

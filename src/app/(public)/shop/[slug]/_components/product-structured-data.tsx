@@ -1,4 +1,4 @@
-import { Product } from "@/shared/lib/generated/prisma/browser";
+import type { Product } from "@/shared/lib/generated/prisma/browser";
 
 export default function ProductStructuredData({
   structuredData,

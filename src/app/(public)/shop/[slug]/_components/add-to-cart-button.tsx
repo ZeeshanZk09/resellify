@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { ShoppingCart, Minus, Plus } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
+import { Minus, Plus, ShoppingCart } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { addItemToCart } from "@/actions/cart";
 import { getProductBySlug } from "@/actions/product/product";
-import { toast } from "sonner";
-import Link from "next/link";
+import { Button } from "@/shared/components/ui/button";
 
 interface AddToCartButtonProps {
   slug: string;
@@ -51,7 +51,7 @@ export default function AddToCartButton({
       const { success, message } = await addItemToCart(
         res.id,
         totalPrice,
-        quantity
+        quantity,
       );
       console.log(success, message);
       if (success) {

@@ -1,7 +1,6 @@
 import Link from "next/link";
-
+import type { TopSellingProductType } from "@/actions/landing-dashboard/dashboard";
 import ProductCard from "@/domains/product/components/productCard";
-import { TopSellingProductType } from "@/actions/landing-dashboard/dashboard";
 // import {  } from "@/domains/product/constants";
 
 export const TopSellingProductsList = ({

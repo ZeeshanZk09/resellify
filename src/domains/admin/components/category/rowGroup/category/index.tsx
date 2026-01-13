@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 import {
   addCategory,
   deleteCategory,
+  type TAddCategory,
+  type TGetAllCategories,
+  type TUpdateCategory,
   updateCategory,
-  TAddCategory,
-  TGetAllCategories,
-  TUpdateCategory,
-} from '@/actions/category/category';
-import Button from '@/shared/components/ui-v2/button';
-import Popup from '@/shared/components/ui-v2/popup';
+} from "@/actions/category/category";
+import Button from "@/shared/components/ui-v2/button";
+import Popup from "@/shared/components/ui-v2/popup";
 
-import AddCategory from '../addCategory';
-import CategoryOptions from '../categoryOptions';
+import AddCategory from "../addCategory";
+import CategoryOptions from "../categoryOptions";
 
 type TProps = {
   data: TGetAllCategories;
@@ -23,9 +23,9 @@ type TProps = {
 };
 
 const initialCategory: TAddCategory = {
-  id: '',
-  name: '',
-  slug: '',
+  id: "",
+  name: "",
+  slug: "",
   description: undefined,
   createdAt: new Date(),
   updatedAt: undefined,
@@ -38,19 +38,23 @@ type TEditSubCat = {
 };
 
 let selectedSubCategory: TEditSubCat = {
-  id: '',
-  name: '',
+  id: "",
+  name: "",
   description: undefined,
 };
 
 const Category = ({ onReset, data, subCategories }: TProps) => {
-  const { id: categoryID, name: categoryName, description: categoryDescription } = data;
+  const {
+    id: categoryID,
+    name: categoryName,
+    description: categoryDescription,
+  } = data;
 
   const [showOptions, setShowOptions] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
   const [showAddSubCategory, setShowAddSubCategory] = useState(false);
 
   // --------------- SUB CATEGORY ---------------
@@ -59,7 +63,8 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
 
   const [showSubOptions, setShowSubOptions] = useState(false);
 
-  const [addSubCategoryData, setAddSubCategoryData] = useState<TAddCategory>(initialCategory);
+  const [addSubCategoryData, setAddSubCategoryData] =
+    useState<TAddCategory>(initialCategory);
   const [editCategoryData, setEditCategoryData] = useState<TAddCategory>({
     id: data.id,
     name: data.name,
@@ -69,44 +74,46 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
     updatedAt: data.updatedAt || undefined,
   });
 
-  const [editSubCatData, setEditSubCatData] = useState<TAddCategory>(initialCategory);
+  const [editSubCatData, setEditSubCatData] =
+    useState<TAddCategory>(initialCategory);
 
   const handleUpdate = async () => {
-    if (!editCategoryData.name || editCategoryData.name.trim() === '') {
-      setErrorMsg('Category name is required');
+    if (!editCategoryData.name || editCategoryData.name.trim() === "") {
+      setErrorMsg("Category name is required");
       return;
     }
     if (editCategoryData.name.trim().length < 3) {
-      setErrorMsg('Category name must be at least 3 characters');
+      setErrorMsg("Category name must be at least 3 characters");
       return;
     }
 
     const updatedData: TUpdateCategory = { id: categoryID };
 
-    if (editCategoryData.name !== categoryName) updatedData.name = editCategoryData.name;
+    if (editCategoryData.name !== categoryName)
+      updatedData.name = editCategoryData.name;
     if (editCategoryData.description !== (categoryDescription || undefined)) {
       updatedData.description = editCategoryData.description;
     }
 
     if (!updatedData.name && !updatedData.description) {
       setShowEdit(false);
-      setErrorMsg('');
+      setErrorMsg("");
       return;
     }
 
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
     const response = await updateCategory(updatedData);
 
-    if ('res' in response && response.res) {
+    if ("res" in response && response.res) {
       setShowEdit(false);
       setIsLoading(false);
-      setErrorMsg('');
+      setErrorMsg("");
       onReset();
     } else {
       const errorMessage =
-        'error' in response
-          ? typeof response.error === 'string'
+        "error" in response
+          ? typeof response.error === "string"
             ? response.error
             : String(response.error)
           : "Can't update category";
@@ -117,16 +124,16 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
 
   const handleDeleteCat = async () => {
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
     const response = await deleteCategory(categoryID);
 
-    if ('error' in response && response.error) {
+    if ("error" in response && response.error) {
       setErrorMsg(response.error);
       setIsLoading(false);
       return;
     }
-    if ('res' in response && response.res) {
-      setErrorMsg('');
+    if ("res" in response && response.res) {
+      setErrorMsg("");
       setShowDelete(false);
       setIsLoading(false);
       onReset();
@@ -135,36 +142,36 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
 
   // --------------- SUB CATEGORY MANAGING SECTION ---------------
   const handleAddSub = async () => {
-    if (!addSubCategoryData.name || addSubCategoryData.name.trim() === '') {
-      setErrorMsg('Category Name should not be empty');
+    if (!addSubCategoryData.name || addSubCategoryData.name.trim() === "") {
+      setErrorMsg("Category Name should not be empty");
       return;
     }
     if (addSubCategoryData.name.trim().length < 3) {
-      setErrorMsg('Category name must be at least 3 characters');
+      setErrorMsg("Category name must be at least 3 characters");
       return;
     }
 
     const categoryData: TAddCategory = {
-      id: '',
+      id: "",
       name: addSubCategoryData.name.trim(),
-      slug: '', // Will be auto-generated by addCategory action
+      slug: "", // Will be auto-generated by addCategory action
       description: addSubCategoryData.description?.trim() || undefined,
       createdAt: new Date(),
       updatedAt: undefined,
     };
 
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
     const response = await addCategory(categoryData);
 
-    if ('error' in response && response.error) {
+    if ("error" in response && response.error) {
       setErrorMsg(response.error);
       setIsLoading(false);
       return;
     }
-    if ('res' in response && response.res) {
+    if ("res" in response && response.res) {
       setAddSubCategoryData(initialCategory);
-      setErrorMsg('');
+      setErrorMsg("");
       setIsLoading(false);
       setShowAddSubCategory(false);
       onReset();
@@ -179,47 +186,51 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
       name,
       description: description || undefined,
     });
-    setErrorMsg('');
+    setErrorMsg("");
     setShowSubEdit(true);
   };
 
   const handleEditSub = async () => {
-    if (!editSubCatData.name || editSubCatData.name.trim() === '') {
-      setErrorMsg('Category Name should not be empty');
+    if (!editSubCatData.name || editSubCatData.name.trim() === "") {
+      setErrorMsg("Category Name should not be empty");
       return;
     }
     if (editSubCatData.name.trim().length < 3) {
-      setErrorMsg('Category name must be at least 3 characters');
+      setErrorMsg("Category name must be at least 3 characters");
       return;
     }
 
     const updatedData: TUpdateCategory = {
       id: selectedSubCategory.id,
     };
-    if (editSubCatData.name !== selectedSubCategory.name) updatedData.name = editSubCatData.name;
-    if (editSubCatData.description !== (selectedSubCategory.description || undefined)) {
+    if (editSubCatData.name !== selectedSubCategory.name)
+      updatedData.name = editSubCatData.name;
+    if (
+      editSubCatData.description !==
+      (selectedSubCategory.description || undefined)
+    ) {
       updatedData.description = editSubCatData.description;
     }
 
     if (!updatedData.name && !updatedData.description) {
       setShowSubEdit(false);
-      setErrorMsg('');
+      setErrorMsg("");
       return;
     }
 
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
     const response = await updateCategory(updatedData);
 
-    if ('res' in response && response.res) {
+    if ("res" in response && response.res) {
       setIsLoading(false);
-      setErrorMsg('');
+      setErrorMsg("");
       setShowSubEdit(false);
       onReset();
     } else {
       const errorMessage =
-        'error' in response
-          ? typeof response.error === 'string'
+        "error" in response
+          ? typeof response.error === "string"
             ? response.error
             : String(response.error)
           : "Can't update category";
@@ -229,23 +240,23 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
   };
 
   const handleShowDeleteSub = (id: string) => {
-    selectedSubCategory = { id, name: '', description: undefined };
-    setErrorMsg('');
+    selectedSubCategory = { id, name: "", description: undefined };
+    setErrorMsg("");
     setShowSubDelete(true);
   };
 
   const handleDeleteSubCat = async () => {
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
     const response = await deleteCategory(selectedSubCategory.id);
 
-    if ('error' in response && response.error) {
+    if ("error" in response && response.error) {
       setErrorMsg(response.error);
       setIsLoading(false);
       return;
     }
-    if ('res' in response && response.res) {
-      setErrorMsg('');
+    if ("res" in response && response.res) {
+      setErrorMsg("");
       setIsLoading(false);
       setShowSubDelete(false);
       onReset();
@@ -259,31 +270,38 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
   };
 
   return (
-    <div className='flex flex-col border border-gray-200 mb-2 rounded-md [&:nth-child(2n-1)]:bg-gray-100'>
-      <div className='flex items-center justify-between p-2.5 pl-6'>
-        <span className='inline-block w-[200px] text-gray-800 text-sm'>{categoryName}</span>
-        <div className='flex'>
-          <Button className='ml-2' onClick={() => setShowOptions(true)}>
+    <div className="flex flex-col border border-gray-200 mb-2 rounded-md [&:nth-child(2n-1)]:bg-gray-100">
+      <div className="flex items-center justify-between p-2.5 pl-6">
+        <span className="inline-block w-[200px] text-gray-800 text-sm">
+          {categoryName}
+        </span>
+        <div className="flex">
+          <Button className="ml-2" onClick={() => setShowOptions(true)}>
             Options
           </Button>
-          <Button className='ml-2' onClick={() => setShowAddSubCategory(true)}>
+          <Button className="ml-2" onClick={() => setShowAddSubCategory(true)}>
             + Add Sub Category
           </Button>
         </div>
-        <div className='flex'>
-          <Button className='ml-2' onClick={() => setShowEdit(true)}>
+        <div className="flex">
+          <Button className="ml-2" onClick={() => setShowEdit(true)}>
             Edit
           </Button>
-          <Button className='ml-2' onClick={() => setShowDelete(true)}>
+          <Button className="ml-2" onClick={() => setShowDelete(true)}>
             Delete
           </Button>
         </div>
       </div>
       {!!subCategories?.length && (
-        <div className='flex flex-col pt-2 border-t border-gray-300'>
+        <div className="flex flex-col pt-2 border-t border-gray-300">
           {subCategories?.map((subCat) => (
-            <div className='flex justify-between items-center mr-2 mb-2 ml-8' key={subCat.id}>
-              <span className='inline-block w-[200px] text-gray-600 text-sm'>{subCat.name}</span>
+            <div
+              className="flex justify-between items-center mr-2 mb-2 ml-8"
+              key={subCat.id}
+            >
+              <span className="inline-block w-[200px] text-gray-600 text-sm">
+                {subCat.name}
+              </span>
               <Button
                 onClick={() =>
                   handleShowSubCatOptions({
@@ -295,7 +313,7 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
               >
                 Options
               </Button>
-              <div className='flex gap-2'>
+              <div className="flex gap-2">
                 <Button
                   onClick={() =>
                     handleShowEditSub({
@@ -307,7 +325,9 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
                 >
                   Edit
                 </Button>
-                <Button onClick={() => handleShowDeleteSub(subCat.id)}>Delete</Button>
+                <Button onClick={() => handleShowDeleteSub(subCat.id)}>
+                  Delete
+                </Button>
               </div>
             </div>
           ))}
@@ -315,7 +335,7 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
       )}
       {showEdit && (
         <Popup
-          width='380px'
+          width="380px"
           content={
             <AddCategory
               errorMsg={errorMsg}
@@ -327,14 +347,14 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
           onCancel={() => setShowEdit(false)}
           onClose={() => setShowEdit(false)}
           onSubmit={() => handleUpdate()}
-          confirmBtnText='Save'
-          title='Update Category'
+          confirmBtnText="Save"
+          title="Update Category"
         />
       )}
 
       {showAddSubCategory && (
         <Popup
-          width='380px'
+          width="380px"
           content={
             <AddCategory
               errorMsg={errorMsg}
@@ -346,16 +366,16 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
           onCancel={() => setShowAddSubCategory(false)}
           onClose={() => setShowAddSubCategory(false)}
           onSubmit={() => handleAddSub()}
-          confirmBtnText='ADD'
+          confirmBtnText="ADD"
           title={`Add Sub Category to: -- ${name}`}
         />
       )}
 
       {showDelete && (
         <Popup
-          width='300px'
+          width="300px"
           content={
-            <div className='w-full px-5 pt-5 pb-10 flex gap-4 flex-col items-center justify-center text-center'>
+            <div className="w-full px-5 pt-5 pb-10 flex gap-4 flex-col items-center justify-center text-center">
               <span>Are you sure?</span>
               <span>{errorMsg}</span>
             </div>
@@ -370,24 +390,28 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
       {/* --------------- SUB CATEGORY SECTION --------------- */}
       {showSubEdit && (
         <Popup
-          width='380px'
+          width="380px"
           content={
-            <AddCategory errorMsg={errorMsg} onChange={setEditSubCatData} data={editSubCatData} />
+            <AddCategory
+              errorMsg={errorMsg}
+              onChange={setEditSubCatData}
+              data={editSubCatData}
+            />
           }
           isLoading={isLoading}
           onCancel={() => setShowSubEdit(false)}
           onClose={() => setShowSubEdit(false)}
           onSubmit={() => handleEditSub()}
-          confirmBtnText='Save'
+          confirmBtnText="Save"
           title={`Edit Sub Category`}
         />
       )}
 
       {showSubDelete && (
         <Popup
-          width='300px'
+          width="300px"
           content={
-            <div className='w-full px-5 pt-5 pb-10 flex gap-4 flex-col items-center justify-center text-center'>
+            <div className="w-full px-5 pt-5 pb-10 flex gap-4 flex-col items-center justify-center text-center">
               <span>Are you sure?</span>
               <span>{errorMsg}</span>
             </div>
@@ -401,7 +425,12 @@ const Category = ({ onReset, data, subCategories }: TProps) => {
       {/* --------------- OPTIONS SECTION --------------- */}
       {showOptions && (
         <Popup
-          content={<CategoryOptions categoryID={categoryID} categoryName={categoryName} />}
+          content={
+            <CategoryOptions
+              categoryID={categoryID}
+              categoryName={categoryName}
+            />
+          }
           isLoading={isLoading}
           onCancel={() => setShowOptions(false)}
           onClose={() => setShowOptions(false)}

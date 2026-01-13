@@ -1,14 +1,14 @@
 import {
-  getAdminDashboard,
-  getStoreDashboard,
-} from "@/actions/admin/dashboard";
-import OrdersAreaChart from "@/shared/components/OrdersAreaChart";
-import {
   CircleDollarSignIcon,
   ShoppingBasketIcon,
   StarIcon,
   TagsIcon,
 } from "lucide-react";
+import {
+  getAdminDashboard,
+  getStoreDashboard,
+} from "@/actions/admin/dashboard";
+import OrdersAreaChart from "@/shared/components/OrdersAreaChart";
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
 import ViewProduct from "./_components/view-product";
 import ViewsReport from "./_components/views-report";

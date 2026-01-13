@@ -1,12 +1,11 @@
 "use server";
 
-import { z } from "zod";
-
-import db from "@/shared/lib/prisma";
-import { TSingleOption } from "@/shared/types/common";
-import { OptionSetCreateInput } from "@/shared/lib/generated/prisma/models";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { OptionType } from "@/shared/lib/generated/prisma/enums";
+import type { OptionSetCreateInput } from "@/shared/lib/generated/prisma/models";
+import db from "@/shared/lib/prisma";
+import type { TSingleOption } from "@/shared/types/common";
 
 // Validation Schemas
 const AddOptionSet = z.object({
@@ -66,7 +65,7 @@ export const getOptionSetByCatID = async (categoryID: string) => {
 
 export const addOptionSet = async (
   data: OptionSetCreateInput,
-  categoryId: string
+  categoryId: string,
 ) => {
   // data: {name, type, categoryId}
   if (!AddOptionSet.safeParse(data).success) return { error: "Invalid Data" };

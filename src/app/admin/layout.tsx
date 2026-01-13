@@ -1,9 +1,8 @@
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import AdminNavbar from "@/shared/components/admin/AdminNavbar";
 import AdminSidebar from "@/shared/components/admin/AdminSidebar";
-import { redirect } from "next/navigation";
-
-import { ReactNode } from "react";
 
 export default async function AdminLayout({
   children,

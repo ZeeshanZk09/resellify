@@ -1,6 +1,11 @@
 "use client";
 /* ================= CLIENT COMPONENT ================= */
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { createCategoryWithOptionSets } from "@/actions/category/categoryOptions";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -8,14 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { createCategoryWithOptionSets } from "@/actions/category/categoryOptions";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
-import { Button } from "@/shared/components/ui/button";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { generateCategorySlug } from "@/shared/lib/utils/category";
 import { OptionType } from "@/shared/lib/generated/prisma/enums";
-import { toast } from "sonner";
+import { generateCategorySlug } from "@/shared/lib/utils/category";
 export default function CategoryManagerPage() {
   // Category
   const [categoryName, setCategoryName] = useState("");
@@ -99,7 +99,7 @@ export default function CategoryManagerPage() {
       if (value.trim()) {
         const slug = await generateCategorySlug(value);
         setSubcategories((prev) =>
-          prev.map((s) => (s.id === id ? { ...s, slug } : s))
+          prev.map((s) => (s.id === id ? { ...s, slug } : s)),
         );
       }
     }, 500);
@@ -112,7 +112,7 @@ export default function CategoryManagerPage() {
         clearTimeout(categoryTimeoutRef.current);
       }
       subcategoryTimeoutsRef.current.forEach((timeout) =>
-        clearTimeout(timeout)
+        clearTimeout(timeout),
       );
     };
   }, []);
@@ -126,7 +126,7 @@ export default function CategoryManagerPage() {
   };
   const updateSubcategory = (
     id: string,
-    patch: Partial<{ name: string; description: string }>
+    patch: Partial<{ name: string; description: string }>,
   ) => {
     setSubcategories((prev) =>
       prev.map((s) => {
@@ -137,7 +137,7 @@ export default function CategoryManagerPage() {
           handleSubcategoryNameChange(id, patch.name);
         }
         return updated;
-      })
+      }),
     );
   };
   const removeSubcategory = (id: string) => {
@@ -156,10 +156,10 @@ export default function CategoryManagerPage() {
     ]);
   const updateOptionSet = (
     id: string,
-    patch: Partial<{ name: string; type: OptionType }>
+    patch: Partial<{ name: string; type: OptionType }>,
   ) =>
     setOptionSets((prev) =>
-      prev.map((os) => (os.id === id ? { ...os, ...patch } : os))
+      prev.map((os) => (os.id === id ? { ...os, ...patch } : os)),
     );
   const removeOptionSet = (id: string) =>
     setOptionSets((prev) => prev.filter((os) => os.id !== id));
@@ -175,14 +175,14 @@ export default function CategoryManagerPage() {
             { id: cryptoRandomId(), name: "", value: "", position: pos },
           ],
         };
-      })
+      }),
     );
   };
 
   const updateOption = (
     optionSetId: string,
     optionId: string,
-    patch: Partial<{ name: string; value: string }>
+    patch: Partial<{ name: string; value: string }>,
   ) => {
     setOptionSets((prev) =>
       prev.map((os) => {
@@ -190,10 +190,10 @@ export default function CategoryManagerPage() {
         return {
           ...os,
           options: os.options.map((o) =>
-            o.id === optionId ? { ...o, ...patch } : o
+            o.id === optionId ? { ...o, ...patch } : o,
           ),
         };
-      })
+      }),
     );
   };
 
@@ -205,7 +205,7 @@ export default function CategoryManagerPage() {
           .filter((o) => o.id !== optionId)
           .map((o, idx) => ({ ...o, position: idx + 1 }));
         return { ...os, options: newOptions };
-      })
+      }),
     );
   };
 

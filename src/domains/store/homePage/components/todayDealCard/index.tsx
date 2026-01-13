@@ -1,8 +1,8 @@
 // import { TodayDeals } from "@/domains/product/constants";
 
-import TodayDealCard from "./TodayDealCard";
-import { TodaysDealType } from "@/actions/landing-dashboard/dashboard";
+import type { TodaysDealType } from "@/actions/landing-dashboard/dashboard";
 import { cn } from "@/shared/lib/utils";
+import TodayDealCard from "./TodayDealCard";
 
 export const TodayDealCards = ({
   TodayDeals,
@@ -19,17 +19,21 @@ export const TodayDealCards = ({
       <div
         className={cn(
           `flex gap-3.5 pb-7`,
-          "overflow-x-scroll [&::-webkit-scrollbar]:h-1  [&::-webkit-scrollbar-track]:bg-foreground/20  [&::-webkit-scrollbar-thumb]:bg-foreground/20"
+          "overflow-x-scroll [&::-webkit-scrollbar]:h-1  [&::-webkit-scrollbar-track]:bg-foreground/20  [&::-webkit-scrollbar-thumb]:bg-foreground/20",
         )}
       >
         {TodayDeals?.map((deal) => {
           const path1 = deal.images?.[0];
           const path2 = deal.images?.[1];
-          console.log('image in toadys deal card: ', path1, path2);
-          console.log('deals: ', TodayDeals);
+          console.log("image in toadys deal card: ", path1, path2);
+          console.log("deals: ", TodayDeals);
 
           // console.log("TodayDealCard", path1, path2, deal?.productVariants[0]);
-          console.log('productDescription: ', deal?.description || undefined, deal?.shortDescription!);
+          console.log(
+            "productDescription: ",
+            deal?.description || undefined,
+            deal?.shortDescription!,
+          );
 
           return (
             <TodayDealCard
@@ -47,7 +51,7 @@ export const TodayDealCards = ({
                   (option) => ({
                     name: option.option.name,
                     value: option.option.value ?? "N/A",
-                  })
+                  }),
                 ) ?? ([] as { name: string; value: string | null }[])
               }
               dealEndTime={deal?.endsAt!}

@@ -1,5 +1,5 @@
 "use client";
-import { TPageStatus } from "@/domains/store/productList/types/";
+import type { TPageStatus } from "@/domains/store/productList/types/";
 
 import { SK_Box } from "../skeleton";
 
@@ -12,10 +12,18 @@ type TProps = {
   onChange: (value: TValue) => void;
 };
 
-const PriceSlider = ({ sliderValues, minMaxLimit, pageStatus, onChange }: TProps) => {
+const PriceSlider = ({
+  sliderValues,
+  minMaxLimit,
+  pageStatus,
+  onChange,
+}: TProps) => {
   if (pageStatus === "pageLoading") {
     return (
-      <div className="w-full flex flex-col gap-4 mb-[26px]" style={{ alignItems: "flex-start" }}>
+      <div
+        className="w-full flex flex-col gap-4 mb-[26px]"
+        style={{ alignItems: "flex-start" }}
+      >
         <SK_Box width="100%" height="30px" />
         <SK_Box width="60%" height="20px" />
       </div>
@@ -23,12 +31,21 @@ const PriceSlider = ({ sliderValues, minMaxLimit, pageStatus, onChange }: TProps
   }
 
   if (pageStatus === "categoryHasNoProduct") {
-    return <div className="w-full flex flex-col gap-4 mb-[26px]" style={{ alignItems: "flex-start" }} />;
+    return (
+      <div
+        className="w-full flex flex-col gap-4 mb-[26px]"
+        style={{ alignItems: "flex-start" }}
+      />
+    );
   }
   const range = minMaxLimit[1] - minMaxLimit[0];
   const gapValue = range / 20;
 
-  const handleChangeValue = (index: number, e: React.ChangeEvent<HTMLInputElement>, isSliderData: boolean) => {
+  const handleChangeValue = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>,
+    isSliderData: boolean,
+  ) => {
     const newValue = isSliderData
       ? (parseFloat(e.currentTarget.value) / 100) * range + minMaxLimit[0]
       : parseInt(e.currentTarget.value);

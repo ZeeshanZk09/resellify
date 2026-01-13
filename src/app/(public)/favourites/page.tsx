@@ -1,18 +1,18 @@
 "use client";
-import { addItemToCart, getCartItems } from "@/actions/cart";
-import { GetFavProducts, getFavProducts } from "@/actions/favourite";
-import { Button } from "@/shared/components/ui/button";
 import { Loader } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { addItemToCart, getCartItems } from "@/actions/cart";
+import { type GetFavProducts, getFavProducts } from "@/actions/favourite";
+import { Button } from "@/shared/components/ui/button";
 
 export default function Favourites() {
   const [cartProductIds, setCartProductIds] = useState<Set<string>>(new Set());
   const [favs, setFavs] = useState<GetFavProducts>([]);
   const [loading, setLoading] = useState(true);
   const [addToCartLoading, setAddToCartLoading] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function Favourites() {
   const handleAddToCart = async (
     productId: string,
     price: number,
-    quantity: number
+    quantity: number,
   ) => {
     setAddToCartLoading((prev) => new Set(prev).add(productId));
     try {
@@ -131,7 +131,7 @@ export default function Favourites() {
                       handleAddToCart(
                         product.product.id,
                         product.product.basePrice,
-                        1
+                        1,
                       )
                     }
                   >

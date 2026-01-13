@@ -1,14 +1,14 @@
 "use client";
+import { useState } from "react";
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
-import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -22,7 +22,7 @@ export default function OrdersAreaChart({
 }: {
   allOrders:
     | {
-        totalAmount: Number;
+        totalAmount: number;
         createdAt: Date;
       }[]
     | undefined;
@@ -38,7 +38,7 @@ export default function OrdersAreaChart({
 
   const getISOWeek = (date: Date) => {
     const d = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
     );
     const dayNum = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);

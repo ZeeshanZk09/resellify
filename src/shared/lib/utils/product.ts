@@ -1,10 +1,10 @@
-import prisma from "../prisma";
-import { Decimal, InputJsonValue } from "@prisma/client/runtime/client";
-import { TwitterCard, Upload } from "../generated/prisma/client";
-import {
+import type { Decimal, InputJsonValue } from "@prisma/client/runtime/client";
+import type { TwitterCard, Upload } from "../generated/prisma/client";
+import type {
   DecimalJsLike,
   NullableJsonNullValueInput,
 } from "../generated/prisma/internal/prismaNamespace";
+import prisma from "../prisma";
 
 function generateProductStructuredData(
   product: {
@@ -21,7 +21,7 @@ function generateProductStructuredData(
     visibility?: string | null;
     averageRating?: number | null;
     reviewCount?: number | null;
-  } & { images?: Upload[] }
+  } & { images?: Upload[] },
 ) {
   return {
     "@context": "https://schema.org",
@@ -61,7 +61,7 @@ function generateProductMetadata(
     metaKeywords: NullableJsonNullValueInput | InputJsonValue | undefined;
     metadata: NullableJsonNullValueInput | InputJsonValue | undefined;
   },
-  imageId: string
+  imageId: string,
 ): {
   metaDescription: string | null | undefined;
   metaKeywords: NullableJsonNullValueInput | InputJsonValue | undefined;
@@ -93,7 +93,7 @@ type ValidationError<T> = {
  * Validate required fields of any object
  */
 function validateRequiredFields<T extends Record<string, unknown>>(
-  data: T
+  data: T,
 ): ValidationError<T> {
   for (const field of Object.keys(data) as Array<keyof T>) {
     const value = data[field];
@@ -116,7 +116,7 @@ export type Option = { id: string; name: string };
 export type OptionSet = { id: string; options: Option[] };
 
 export function generateAllCombinations(
-  optionSets: OptionSet[]
+  optionSets: OptionSet[],
 ): Array<{ optionSetId: string; optionId: string; optionName: string }[]> {
   if (!optionSets || optionSets.length === 0) return [];
 
@@ -126,7 +126,7 @@ export function generateAllCombinations(
 
   function generate(
     current: { optionSetId: string; optionId: string; optionName: string }[],
-    depth: number
+    depth: number,
   ): void {
     if (depth === optionSets.length) {
       combinations.push([...current]);

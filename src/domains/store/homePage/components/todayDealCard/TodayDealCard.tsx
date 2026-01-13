@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { ClockIcon } from "@/shared/components/icons/svgIcons";
-import { Visibility } from "@/shared/lib/generated/prisma/enums";
-import { Upload } from "@/shared/lib/generated/prisma/browser";
+import type { Upload } from "@/shared/lib/generated/prisma/browser";
+import type { Visibility } from "@/shared/lib/generated/prisma/enums";
 
 // const DEFAULT_DEAL_DURATION_MS = 60 * 60 * 10000; // 1 hour
 
@@ -106,9 +106,8 @@ const TodayDealCard = ({
   const { days, hours, minutes, seconds } = formatMsToDHMS(timeLeftMs);
   const saveAmount = Math.max(0, oldPrice - newPrice);
   console.log("saveAmount: ", saveAmount, "typeof: ", typeof saveAmount);
-  console.log('image in toadys deal card: ', image);
+  console.log("image in toadys deal card: ", image);
   // console.log("product: ", spec);
-
 
   return (
     <article
@@ -169,7 +168,7 @@ const TodayDealCard = ({
           </Link>
 
           <div className="min-h-10 sm:min-h-12">
-            {!!spec.length ? (
+            {spec.length ? (
               <ul className="text-xs sm:text-sm text-foreground/70 space-y-1 line-clamp-3">
                 {spec.map((item, index) => (
                   <li key={index + Math.random()}>

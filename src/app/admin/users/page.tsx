@@ -1,18 +1,22 @@
-import { getUsers } from '@/actions/admin/users';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
-import { Card } from '@/shared/components/ui/card';
-import { UserActiveToggle } from './_components/toggle-active';
-import { auth } from '@/auth';
-import { toast } from 'sonner';
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
+import { getUsers } from "@/actions/admin/users";
+import { auth } from "@/auth";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
+import { Card } from "@/shared/components/ui/card";
+import { UserActiveToggle } from "./_components/toggle-active";
 
 export default async function Users() {
   const session = await auth();
   const data = await getUsers();
-  console.log('admin-users', data);
+  console.log("admin-users", data);
 
-  if (session?.user.role !== 'ADMIN') {
-    redirect('/dashboard');
+  if (session?.user.role !== "ADMIN") {
+    redirect("/dashboard");
   }
 
   if (!data.users) {
@@ -21,24 +25,28 @@ export default async function Users() {
 
   console.log(data);
   return (
-    <div className='p-0 sm:p-6'>
-      <h1 className='text-2xl font-bold mb-4'>User Management</h1>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+    <div className="p-0 sm:p-6">
+      <h1 className="text-2xl font-bold mb-4">User Management</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {data.users && data.users.length > 0 ? (
           data.users.map((user) => (
-            <Card key={user.id} className='p-4'>
-              <Avatar className='size-9'>
-                <AvatarFallback className='uppercase'>
+            <Card key={user.id} className="p-4">
+              <Avatar className="size-9">
+                <AvatarFallback className="uppercase">
                   {(user?.name as string)?.slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
 
-              <h2 className='text-xl font-semibold'>{user.name} </h2>
+              <h2 className="text-xl font-semibold">{user.name} </h2>
               {/* In-active a user */}
               {session?.user.email !== user.email && (
-                <div className='flex justify-between'>
-                  <p className='text-sm text-gray-600'>Active</p>
-                  <UserActiveToggle userId={user.id} key={user.id} isActive={!!user.isActive} />
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-600">Active</p>
+                  <UserActiveToggle
+                    userId={user.id}
+                    key={user.id}
+                    isActive={!!user.isActive}
+                  />
                   {/* <label className='relative inline-flex items-center cursor-pointer text-gray-900'>
                   <input
                     type='checkbox'
@@ -55,8 +63,8 @@ export default async function Users() {
                 </label> */}
                 </div>
               )}
-              <p className='text-sm text-gray-600'>Email: {user.email}</p>
-              <p className='text-sm text-gray-600'>ID: {user.id}</p>
+              <p className="text-sm text-gray-600">Email: {user.email}</p>
+              <p className="text-sm text-gray-600">ID: {user.id}</p>
             </Card>
           ))
         ) : (

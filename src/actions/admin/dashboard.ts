@@ -1,5 +1,5 @@
-import { authAdmin, authUser } from '@/shared/lib/utils/auth';
 import Prisma from '@/shared/lib/prisma';
+import { authAdmin, authUser } from '@/shared/lib/utils/auth';
 export async function getAdminDashboard() {
   try {
     // const { userId } = getAuth(request);
@@ -26,7 +26,9 @@ export async function getAdminDashboard() {
       },
     });
     let totalRevenue = 0;
-    allOrders.map((order) => (totalRevenue += +order.totalAmount));
+    allOrders.forEach((order) => {
+      totalRevenue += Number(order.totalAmount);
+    });
     const revenue = totalRevenue.toFixed(2);
     const products = await Prisma.product.count();
 
@@ -47,25 +49,18 @@ export async function getAdminDashboard() {
       message: 'Dashboard data fetched',
       data: dashboardData,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[API] error', err);
 
-    // detect Neon/Prisma network/connect-timeout errors (relaxed check)
-    const isNetworkErr =
-      err?.message?.includes('fetch failed') ||
-      err?.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
-      err?.name === 'NeonDbError' ||
-      err?.code === 'ENOTFOUND';
-
-    if (isNetworkErr) {
+    if (err instanceof Error) {
       return {
         success: false,
-        message: 'Service Unavailable',
+        message: err.message,
       };
     }
     return {
       success: false,
-      message: err instanceof Error ? err.message : 'Something went wrong',
+      message: 'Something went wrong',
     };
   }
 }
@@ -141,25 +136,34 @@ export async function getStoreDashboard() {
       message: 'Dashboard data fetched',
       data: dashboard,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[API] error', err);
 
     // detect Neon/Prisma network/connect-timeout errors (relaxed check)
-    const isNetworkErr =
-      err?.message?.includes('fetch failed') ||
-      err?.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
-      err?.name === 'NeonDbError' ||
-      err?.code === 'ENOTFOUND';
+    if (err instanceof Error) {
+      const isNetworkErr =
+        (typeof err.message === 'string' && err.message.includes('fetch failed')) ||
+        (typeof err === 'object' &&
+          err !== null &&
+          'cause' in err &&
+          typeof (err as { cause?: unknown }).cause === 'object' &&
+          (err as { cause?: { code?: unknown } }).cause !== null &&
+          'code' in (err as { cause: { code?: unknown } }).cause &&
+          (err as { cause: { code?: unknown } }).cause.code === 'UND_ERR_CONNECT_TIMEOUT') ||
+        (typeof err.name === 'string' && err.name === 'NeonDbError') ||
+        ('code' in err && (err as { code?: unknown }).code === 'ENOTFOUND');
 
-    if (isNetworkErr) {
+      if (isNetworkErr) {
+        return {
+          success: false,
+          message: err instanceof Error ? err.message : 'Something went wrong',
+        };
+      }
+    } else {
       return {
         success: false,
-        message: err instanceof Error ? err.message : 'Something went wrong',
+        message: 'Something went wrong',
       };
     }
-    return {
-      success: false,
-      message: err instanceof Error ? err.message : 'Something went wrong',
-    };
   }
 }

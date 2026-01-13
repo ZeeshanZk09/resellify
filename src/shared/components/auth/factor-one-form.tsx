@@ -1,5 +1,14 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader, Pencil } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
+import { login } from "@/actions/auth/login";
+import { sendCodeForPasswordReset } from "@/actions/auth/resset-password";
+import { loginFormSchemaPassword } from "@/shared/lib/schemas";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -7,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import ErrorAlert from "../ui/error-alert";
 import {
   Form,
   FormControl,
@@ -15,18 +25,9 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginFormSchemaPassword } from "@/shared/lib/schemas";
-import { z } from "zod";
-import { sendCodeForPasswordReset } from "@/actions/auth/resset-password";
-import { login } from "@/actions/auth/login";
-import { useRouter } from "next/navigation";
 import SuccessAlert from "../ui/success-alert";
-import ErrorAlert from "../ui/error-alert";
+
 type Props = {
   email: string;
 };

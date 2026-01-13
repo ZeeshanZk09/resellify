@@ -1,6 +1,5 @@
+import type { JsonValue } from "next-auth/adapters";
 import { COMPANIES_LOGOS } from "@/shared/constants/store/homePage/compayLogos";
-
-import { JsonValue } from "next-auth/adapters";
 import CompanyLogo from "./CompanyLogo";
 
 export const CompanyLogoList = ({

@@ -1,10 +1,10 @@
 "use client";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  GetInitialProducts,
+  type GetInitialProducts,
   loadMoreProducts,
 } from "@/actions/product/product";
 import ProductCard from "@/domains/product/components/productCard";
-import { useCallback, useEffect, useRef, useState } from "react";
 import ProductSkeleton from "./ProductSkeleton";
 
 interface ProductListProps {
@@ -20,7 +20,7 @@ export default function ProductList({
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [lastId, setLastId] = useState<string | null>(
-    initialProducts[initialProducts.length - 1]?.id || null
+    initialProducts[initialProducts.length - 1]?.id || null,
   );
 
   // Load more products function
@@ -61,14 +61,14 @@ export default function ProductList({
             loadMore();
           }
         },
-        { threshold: 1.0 }
+        { threshold: 1.0 },
       );
 
       if (node) {
         observerRef.current.observe(node);
       }
     },
-    [isLoading, hasMore, loadMore]
+    [isLoading, hasMore, loadMore],
   );
 
   // Alternative: Scroll event listener (agar browser support ka issue ho)
@@ -142,7 +142,7 @@ export default function ProductList({
               canonicalUrl,
               basePrice,
             },
-            index
+            index,
           ) => (
             <ProductCard
               className="sm:col-span-2 "
@@ -158,7 +158,7 @@ export default function ProductList({
               specs={productSpecs}
               url={`/shop/${slug}`}
             />
-          )
+          ),
         )}
 
         {!hasMore && products.length > 0 && (

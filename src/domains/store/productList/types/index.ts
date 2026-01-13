@@ -1,4 +1,4 @@
-import { Brand } from "@/shared/lib/generated/prisma/client";
+import type { Brand } from "@/shared/lib/generated/prisma/client";
 
 export type TListItem = {
   id: string;

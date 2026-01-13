@@ -1,6 +1,6 @@
-import { TBrand } from "@/shared/types";
+import type { TBrand } from "@/shared/types";
 
-import { TFilters, TListItem } from "../types";
+import type { TFilters, TListItem } from "../types";
 
 const getBrandsFromProducts = (productList: TListItem[]) => {
   return productList.map((product) => product.brand);

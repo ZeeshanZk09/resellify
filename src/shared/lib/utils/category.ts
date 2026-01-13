@@ -1,7 +1,8 @@
-'use server';
-import prisma from '../prisma';
+"use server";
+import prisma from "../prisma";
+
 async function generateCategorySlug(name: string) {
-  let slug = name.toLowerCase().replace(/\s+/g, '-');
+  let slug = name.toLowerCase().replace(/\s+/g, "-");
 
   const existingSlug = await prisma.category.findUnique({
     where: {
@@ -10,15 +11,15 @@ async function generateCategorySlug(name: string) {
   });
 
   if (existingSlug) {
-    slug += '-' + crypto.randomUUID();
+    slug += "-" + crypto.randomUUID();
   }
 
   return slug;
 }
 
 async function generateProductSlug(name: string) {
-  'use server';
-  let slug = name.toLowerCase().replace(/\s+/g, '-');
+  "use server";
+  let slug = name.toLowerCase().replace(/\s+/g, "-");
 
   const existingSlug = await prisma.product.findUnique({
     where: {
@@ -27,7 +28,7 @@ async function generateProductSlug(name: string) {
   });
 
   if (existingSlug) {
-    slug += '-' + crypto.randomUUID();
+    slug += "-" + crypto.randomUUID();
   }
 
   return slug;

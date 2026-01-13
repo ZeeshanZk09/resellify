@@ -4,7 +4,7 @@ export const calculateTablePagination = (
   pageSize: number,
   maxButtons = 10
 ): (number | null)[] => {
-  if (!totalRows || !currentPage || isNaN(currentPage)) {
+  if (!totalRows || !currentPage || Number.isNaN(currentPage)) {
     return [];
   }
 

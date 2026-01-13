@@ -1,12 +1,12 @@
 "use client";
+import { Heart } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   getFavProduct,
   getFavProducts,
   toggleFavProduct,
 } from "@/actions/favourite";
-import { Heart } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 export default function FavBtn({ productId }: { productId: string }) {
   const [isFav, setIsFav] = useState<boolean | null>(null);

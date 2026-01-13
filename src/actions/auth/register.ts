@@ -1,12 +1,12 @@
 'use server';
 
 import { hash } from 'bcryptjs';
-import prisma from '@/shared/lib/prisma';
-import { sendVerification } from '@/actions/send-verification';
-import { z } from 'zod';
-import { signUpFormSchema } from '@/shared/lib/schemas';
 import { cookies } from 'next/headers';
+import type { z } from 'zod';
+import { sendVerification } from '@/actions/send-verification';
 import { signIn } from '@/auth';
+import prisma from '@/shared/lib/prisma';
+import { signUpFormSchema } from '@/shared/lib/schemas';
 
 type RegisterInput = z.infer<typeof signUpFormSchema>;
 
@@ -20,7 +20,11 @@ export async function registerUser(formData: RegisterInput): Promise<RegisterRes
     const parsedData = signUpFormSchema.safeParse(formData);
     if (!parsedData.success) {
       return {
-        error: (parsedData.error as any)?.errors.map((err: any) => err.message).join(', '),
+        error: Array.isArray(parsedData.error?.issues)
+          ? parsedData.error.issues
+              .map((err: { message?: string }) => err.message || 'Validation error')
+              .join(', ')
+          : parsedData.error?.message || 'Validation error',
       };
     }
 
@@ -92,7 +96,11 @@ export async function verifyEmail(code: string) {
         },
       });
     } catch (userCreationErr) {
-      return { error: 'Failed to create user: ' + (userCreationErr as any).message };
+      const errorMessage =
+        userCreationErr instanceof Error ? userCreationErr.message : 'Unknown error occurred';
+      return {
+        error: `Failed to create user: ${errorMessage}`,
+      };
     }
 
     // Generate a unique session token string (for demonstration, use a random string)
@@ -119,7 +127,11 @@ export async function verifyEmail(code: string) {
     } catch (sessionErr) {
       // Roll back user if session creation fails
       await prisma.user.delete({ where: { id: user.id } });
-      return { error: 'Failed to create session: ' + (sessionErr as any).message };
+      const errorMessage =
+        sessionErr instanceof Error ? sessionErr.message : 'Unknown error occurred';
+      return {
+        error: `Failed to create session: ${errorMessage}`,
+      };
     }
 
     // Clean up cookies
@@ -143,6 +155,8 @@ export async function verifyEmail(code: string) {
     return { success: 'User signed in successfully and session created.' };
   } catch (error) {
     console.log(error);
-    return { error: 'An unexpected error occurred during registration. Please try again later.' };
+    return {
+      error: 'An unexpected error occurred during registration. Please try again later.',
+    };
   }
 }

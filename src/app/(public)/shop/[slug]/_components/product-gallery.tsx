@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import { ZoomIn } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 interface ProductGalleryProps {
   images: Array<{
@@ -39,7 +39,7 @@ export default function ProductGallery({
             -{discount}%
           </div>
         )}
-        
+
         <Image
           src={images[selectedImage].path}
           alt={`${productTitle} - Image ${selectedImage + 1}`}
@@ -50,7 +50,7 @@ export default function ProductGallery({
           loading={selectedImage === 0 ? "eager" : "lazy"}
           quality={85}
         />
-        
+
         <button
           onClick={() => setIsZoomed(!isZoomed)}
           className="absolute bottom-4 right-4 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -58,10 +58,10 @@ export default function ProductGallery({
         >
           <ZoomIn size={20} />
         </button>
-        
+
         {/* Zoom overlay */}
         {isZoomed && (
-          <div 
+          <div
             className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center cursor-zoom-out"
             onClick={() => setIsZoomed(false)}
           >

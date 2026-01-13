@@ -32,7 +32,8 @@ const StoreNavBar = () => {
     const handleScroll = () => {
       //---handle auto hiding navbar
       if (window !== undefined) {
-        const shouldHideNavbar = prevPositionY < window.scrollY && window.scrollY > 100;
+        const shouldHideNavbar =
+          prevPositionY < window.scrollY && window.scrollY > 100;
         setHideNavbar(shouldHideNavbar);
         prevPositionY = window.scrollY;
       }
@@ -51,13 +52,19 @@ const StoreNavBar = () => {
     <nav
       className={cn(
         "flex flex-col bg-white transition-all pt-5 duration-700 fixed w-full z-10",
-        hideNavbar ? "top-[-180px]" : "top-0"
+        hideNavbar ? "top-[-180px]" : "top-0",
       )}
     >
       <section className="w-full">
         <div className="storeContainer w-full relative flex justify-between items-center">
           <Link href={"/"} className="mr-0 xl:mr-20 lg:mr-10">
-            <Image alt="Bitex Logo" src={"/images/logo.png"} width={125} height={40} quality={100} />
+            <Image
+              alt="Bitex Logo"
+              src={"/images/logo.png"}
+              width={125}
+              height={40}
+              quality={100}
+            />
           </Link>
           <div className="h-11 relative flex-1 mx-6 sm:mx-10">
             <input
@@ -100,7 +107,10 @@ const StoreNavBar = () => {
           </div>
           <ul className="flex items-center">
             <li className="hidden lg:block">
-              <Link href={""} className="text-sm hover:bg-gray-100 py-2 px-4 rounded-lg transition-all duration-150">
+              <Link
+                href={""}
+                className="text-sm hover:bg-gray-100 py-2 px-4 rounded-lg transition-all duration-150"
+              >
                 PC Configuration
               </Link>
             </li>

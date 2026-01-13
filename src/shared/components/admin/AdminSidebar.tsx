@@ -1,8 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
 import {
   Copy,
   HomeIcon,
@@ -13,6 +10,9 @@ import {
   TicketPercentIcon,
   User,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React, { useState } from "react";
 import { Button } from "../ui/button";
 
 export default function AdminSidebar() {

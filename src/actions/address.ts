@@ -1,9 +1,9 @@
 'use server';
+import type { Session } from 'next-auth';
 import { auth } from '@/auth';
-import { AddressCreateInput } from '@/shared/lib/generated/prisma/models';
+import type { AddressCreateInput } from '@/shared/lib/generated/prisma/models';
 import prisma from '@/shared/lib/prisma';
 import { authUser } from '@/shared/lib/utils/auth';
-import { Session } from 'next-auth';
 
 async function getAddress() {
   try {

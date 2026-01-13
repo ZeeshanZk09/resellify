@@ -1,4 +1,4 @@
-import { TCollectionCard } from "../types";
+import type { TCollectionCard } from "../types";
 
 export const CollectionsData: TCollectionCard[] = [
   {

@@ -1,10 +1,9 @@
 "use client";
+import { Check, Copy } from "lucide-react";
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
 import { Button } from "../ui/button";
 
-
-export const repo = "https://github.com/Bendada-abdelmajid/nextjs-authjs.git"
+export const repo = "https://github.com/Bendada-abdelmajid/nextjs-authjs.git";
 export default function CopyToClipboard() {
   const [copied, setCopied] = useState(false);
 
@@ -24,7 +23,7 @@ export default function CopyToClipboard() {
         <p className="text-ellipsis line-clamp-1">git clone {repo} </p>
       </div>
       <Button onClick={handleCopy} size={"icon"}>
-        {copied ? <Check  size={20} /> : <Copy size={20} />}
+        {copied ? <Check size={20} /> : <Copy size={20} />}
       </Button>
     </div>
   );

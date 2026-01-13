@@ -32,6 +32,8 @@ enum OrderStatus {
 enum PaymentMethod {
     JAZZCASH
     COD
+    STRIPE
+    CARD
 }
 
 enum PaymentStatus {
@@ -93,6 +95,26 @@ enum OfferTarget {
     PRODUCT
 }
 
+enum SubscriptionPlanType {
+    BASIC
+    PRO
+    ENTERPRISE
+}
+
+enum SubscriptionStatus {
+    ACTIVE
+    CANCELLED
+    EXPIRED
+    PAST_DUE
+    TRIALING
+}
+
+enum PaymentProvider {
+    STRIPE
+    JAZZCASH
+    COD
+}
+
 // ---------------------------------------------------
 //                   User Management
 // ---------------------------------------------------
@@ -131,12 +153,14 @@ model User {
     // analytics
     visits Visit[]
 
-    orderLogs         OrderLog[]
-    couponRedemptions CouponRedemption[]
-    waitlists         Waitlist[]
-    auditLogs         AuditLog[]
-    createdBrands     Brand[]            @relation("BrandCreatedBy")
-    createdProducts   Product[]          @relation("ProductUploader")
+    orderLogs           OrderLog[]
+    couponRedemptions   CouponRedemption[]
+    waitlists           Waitlist[]
+    auditLogs           AuditLog[]
+    createdBrands       Brand[]              @relation("BrandCreatedBy")
+    createdProducts     Product[]            @relation("ProductUploader")
+    subscriptions       Subscription[]
+    paymentTransactions PaymentTransaction[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime? @updatedAt
@@ -190,7 +214,7 @@ model Address {
 model Favourite {
     id        String   @id @default(cuid())
     userId    String
-    productId String   
+    productId String
     isFav     Boolean  @default(true)
     createdAt DateTime @default(now())
 
@@ -759,4 +783,109 @@ model Visit {
     product   Product? @relation(fields: [productId], references: [id])
 
     @@index([userId])
+}
+
+// ---------- Billing & Subscriptions ----------
+model SubscriptionPlan {
+    id          String               @id @default(cuid())
+    name        String               @unique // "Basic", "Pro", "Enterprise"
+    type        SubscriptionPlanType
+    description String?
+    price       Decimal // monthly price in PKR
+    currency    String               @default("PKR")
+
+    // Features
+    features        Json? // Array of feature strings
+    maxProducts     Int? // null = unlimited
+    maxStorage      Int? // in MB, null = unlimited
+    prioritySupport Boolean @default(false)
+    analytics       Boolean @default(false)
+    apiAccess       Boolean @default(false)
+
+    // Stripe integration
+    stripePriceId   String? @unique // Stripe Price ID
+    stripeProductId String? // Stripe Product ID
+
+    isActive  Boolean   @default(true)
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    subscriptions Subscription[]
+
+    @@index([type])
+    @@index([isActive])
+}
+
+model Subscription {
+    id     String             @id @default(cuid())
+    userId String
+    planId String
+    status SubscriptionStatus @default(ACTIVE)
+
+    // Dates
+    startDate   DateTime  @default(now())
+    endDate     DateTime? // null for active subscriptions
+    cancelledAt DateTime?
+    trialEndsAt DateTime?
+
+    // Stripe integration
+    stripeSubscriptionId String? @unique
+    stripeCustomerId     String?
+    stripePriceId        String?
+
+    // Billing
+    currentPeriodStart DateTime?
+    currentPeriodEnd   DateTime?
+    cancelAtPeriodEnd  Boolean   @default(false)
+
+    // Metadata
+    metadata Json?
+
+    user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+    plan                SubscriptionPlan     @relation(fields: [planId], references: [id])
+    paymentTransactions PaymentTransaction[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    @@index([userId])
+    @@index([status])
+    @@index([stripeSubscriptionId])
+}
+
+model PaymentTransaction {
+    id             String  @id @default(cuid())
+    userId         String
+    subscriptionId String?
+
+    // Payment details
+    amount   Decimal
+    currency String          @default("PKR")
+    provider PaymentProvider
+    status   PaymentStatus   @default(PENDING)
+
+    // Stripe integration
+    stripePaymentIntentId String? @unique
+    stripeChargeId        String?
+    stripeCustomerId      String?
+
+    // Transaction details
+    description String?
+    metadata    Json?
+
+    // Timestamps
+    paidAt     DateTime?
+    failedAt   DateTime?
+    refundedAt DateTime?
+
+    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    @@index([userId])
+    @@index([status])
+    @@index([stripePaymentIntentId])
+    @@index([subscriptionId])
 }

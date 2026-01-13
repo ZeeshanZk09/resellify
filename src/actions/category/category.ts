@@ -1,10 +1,10 @@
 "use server";
 import { z } from "zod";
-import { Category } from "@/shared/lib/generated/prisma/client";
+import type { Category } from "@/shared/lib/generated/prisma/client";
 import db from "@/shared/lib/prisma";
-import { TCategory } from "@/shared/types/categories";
-import { generateCategorySlug } from "@/shared/lib/utils/category";
 import { authAdmin, authUser } from "@/shared/lib/utils/auth";
+import { generateCategorySlug } from "@/shared/lib/utils/category";
+import { TCategory } from "@/shared/types/categories";
 
 //eslint-disable-next-line
 const GetAllCategories = z.object({
@@ -101,7 +101,7 @@ export const getAllCategories = async (catId: string) => {
     // }
 
     const parentCategory = categories.find(
-      (category: Category) => category.id === catId
+      (category: Category) => category.id === catId,
     );
 
     return {
@@ -257,7 +257,7 @@ export const getCategoryTree = async () => {
         slug: c.slug,
         description: c.description,
         children: [],
-      })
+      }),
     );
 
     flat.forEach((c) => {

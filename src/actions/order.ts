@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { auth } from '@/auth';
-import prisma from '@/shared/lib/prisma';
-import { authUser } from '@/shared/lib/utils/auth';
-import { Decimal } from '@prisma/client/runtime/client';
-import { Session } from 'next-auth';
+import { Decimal } from "@prisma/client/runtime/client";
+import type { Session } from "next-auth";
+import { auth } from "@/auth";
+import prisma from "@/shared/lib/prisma";
+import { authUser } from "@/shared/lib/utils/auth";
 
 interface OrderItemInput {
   cartId: string;
@@ -17,7 +17,7 @@ interface OrderItemInput {
 interface CreateOrderInput {
   addressId: string;
   items: OrderItemInput[];
-  paymentMethod: 'COD' | 'JAZZCASH';
+  paymentMethod: "COD" | "JAZZCASH";
   subTotal: number;
   shippingFee: number;
   discountAmount: number;
@@ -25,7 +25,7 @@ interface CreateOrderInput {
   notes?: string;
 }
 
-export type GetMyOrders = Awaited<ReturnType<typeof getMyOrders>>['orders'];
+export type GetMyOrders = Awaited<ReturnType<typeof getMyOrders>>["orders"];
 
 /**
  * Generate a unique order number in format: ORD-YYYYMMDD-XXXX
@@ -33,8 +33,8 @@ export type GetMyOrders = Awaited<ReturnType<typeof getMyOrders>>['orders'];
 function generateOrderNumber(): string {
   const now = new Date();
   const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
   const dateStr = `${year}${month}${day}`;
 
   // Generate a random 4-digit number
@@ -48,20 +48,22 @@ function generateOrderNumber(): string {
  */
 async function createOrder(input: CreateOrderInput, productId?: string) {
   try {
-    console.log('[createOrder] Step 1: Authenticating user...');
+    console.log("[createOrder] Step 1: Authenticating user...");
     const session = (await authUser()) as Session;
     if (!session?.user?.id) {
-      console.log('[createOrder] Authentication failed. No user id in session.');
+      console.log(
+        "[createOrder] Authentication failed. No user id in session.",
+      );
       return {
-        error: 'Unauthorized. Please login to place an order.',
+        error: "Unauthorized. Please login to place an order.",
       };
     }
 
     const userId = session.user.id;
-    console.log('[createOrder] Step 2: User ID:', userId);
+    console.log("[createOrder] Step 2: User ID:", userId);
 
     // Validate address belongs to user
-    console.log('[createOrder] Step 3: Validating address:', input.addressId);
+    console.log("[createOrder] Step 3: Validating address:", input.addressId);
     const address = await prisma.address.findFirst({
       where: {
         id: input.addressId,
@@ -70,14 +72,14 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
     });
 
     if (!address) {
-      console.log('[createOrder] Invalid shipping address:', input.addressId);
+      console.log("[createOrder] Invalid shipping address:", input.addressId);
       return {
-        error: 'Invalid shipping address.',
+        error: "Invalid shipping address.",
       };
     }
 
     // Generate unique order number
-    console.log('[createOrder] Step 4: Generating order number...');
+    console.log("[createOrder] Step 4: Generating order number...");
     let orderNumber = generateOrderNumber();
     let attempts = 0;
     const maxAttempts = 10;
@@ -88,24 +90,32 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
         where: { orderNumber },
       });
       if (!existing) {
-        console.log(`[createOrder] Order number generated (unique): ${orderNumber}`);
+        console.log(
+          `[createOrder] Order number generated (unique): ${orderNumber}`,
+        );
         break;
       }
-      console.log(`[createOrder] Order number collision detected: ${orderNumber}, regenerating...`);
+      console.log(
+        `[createOrder] Order number collision detected: ${orderNumber}, regenerating...`,
+      );
       orderNumber = generateOrderNumber();
       attempts++;
     }
 
     if (attempts >= maxAttempts) {
-      console.log('[createOrder] Failed to generate a unique order number after max attempts.');
+      console.log(
+        "[createOrder] Failed to generate a unique order number after max attempts.",
+      );
       return {
-        error: 'Failed to generate unique order number. Please try again.',
+        error: "Failed to generate unique order number. Please try again.",
       };
     }
 
     // Handle "Buy Now" (productId provided) vs cart-based order creation
     if (productId) {
-      console.log('[createOrder] Step 5 (productId mode): Creating single-product order.');
+      console.log(
+        "[createOrder] Step 5 (productId mode): Creating single-product order.",
+      );
 
       // Fetch the product from DB
       const product = await prisma.product.findUnique({
@@ -118,23 +128,25 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
       });
 
       if (!product) {
-        console.log(`[createOrder] Product not found for productId: ${productId}`);
-        return { error: 'Product not found.' };
+        console.log(
+          `[createOrder] Product not found for productId: ${productId}`,
+        );
+        return { error: "Product not found." };
       }
 
       // We expect input.items to have a single item describing the order
       const itemInput = input.items[0];
       if (
         !itemInput ||
-        typeof itemInput.quantity !== 'number' ||
-        typeof itemInput.price !== 'number'
+        typeof itemInput.quantity !== "number" ||
+        typeof itemInput.price !== "number"
       ) {
         console.log(
-          '[createOrder] Invalid item data for single-product order.',
+          "[createOrder] Invalid item data for single-product order.",
           itemInput,
-          input.items
+          input.items,
         );
-        return { error: 'Invalid item data for order.' };
+        return { error: "Invalid item data for order." };
       }
 
       const lineTotal = itemInput.price * itemInput.quantity;
@@ -155,15 +167,18 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
             userId: userId,
             addressId: input.addressId,
             orderNumber: orderNumber,
-            status: 'CREATED',
+            status: "CREATED",
             paymentMethod: input.paymentMethod,
-            paymentStatus: 'PENDING',
+            paymentStatus: "PENDING",
             subTotal: new Decimal(input.subTotal),
             shippingFee: new Decimal(input.shippingFee),
             discountAmount: new Decimal(input.discountAmount),
             taxAmount: new Decimal(input.taxAmount || 0),
             totalAmount: new Decimal(
-              input.subTotal + input.shippingFee - input.discountAmount + (input.taxAmount || 0)
+              input.subTotal +
+                input.shippingFee -
+                input.discountAmount +
+                (input.taxAmount || 0),
             ),
             notes: input.notes || null,
             placedAt: new Date(),
@@ -174,26 +189,35 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
         });
       });
 
-      console.log('[createOrder] Single-product order created successfully.');
+      console.log("[createOrder] Single-product order created successfully.");
       return {
         success: true,
       };
     } else {
       // Cart-based order (default/legacy mode)
       // Fix: Remove undefined/null/empty cartIds to avoid Prisma errors
-      console.log('[createOrder] Step 5: Filtering valid cart item IDs...');
+      console.log("[createOrder] Step 5: Filtering valid cart item IDs...");
       const cartIds = input.items
         .map((item) => item.cartId)
-        .filter((id): id is string => Boolean(id && id !== 'undefined' && id !== 'null'));
-      console.log('[createOrder] Filtered cartIds:', cartIds);
+        .filter((id): id is string =>
+          Boolean(id && id !== "undefined" && id !== "null"),
+        );
+      console.log("[createOrder] Filtered cartIds:", cartIds);
 
       if (!cartIds.length) {
-        console.log('[createOrder] No valid cart item IDs provided.', cartIds, input, input.items);
-        return { error: 'No valid cart item IDs provided.' };
+        console.log(
+          "[createOrder] No valid cart item IDs provided.",
+          cartIds,
+          input,
+          input.items,
+        );
+        return { error: "No valid cart item IDs provided." };
       }
 
       // Fetch cart items and related products for all items
-      console.log('[createOrder] Step 6: Fetching cart items with their products from DB...');
+      console.log(
+        "[createOrder] Step 6: Fetching cart items with their products from DB...",
+      );
       const cartItems = await prisma.cartItem.findMany({
         where: {
           id: { in: cartIds },
@@ -208,26 +232,34 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
           },
         },
       });
-      console.log('[createOrder] Retrieved cartItems:', cartItems);
+      console.log("[createOrder] Retrieved cartItems:", cartItems);
 
       const cartItemsMap = new Map(cartItems.map((c) => [c.id, c]));
-      console.log('[createOrder] Created cartItemsMap for fast lookup.');
+      console.log("[createOrder] Created cartItemsMap for fast lookup.");
 
       // Validate all cartIds & corresponding products exist
-      console.log('[createOrder] Step 7: Validating all cart and product IDs exist...');
+      console.log(
+        "[createOrder] Step 7: Validating all cart and product IDs exist...",
+      );
       for (const item of input.items) {
         const cartItem = item.cartId && cartItemsMap.get(item.cartId);
         if (!cartItem || !cartItem.product?.id) {
-          console.log(`[createOrder] Cart item or product not found for cartId: ${item.cartId}`);
+          console.log(
+            `[createOrder] Cart item or product not found for cartId: ${item.cartId}`,
+          );
           return {
             error: `Product with ID ${item.cartId} not found.`,
           };
         }
       }
-      console.log('[createOrder] All cart and product IDs are valid and present.');
+      console.log(
+        "[createOrder] All cart and product IDs are valid and present.",
+      );
 
       // Create order with order items in a transaction
-      console.log('[createOrder] Step 8: Creating order and items in DB transaction...');
+      console.log(
+        "[createOrder] Step 8: Creating order and items in DB transaction...",
+      );
       await prisma.$transaction(async (tx) => {
         // Create order items with correct productId FK (from .product.id)
         const orderItemsData = input.items
@@ -249,30 +281,33 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
             };
           });
 
-        console.log('[createOrder] orderItemsData:', orderItemsData);
+        console.log("[createOrder] orderItemsData:", orderItemsData);
 
         // Only proceed if there are valid order items
         if (!orderItemsData.length) {
-          console.log('[createOrder] No valid cart items for order.');
-          throw new Error('No valid cart items to create order for.');
+          console.log("[createOrder] No valid cart items for order.");
+          throw new Error("No valid cart items to create order for.");
         }
 
         // Create the order with order items
-        console.log('[createOrder] Creating order in DB...');
+        console.log("[createOrder] Creating order in DB...");
         await tx.order.create({
           data: {
             userId: userId,
             addressId: input.addressId,
             orderNumber: orderNumber,
-            status: 'CREATED',
+            status: "CREATED",
             paymentMethod: input.paymentMethod,
-            paymentStatus: 'PENDING',
+            paymentStatus: "PENDING",
             subTotal: new Decimal(input.subTotal),
             shippingFee: new Decimal(input.shippingFee),
             discountAmount: new Decimal(input.discountAmount),
             taxAmount: new Decimal(input.taxAmount || 0),
             totalAmount: new Decimal(
-              input.subTotal + input.shippingFee - input.discountAmount + (input.taxAmount || 0)
+              input.subTotal +
+                input.shippingFee -
+                input.discountAmount +
+                (input.taxAmount || 0),
             ),
             notes: input.notes || null,
             placedAt: new Date(),
@@ -282,24 +317,26 @@ async function createOrder(input: CreateOrderInput, productId?: string) {
           },
         });
 
-        console.log('[createOrder] Order created successfully, now deleting cart items...');
+        console.log(
+          "[createOrder] Order created successfully, now deleting cart items...",
+        );
         await tx.cartItem.deleteMany({
           where: {
             id: { in: cartIds },
           },
         });
-        console.log('[createOrder] Cart items deleted after order.');
+        console.log("[createOrder] Cart items deleted after order.");
       });
 
-      console.log('[createOrder] Step 9: Order successfully created.');
+      console.log("[createOrder] Step 9: Order successfully created.");
       return {
         success: true,
       };
     }
   } catch (error: any) {
-    console.error('Error creating order:', error);
+    console.error("Error creating order:", error);
     return {
-      error: error?.message || 'Failed to create order. Please try again.',
+      error: error?.message || "Failed to create order. Please try again.",
     };
   }
 }
@@ -311,7 +348,7 @@ async function getMyOrders() {
     if (!session?.user.id)
       return {
         cartItems: [],
-        message: 'Unauthorized',
+        message: "Unauthorized",
       };
 
     const orders = await prisma.order.findMany({
@@ -347,29 +384,35 @@ async function getMyOrders() {
       },
     });
 
-    console.log('orders: ', orders);
+    console.log("orders: ", orders);
 
     // Helper function to deeply convert Decimal instances to numbers,
     // but ensures Date fields like placedAt are returned as ISO strings
     function convertDecimalsAndDates(obj: any): any {
       if (Array.isArray(obj)) {
         return obj.map(convertDecimalsAndDates);
-      } else if (obj && typeof obj === 'object') {
+      } else if (obj && typeof obj === "object") {
         const result: any = {};
         for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (Object.hasOwn(obj, key)) {
             const value = obj[key];
             // For Prisma's Decimal type
-            if (value && typeof value === 'object' && value._isDecimal) {
+            if (value && typeof value === "object" && value._isDecimal) {
               result[key] = Number(value);
             }
             // For legacy decimal.js style (sometimes toNumber exists)
-            else if (value && typeof value === 'object' && typeof value.toNumber === 'function') {
+            else if (
+              value &&
+              typeof value === "object" &&
+              typeof value.toNumber === "function"
+            ) {
               result[key] = value.toNumber();
             }
             // Ensure placedAt and createdAt fields are serialized to ISO strings if they're Dates
             else if (
-              (key === 'placedAt' || key === 'createdAt' || key === 'updatedAt') &&
+              (key === "placedAt" ||
+                key === "createdAt" ||
+                key === "updatedAt") &&
               value instanceof Date
             ) {
               result[key] = value.toISOString();
@@ -388,17 +431,17 @@ async function getMyOrders() {
       const plainOrder = convertDecimalsAndDates(order);
       return plainOrder;
     });
-    console.log('plainOrders: ', plainOrders);
+    console.log("plainOrders: ", plainOrders);
 
     return {
       orders: plainOrders as typeof orders,
-      message: 'Cart items fetched successfully',
+      message: "Cart items fetched successfully",
     };
   } catch (error) {
     console.log(error);
     return {
       cartItems: [],
-      message: 'Failed to fetch cart items',
+      message: "Failed to fetch cart items",
     };
   }
 }

@@ -1,20 +1,20 @@
-'use server';
+"use server";
 
-import { auth, unstable_update } from '@/auth';
-import prisma from '@/shared/lib/prisma';
+import { auth, unstable_update } from "@/auth";
+import prisma from "@/shared/lib/prisma";
 
 export const updateEmail = async (email: string, code: string) => {
   try {
     const session = await auth();
     const user = session?.user;
     if (!user) {
-      return { error: 'User not found' };
+      return { error: "User not found" };
     }
     if (!email) {
-      return { error: 'Email are required' };
+      return { error: "Email are required" };
     }
     if (!code) {
-      return { error: 'code are required' };
+      return { error: "code are required" };
     }
 
     const verificationToken = await prisma.verificationToken.findUnique({
@@ -22,15 +22,15 @@ export const updateEmail = async (email: string, code: string) => {
     });
 
     if (!verificationToken) {
-      return { error: 'Verification token is missing' };
+      return { error: "Verification token is missing" };
     }
 
     if (verificationToken.token !== code) {
-      return { error: 'Invalid verification code' };
+      return { error: "Invalid verification code" };
     }
 
     if (verificationToken.expires < new Date()) {
-      return { error: 'Verification code has expired' };
+      return { error: "Verification code has expired" };
     }
 
     await prisma.user.update({
@@ -44,9 +44,9 @@ export const updateEmail = async (email: string, code: string) => {
     });
     await unstable_update({ user: { ...session?.user, email } });
 
-    return { success: 'Email updated successfully!' };
+    return { success: "Email updated successfully!" };
   } catch (error) {
     console.log(error);
-    return { error: (error as Error).message || 'Somting wenth wrong' };
+    return { error: (error as Error).message || "Somting wenth wrong" };
   }
 };

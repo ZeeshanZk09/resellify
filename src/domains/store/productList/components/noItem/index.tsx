@@ -13,7 +13,10 @@ const NoItem = ({ pageHeader }: TProps) => {
     >
       <span> There is no product in {pageHeader} category!</span>
       <div className="text-sm flex flex-col gap-4">
-        <span className="w-full text-center"> You Can Check These Categories Instead:</span>
+        <span className="w-full text-center">
+          {" "}
+          You Can Check These Categories Instead:
+        </span>
         <div className="flex gap-3 items-center justify-center">
           <Link
             className="border border-gray-300 px-4 py-1 rounded-md transition-colors duration-300 hover:bg-gray-100"

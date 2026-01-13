@@ -1,7 +1,7 @@
 "use client";
 
-import { TFilters } from "@/domains/store/productList/types";
-import { TPageStatus } from "@/domains/store/productList/types/";
+import type { TFilters } from "@/domains/store/productList/types";
+import type { TPageStatus } from "@/domains/store/productList/types/";
 import { CloseIcon } from "@/shared/components/icons/svgIcons";
 import Button from "@/shared/components/ui-v2/button";
 import CheckBox from "@/shared/components/ui-v2/checkBox";
@@ -36,13 +36,13 @@ const Filters = ({
         "min-w-[260px] lg:relative lg:visible lg:transition-none lg:opacity-100 fixed inset-0 transition-all invisible opacity-0 lg:z-1 z-20",
         {
           "visible opacity-100": showFilters,
-        }
+        },
       )}
     >
       <div
         className={cn(
           "block w-screen h-screen lg:invisible opacity-0 absolute bg-[rgba(0,0,0,0.6)] cursor-pointer backdrop-blur-xs transition-opacity duration-300",
-          { "visible opacity-100": showFilters }
+          { "visible opacity-100": showFilters },
         )}
         onClick={() => onToggleWindow(false)}
       />
@@ -50,7 +50,7 @@ const Filters = ({
       <div
         className={cn(
           "lg:min-w-[220px] w-[310px] ease-bitex-easeOut transition-all pb-8 duration-500 lg:w-auto max-w-[260px] absolute lg:relative h-full px-5 border-r bg-white lg:z-1 z-20 border-gray-300 overflow-y-scroll",
-          showFilters ? "left-0" : "left-[-310px] lg:left-0"
+          showFilters ? "left-0" : "left-[-310px] lg:left-0",
         )}
       >
         <div className="lg:hidden pb-2 flex justify-between text-gray-500 items-center my-2 border-b border-gray-300">

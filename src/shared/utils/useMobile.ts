@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function useMobile() {
   const [isMobile, setIsMobile] = useState(false);

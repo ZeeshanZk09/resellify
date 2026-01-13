@@ -1,9 +1,9 @@
-'use client';
-import { JsonValue } from 'next-auth/adapters';
-import { useTheme } from 'next-themes';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import type { JsonValue } from "next-auth/adapters";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 type CompanyLogoProps = {
   upload: {
@@ -31,7 +31,7 @@ const CompanyLogo = ({
   name,
   width = 100,
   bgPositionX = 0,
-  url = '/',
+  url = "/",
 }: CompanyLogoProps) => {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -42,7 +42,7 @@ const CompanyLogo = ({
 
   // Use upload path if available, otherwise fall back to logo, otherwise use sprite
   const logoSrc = upload?.path || logo;
-  const altText = upload?.altText || name || 'Company logo';
+  const altText = upload?.altText || name || "Company logo";
 
   const logoContent = logoSrc ? (
     <Image
@@ -51,14 +51,14 @@ const CompanyLogo = ({
       width={width}
       height={56}
       className={`${
-        mounted && theme === 'dark' ? 'invert' : ''
+        mounted && theme === "dark" ? "invert" : ""
       } opacity-80 transition-opacity duration-300 hover:opacity-100 object-contain`}
-      style={{ width: `${width}px`, height: '56px' }}
+      style={{ width: `${width}px`, height: "56px" }}
     />
   ) : (
     <div
       className={`${
-        mounted && theme === 'dark' ? 'invert' : ''
+        mounted && theme === "dark" ? "invert" : ""
       } bg-[url('/icons/companiesIcons.png')] h-14 bg-no-repeat bg-[position-y:center] opacity-80 transition-opacity duration-300 hover:opacity-100`}
       style={{
         width: `${width}px`,
@@ -68,7 +68,7 @@ const CompanyLogo = ({
   );
 
   return (
-    <Link href={url} className='flex items-center justify-center'>
+    <Link href={url} className="flex items-center justify-center">
       {logoContent}
     </Link>
   );

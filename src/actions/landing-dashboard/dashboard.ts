@@ -1,6 +1,6 @@
-'use server';
-import prisma from '@/shared/lib/prisma';
-import type { Prisma } from '@/shared/lib/generated/prisma/client';
+"use server";
+import type { Prisma } from "@/shared/lib/generated/prisma/client";
+import prisma from "@/shared/lib/prisma";
 
 // --- Dashboard Types (updated for actual getHome() return structure) ---
 
@@ -160,7 +160,7 @@ export type TopSellingProductType = Omit<
       };
     };
   }>,
-  'images'
+  "images"
 > & {
   totalSold: number;
   images: Array<Prisma.UploadGetPayload<{}>>;
@@ -263,8 +263,8 @@ async function categoryOffers(): Promise<
     const categoryOffers = await prisma.productOffer.findMany({
       where: {
         product: {
-          status: 'PUBLISHED',
-          visibility: 'PUBLIC',
+          status: "PUBLISHED",
+          visibility: "PUBLIC",
         },
         offer: {
           isActive: true,
@@ -297,7 +297,10 @@ async function categoryOffers(): Promise<
         coupons: true,
         offer: true,
       },
-      orderBy: [{ product: { publishedAt: 'desc' } }, { offer: { priority: 'desc' } }],
+      orderBy: [
+        { product: { publishedAt: "desc" } },
+        { offer: { priority: "desc" } },
+      ],
     });
     return categoryOffers;
   } catch (error) {
@@ -322,7 +325,11 @@ async function getHome() {
     // Grouping logic
     const offersByCategory: Record<string, CategoryOffer> = offers.reduce(
       (acc: Record<string, CategoryOffer>, offer) => {
-        if (!offer?.product?.categories || offer.product.categories.length === 0) return acc;
+        if (
+          !offer?.product?.categories ||
+          offer.product.categories.length === 0
+        )
+          return acc;
 
         offer.product.categories.forEach((catRel) => {
           const cat = catRel.category;
@@ -348,7 +355,7 @@ async function getHome() {
           if (offerObj) {
             if (offerObj.maxDiscount != null) {
               discount = Number(offerObj.maxDiscount);
-            } else if (offerObj.type === 'PERCENT') {
+            } else if (offerObj.type === "PERCENT") {
               discount = Number(offerObj.value);
             }
           }
@@ -362,14 +369,14 @@ async function getHome() {
 
         return acc;
       },
-      {}
+      {},
     );
 
     // 2. Today's Deals (Products with salePrice)
     const todaysDealsRaw = await prisma.product.findMany({
       where: {
-        status: 'PUBLISHED',
-        visibility: 'PUBLIC',
+        status: "PUBLISHED",
+        visibility: "PUBLIC",
         salePrice: { not: null },
         OR: [
           { productOffers: { some: { offer: { isActive: true } } } },
@@ -424,7 +431,7 @@ async function getHome() {
       },
       take: 10,
       orderBy: {
-        updatedAt: 'desc',
+        updatedAt: "desc",
       },
     });
 
@@ -470,7 +477,7 @@ async function getHome() {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       take: 10,
     });
@@ -479,8 +486,8 @@ async function getHome() {
     // Based on order items count
     const topSellingProductsRaw = await prisma.product.findMany({
       where: {
-        status: 'PUBLISHED',
-        visibility: 'PUBLIC',
+        status: "PUBLISHED",
+        visibility: "PUBLIC",
       },
       include: {
         productSpecs: true,
@@ -513,18 +520,19 @@ async function getHome() {
       },
       orderBy: {
         orderItems: {
-          _count: 'desc',
+          _count: "desc",
         },
       },
       take: 10,
     });
 
     // Add totalSold and normalize images for TopSellingProductType
-    const topSellingProducts: TopSellingProductType[] = topSellingProductsRaw.map((product) => ({
-      ...product,
-      totalSold: product._count.orderItems,
-      images: product.images,
-    }));
+    const topSellingProducts: TopSellingProductType[] =
+      topSellingProductsRaw.map((product) => ({
+        ...product,
+        totalSold: product._count.orderItems,
+        images: product.images,
+      }));
 
     // 5. Brands
     const brands = await prisma.brand.findMany({
@@ -538,7 +546,7 @@ async function getHome() {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       take: 20,
     });
@@ -551,9 +559,9 @@ async function getHome() {
       brands,
     };
   } catch (error) {
-    console.error('Error fetching home data:', error);
+    console.error("Error fetching home data:", error);
     return {
-      error: 'Failed to fetch home data',
+      error: "Failed to fetch home data",
       details: error instanceof Error ? error.message : String(error),
     };
   }

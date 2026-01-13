@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, ReactNode, Fragment } from "react";
+import { Fragment, type ReactNode, useEffect, useState } from "react";
 import { cn } from "@/shared/utils/styling";
 
 export type Slide = {
@@ -34,7 +34,7 @@ export type HomeSliderProps = {
   renderDot?: (
     index: number,
     isActive: boolean,
-    onClick: () => void
+    onClick: () => void,
   ) => ReactNode;
   renderSlideContent?: (slide: Slide, isActive: boolean) => ReactNode;
   onSlideChange?: (index: number) => void;
@@ -115,7 +115,7 @@ export const HomeSlider = ({
       onClick={() => handleSliding(activeSlideNum - 1)}
       className={cn(
         "rounded-full flex justify-center size-[50px] rotate-180 border-none cursor-pointer bg-white/25",
-        arrowClassName
+        arrowClassName,
       )}
       aria-label="Previous slide"
     >
@@ -140,7 +140,7 @@ export const HomeSlider = ({
       onClick={() => handleSliding(activeSlideNum + 1)}
       className={cn(
         "rounded-full flex justify-center size-[50px] border-none cursor-pointer bg-white/25",
-        arrowClassName
+        arrowClassName,
       )}
       aria-label="Next slide"
     >
@@ -163,7 +163,7 @@ export const HomeSlider = ({
   const defaultDot = (
     index: number,
     isActive: boolean,
-    onClick: () => void
+    onClick: () => void,
   ) => (
     <button
       onClick={onClick}
@@ -172,7 +172,7 @@ export const HomeSlider = ({
         isActive
           ? "w-4 opacity-100 scale-110 bg-white"
           : "opacity-35 bg-white/40 hover:bg-white/80 scale-100",
-        dotClassName
+        dotClassName,
       )}
       aria-label={`Go to slide ${index + 1}`}
     />
@@ -186,7 +186,7 @@ export const HomeSlider = ({
         fill
         className={cn(
           "hover:scale-105 object-cover transition-all duration-500",
-          imageClassName
+          imageClassName,
         )}
         sizes="(max-width:1080px)"
         priority
@@ -197,7 +197,7 @@ export const HomeSlider = ({
         <div
           className={cn(
             "flex flex-col w-full absolute pt-0 sm:pt-[10%] items-center left-0 bottom-20 lg:w-[50%] text-gray-100 transition-all duration-1000",
-            isActive ? "opacity-100 visible" : "opacity-0 invisible"
+            isActive ? "opacity-100 visible" : "opacity-0 invisible",
           )}
         >
           <h2 className="sm:text-3xl text-lg font-light">{slide.msg.title}</h2>
@@ -219,7 +219,7 @@ export const HomeSlider = ({
       className={cn(
         "w-full h-[450px] sm:h-[500px] overflow-hidden relative group",
         rounded ? "rounded-[12px]" : "",
-        className
+        className,
       )}
     >
       {totalSlides > 1 && showArrows && (
@@ -241,7 +241,7 @@ export const HomeSlider = ({
         className={cn(
           "h-full overflow-hidden translate-z-0 top-0 left-0 select-none",
           rounded ? "rounded-xl" : "",
-          slideClassName
+          slideClassName,
         )}
       >
         {totalSlides === 0 ? (
@@ -261,7 +261,7 @@ export const HomeSlider = ({
               className={cn(
                 "inline-block absolute w-full h-full opacity-0 invisible transition-all duration-1000 overflow-hidden",
                 rounded ? "rounded-[12px]" : "",
-                index === activeSlideNum ? "opacity-100 visible" : ""
+                index === activeSlideNum ? "opacity-100 visible" : "",
               )}
             >
               {renderSlideContent
@@ -273,7 +273,7 @@ export const HomeSlider = ({
                     "absolute top-0 w-0 h-2 bg-white/30 transition-all ease-linear",
                     index === activeSlideNum &&
                       "animate-autoSlide duration-[5s]",
-                    progressBarClassName
+                    progressBarClassName,
                   )}
                 />
               )}
@@ -288,10 +288,10 @@ export const HomeSlider = ({
             <Fragment key={index}>
               {renderDot
                 ? renderDot(index, index === activeSlideNum, () =>
-                    handleSliding(index)
+                    handleSliding(index),
                   )
                 : defaultDot(index, index === activeSlideNum, () =>
-                    handleSliding(index)
+                    handleSliding(index),
                   )}
             </Fragment>
           ))}

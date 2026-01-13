@@ -4,13 +4,16 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 import { addVisit } from "@/actions/pageVisit/pageVisitServices";
-import { TAddPageVisit } from "@/shared/types/common";
+import type { TAddPageVisit } from "@/shared/types/common";
 
 const AddVisit = () => {
   const pathName = usePathname();
   useEffect(() => {
     const addingVisit = async () => {
-      const deviceResolution = window.screen.width.toString() + " x " + window.screen.height.toString();
+      const deviceResolution =
+        window.screen.width.toString() +
+        " x " +
+        window.screen.height.toString();
 
       const data: TAddPageVisit = {
         pageType: "MAIN",

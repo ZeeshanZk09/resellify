@@ -1,4 +1,4 @@
-import { CategoryOffer } from "@/actions/landing-dashboard/dashboard";
+import type { CategoryOffer } from "@/actions/landing-dashboard/dashboard";
 import { WideCard } from "./WideCard";
 
 type TProps = {

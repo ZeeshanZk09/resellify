@@ -29,7 +29,7 @@ export const Pagination = ({ currentPage, routeBase, pagesList }: TProps) => {
           >
             {item}
           </Button>
-        )
+        ),
       )}
     </div>
   );

@@ -1,7 +1,7 @@
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 const isValidPhoneNumber = (phoneNumber: string) => {
-  const phone = parsePhoneNumberFromString(phoneNumber, 'PK');
+  const phone = parsePhoneNumberFromString(phoneNumber, "PK");
   return phone?.isValid() || false;
 };
 

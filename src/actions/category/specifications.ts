@@ -1,9 +1,9 @@
-'use server';
+"use server";
 
-import db from '@/shared/lib/prisma';
+import db from "@/shared/lib/prisma";
 
 export const getCategorySpecs = async (categoryID: string) => {
-  if (!categoryID || categoryID === '') return { error: 'Invalid Category ID' };
+  if (!categoryID || categoryID === "") return { error: "Invalid Category ID" };
 
   const specifications: any[] = [];
   const processedSpecGroupIds = new Set<string>();
@@ -96,10 +96,7 @@ export const getCategorySpecs = async (categoryID: string) => {
   }
 };
 
-
-export type GetSpecGroups = Awaited<
-  ReturnType<typeof getSpecGroups>
->["res"];
+export type GetSpecGroups = Awaited<ReturnType<typeof getSpecGroups>>["res"];
 export const getSpecGroups = async () => {
   try {
     const groups = await db.specGroup.findMany({
@@ -108,11 +105,11 @@ export const getSpecGroups = async () => {
         title: true,
         keys: true,
       },
-      orderBy: {  
-        title: 'asc',
+      orderBy: {
+        title: "asc",
       },
     });
-    if (!groups || groups.length === 0) return { error: 'Not Found!' };
+    if (!groups || groups.length === 0) return { error: "Not Found!" };
     return { res: groups };
   } catch (error) {
     return { error: JSON.stringify(error) };

@@ -28,7 +28,10 @@ const Popup = ({
 }: TProps) => {
   return (
     <div className="fixed inset-0 overflow-hidden flex items-center justify-center">
-      <div className="absolute inset-0 cursor-pointer bg-[rgba(0,0,0,0.2)] backdrop-blur-[2px]" onClick={onClose} />
+      <div
+        className="absolute inset-0 cursor-pointer bg-[rgba(0,0,0,0.2)] backdrop-blur-[2px]"
+        onClick={onClose}
+      />
       <div
         className={
           "w-[700px] max-h-[95vh] flex flex-col px-6 py-4 rounded-xl bg-white z-[10] text-gray-700 drop-shadow-sm origin-top animate-poppingUp ease-bitex-easeOut"
@@ -38,7 +41,10 @@ const Popup = ({
         {title && (
           <div className="flex justify-between items-center pb-3 text-gray-700 border-b border-gray-300">
             {title}
-            <Button onClick={onClose} className="size-8 p-0 border border-white transition-colors duration-400">
+            <Button
+              onClick={onClose}
+              className="size-8 p-0 border border-white transition-colors duration-400"
+            >
               <CloseIcon width={12} />
             </Button>
           </div>
@@ -48,7 +54,11 @@ const Popup = ({
           <Button className="w-[140px] py-1.5" onClick={onCancel}>
             {cancelBtnText || "Cancel"}
           </Button>
-          <Button className="w-[140px] py-1.5" disabled={isLoading} onClick={onSubmit}>
+          <Button
+            className="w-[140px] py-1.5"
+            disabled={isLoading}
+            onClick={onSubmit}
+          >
             {confirmBtnText || "OK"}
           </Button>
         </div>

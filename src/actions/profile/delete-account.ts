@@ -1,19 +1,19 @@
-'use server';
-import { auth } from '@/auth';
-import prisma from '@/shared/lib/prisma';
+"use server";
+import { auth } from "@/auth";
+import prisma from "@/shared/lib/prisma";
 
 export const deleteAccount = async (command: string) => {
   try {
     const session = await auth();
     const user_email = session?.user?.email;
     if (!user_email) {
-      return { error: 'User not found' };
+      return { error: "User not found" };
     }
     if (!command) {
       return { error: `Please enter "Delete account"` };
     }
-    if (command !== 'Delete account') {
-      return { error: 'Incorrect command' };
+    if (command !== "Delete account") {
+      return { error: "Incorrect command" };
     }
     // 1. Delete related accounts
     await prisma.user.delete({
@@ -25,9 +25,9 @@ export const deleteAccount = async (command: string) => {
       where: { email: user_email },
     });
 
-    return { success: 'Account deleted successfully!' };
+    return { success: "Account deleted successfully!" };
   } catch (error) {
     console.log(error);
-    return { error: (error as Error).message || 'Somting wenth wrong' };
+    return { error: (error as Error).message || "Somting wenth wrong" };
   }
 };

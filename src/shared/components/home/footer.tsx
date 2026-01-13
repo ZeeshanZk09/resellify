@@ -1,7 +1,7 @@
-import ThemeSwitch from "../theme-switch";
-import Link from "next/link";
 import { ChevronRight, Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import ThemeSwitch from "../theme-switch";
 import { Input } from "../ui/input";
 
 const Footer = () => {

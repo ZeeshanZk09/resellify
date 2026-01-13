@@ -1,7 +1,7 @@
-import { TListSort } from "@/domains/store/productList/types/";
-import { TDropDown } from "@/shared/types/uiElements";
+import type { TListSort } from "@/domains/store/productList/types/";
+import type { TDropDown } from "@/shared/types/uiElements";
 
-import { TFilters } from "../types";
+import type { TFilters } from "../types";
 
 export const DEFAULT_FILTERS: TFilters = {
   stockStatus: "all",

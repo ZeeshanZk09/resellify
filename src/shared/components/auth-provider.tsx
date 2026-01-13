@@ -1,9 +1,9 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@auth/core/types";
 import { SessionProvider } from "next-auth/react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { getUser } from "@/actions/profile/user-accounts";
-import { Role } from "@/shared/lib/generated/prisma/enums";
+import type { Role } from "@/shared/lib/generated/prisma/enums";
 
 type Props = {
   children: React.ReactNode;

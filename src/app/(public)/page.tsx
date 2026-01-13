@@ -32,7 +32,7 @@ export default async function Home() {
     error,
     details,
     collections,
-    brands
+    brands,
   );
 
   return (

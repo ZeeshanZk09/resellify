@@ -1,9 +1,9 @@
 "use client";
 
+import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useEffect, useState } from "react";
-import { getVisitsReport } from "@/actions/pageVisit/pageVisitServices";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
+import { getVisitsReport } from "@/actions/pageVisit/pageVisitServices";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -18,7 +18,7 @@ const COLORS = [
 
 // helper to pick colors (repeat if fewer than data)
 function getColors(count: number) {
-  let arr = [];
+  const arr = [];
   for (let i = 0; i < count; i++) {
     arr.push(COLORS[i % COLORS.length]);
   }
@@ -92,7 +92,7 @@ export default function ViewsReport() {
         data: topPaths.map((item) => item.count ?? 0),
         backgroundColor: getColors(topPaths.length),
         borderColor: getColors(topPaths.length).map((c) =>
-          c.replace("0.6", "1")
+          c.replace("0.6", "1"),
         ),
         borderWidth: 1,
         label: "Top 5 Most Visited Pages",
@@ -107,7 +107,7 @@ export default function ViewsReport() {
         data: topReferrers.map((item) => item.count ?? 0),
         backgroundColor: getColors(topReferrers.length),
         borderColor: getColors(topReferrers.length).map((c) =>
-          c.replace("0.6", "1")
+          c.replace("0.6", "1"),
         ),
         borderWidth: 1,
         label: "Top 5 Referrers",

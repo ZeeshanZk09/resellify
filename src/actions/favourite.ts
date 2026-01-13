@@ -73,7 +73,7 @@ async function getFavProduct(productId: string) {
       "[getFavProduct] fetching favourite for userId:",
       userId,
       "productId:",
-      productId
+      productId,
     );
     const fav = await prisma.favourite.findUnique({
       where: {

@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import { useFormContext } from "react-hook-form";
-import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
+import { Plus, Trash2, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
-import { ProductSpec } from "@/shared/lib/generated/prisma/browser";
+} from '@/shared/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 
 type SpecGroup = {
   id: string;
@@ -22,7 +22,8 @@ type SpecGroup = {
 
 type Specification = {
   specGroupId: string;
-  productId: string;
+  specGroupTitle?: string; // For manually created groups
+  specGroupKeys?: string[]; // For manually created groups
   values: string[];
 };
 
@@ -30,162 +31,324 @@ type SpecificationsStepProps = {
   specGroups: SpecGroup[];
 };
 
-export default function SpecificationsStep({
-  specGroups,
-}: SpecificationsStepProps) {
-  const { setValue, watch, getValues } = useFormContext();
-  const [selectedSpecGroup, setSelectedSpecGroup] = useState<string>("");
+export default function SpecificationsStep({ specGroups }: SpecificationsStepProps) {
+  const { setValue, watch } = useFormContext();
+  const [mode, setMode] = useState<'existing' | 'new'>('new');
+  const [selectedSpecGroup, setSelectedSpecGroup] = useState<string>('');
+
+  // For new spec group creation
+  const [newGroupTitle, setNewGroupTitle] = useState<string>('');
+  const [newGroupKeys, setNewGroupKeys] = useState<string[]>(['']);
+  const [newGroupValues, setNewGroupValues] = useState<Record<number, string>>({});
+
+  // For existing spec group
   const [specValues, setSpecValues] = useState<Record<string, string>>({});
 
-  const specifications: Specification[] = watch("specifications") || [];
+  const specifications: Specification[] = watch('specifications') || [];
 
-  const handleAddSpecGroup = () => {
+  const handleAddNewKey = () => {
+    setNewGroupKeys([...newGroupKeys, '']);
+  };
+
+  const handleRemoveKey = (index: number) => {
+    const updated = newGroupKeys.filter((_, i) => i !== index);
+    setNewGroupKeys(updated);
+    // Remove corresponding value
+    const updatedValues = { ...newGroupValues };
+    delete updatedValues[index];
+    // Shift values for keys after the removed one
+    const shiftedValues: Record<number, string> = {};
+    Object.keys(updatedValues).forEach((key) => {
+      const keyIndex = Number.parseInt(key, 10);
+      if (keyIndex < index) {
+        shiftedValues[keyIndex] = updatedValues[keyIndex];
+      } else if (keyIndex > index) {
+        shiftedValues[keyIndex - 1] = updatedValues[keyIndex];
+      }
+    });
+    setNewGroupValues(shiftedValues);
+  };
+
+  const handleUpdateKey = (index: number, value: string) => {
+    const updated = [...newGroupKeys];
+    updated[index] = value;
+    setNewGroupKeys(updated);
+  };
+
+  const handleAddNewSpecGroup = () => {
+    if (!newGroupTitle.trim()) {
+      alert('Please enter a spec group title');
+      return;
+    }
+
+    const validKeys = newGroupKeys.filter((k) => k.trim());
+    if (validKeys.length === 0) {
+      alert('Please add at least one key');
+      return;
+    }
+
+    const values = validKeys.map((_, index) => {
+      // Find the value for this key index
+      const valueIndex = newGroupKeys.findIndex((k, i) => i === index && k.trim());
+      return newGroupValues[valueIndex] || '';
+    });
+
+    // Check if all values are filled
+    if (values.some((v) => !v.trim())) {
+      alert('Please fill all values');
+      return;
+    }
+
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newSpec: Specification = {
+      specGroupId: tempId,
+      specGroupTitle: newGroupTitle.trim(),
+      specGroupKeys: validKeys,
+      values: values,
+    };
+
+    setValue('specifications', [...specifications, newSpec]);
+
+    // Reset form
+    setNewGroupTitle('');
+    setNewGroupKeys(['']);
+    setNewGroupValues({});
+  };
+
+  const handleAddExistingSpecGroup = () => {
     if (!selectedSpecGroup) return;
 
     const specGroup = specGroups.find((g) => g.id === selectedSpecGroup);
     if (!specGroup) return;
 
     const values = specGroup.keys.map(
-      (key, index) => specValues[`${selectedSpecGroup}_${index}`] || ""
+      (key, index) => specValues[`${selectedSpecGroup}_${index}`] || ''
     );
 
     // Check if all required values are filled
     if (values.some((v) => !v.trim())) {
-      alert("Please fill all values for the selected spec group");
+      alert('Please fill all values for the selected spec group');
       return;
     }
 
     const newSpec: Specification = {
       specGroupId: selectedSpecGroup,
-      productId: getValues("productId"),
       values: values,
     };
 
-    setValue("specifications", [...specifications, newSpec]);
-    setSelectedSpecGroup("");
+    setValue('specifications', [...specifications, newSpec]);
+    setSelectedSpecGroup('');
     setSpecValues({});
   };
 
   const handleRemoveSpec = (index: number) => {
     const updated = specifications.filter((_, i) => i !== index);
-    setValue("specifications", updated);
+    setValue('specifications', updated);
   };
 
   const selectedGroup = specGroups.find((g) => g.id === selectedSpecGroup);
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">Product Specifications</h2>
+      <h2 className='text-xl font-semibold mb-2'>Product Specifications</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         <Card>
-          <CardContent className="pt-6 space-y-4">
-            <div className="space-y-2">
-              <Label>Select Spec Group</Label>
-              <Select
-                value={selectedSpecGroup || undefined}
-                onValueChange={(value) => setSelectedSpecGroup(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select spec group" />
-                </SelectTrigger>
-                <SelectContent>
-                  {specGroups.map((group) => (
-                    <SelectItem key={group.id} value={group.id}>
-                      {group.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <CardContent className='pt-6 space-y-4'>
+            <Tabs value={mode} onValueChange={(v) => setMode(v as 'existing' | 'new')}>
+              <TabsList className='grid w-full grid-cols-2'>
+                <TabsTrigger value='new'>Create New</TabsTrigger>
+                <TabsTrigger value='existing'>Use Existing</TabsTrigger>
+              </TabsList>
 
-            {selectedGroup && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">
-                  Enter values for: {selectedGroup.title}
-                </p>
-                {selectedGroup.keys.map((key, index) => (
-                  <div key={index} className="space-y-1">
-                    <Label>{key}</Label>
-                    <Input
-                      value={specValues[`${selectedSpecGroup}_${index}`] || ""}
-                      onChange={(e) =>
-                        setSpecValues((prev) => ({
-                          ...prev,
-                          [`${selectedSpecGroup}_${index}`]: e.target.value,
-                        }))
-                      }
-                    />
+              <TabsContent value='new' className='space-y-4 mt-4'>
+                <div className='space-y-2'>
+                  <Label>
+                    Spec Group Title <span className='text-destructive'>*</span>
+                  </Label>
+                  <Input
+                    placeholder='e.g., Technical Specifications'
+                    value={newGroupTitle}
+                    onChange={(e) => setNewGroupTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className='space-y-2'>
+                  <div className='flex items-center justify-between'>
+                    <Label>
+                      Keys (Spec Fields) <span className='text-destructive'>*</span>
+                    </Label>
+                    <Button type='button' size='sm' variant='outline' onClick={handleAddNewKey}>
+                      <Plus className='h-3 w-3 mr-1' />
+                      Add Key
+                    </Button>
                   </div>
-                ))}
-              </div>
-            )}
 
-            <Button
-              onClick={handleAddSpecGroup}
-              disabled={!selectedSpecGroup}
-              className="w-full"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Specification Group
-            </Button>
+                  {newGroupKeys.map((key, index) => (
+                    <div key={index} className='flex gap-2 items-center'>
+                      <Input
+                        placeholder={`Key ${index + 1} (e.g., RAM, Storage)`}
+                        value={key}
+                        onChange={(e) => handleUpdateKey(index, e.target.value)}
+                      />
+                      {newGroupKeys.length > 1 && (
+                        <Button
+                          type='button'
+                          size='sm'
+                          variant='ghost'
+                          onClick={() => handleRemoveKey(index)}
+                        >
+                          <X className='h-4 w-4' />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {newGroupKeys.some((k) => k.trim()) && (
+                  <div className='space-y-2'>
+                    <Label className='text-sm font-medium'>Enter Values</Label>
+                    {newGroupKeys
+                      .map((key, index) => ({ key, index }))
+                      .filter(({ key }) => key.trim())
+                      .map(({ key, index }) => (
+                        <div key={index} className='space-y-1'>
+                          <Label className='text-xs'>{key}</Label>
+                          <Input
+                            placeholder={`Value for ${key}`}
+                            value={newGroupValues[index] || ''}
+                            onChange={(e) =>
+                              setNewGroupValues((prev) => ({
+                                ...prev,
+                                [index]: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleAddNewSpecGroup}
+                  disabled={!newGroupTitle.trim() || !newGroupKeys.some((k) => k.trim())}
+                  className='w-full'
+                >
+                  <Plus className='h-4 w-4 mr-2' />
+                  Add Specification Group
+                </Button>
+              </TabsContent>
+
+              <TabsContent value='existing' className='space-y-4 mt-4'>
+                <div className='space-y-2'>
+                  <Label>Select Spec Group</Label>
+                  <Select
+                    value={selectedSpecGroup || undefined}
+                    onValueChange={(value) => setSelectedSpecGroup(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder='Select spec group' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specGroups.map((group) => (
+                        <SelectItem key={group.id} value={group.id}>
+                          {group.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedGroup && (
+                  <div className='space-y-2'>
+                    <p className='text-sm font-medium'>Enter values for: {selectedGroup.title}</p>
+                    {selectedGroup.keys.map((key, index) => (
+                      <div key={index} className='space-y-1'>
+                        <Label>{key}</Label>
+                        <Input
+                          value={specValues[`${selectedSpecGroup}_${index}`] || ''}
+                          onChange={(e) =>
+                            setSpecValues((prev) => ({
+                              ...prev,
+                              [`${selectedSpecGroup}_${index}`]: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleAddExistingSpecGroup}
+                  disabled={!selectedSpecGroup}
+                  className='w-full'
+                >
+                  <Plus className='h-4 w-4 mr-2' />
+                  Add Specification Group
+                </Button>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-medium mb-2">Added Specifications</h3>
+          <CardContent className='pt-6'>
+            <h3 className='text-lg font-medium mb-2'>Added Specifications</h3>
 
             {specifications.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">
-                No specifications added yet
-              </p>
+              <p className='text-center text-muted-foreground py-4'>No specifications added yet</p>
             ) : (
-              <div className="rounded-md border">
-                <table className="w-full caption-bottom text-sm">
-                  <thead className="[&_tr]:border-b">
-                    <tr className="border-b transition-colors hover:bg-muted/50">
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+              <div className='rounded-md border'>
+                <table className='w-full caption-bottom text-sm'>
+                  <thead className='[&_tr]:border-b'>
+                    <tr className='border-b transition-colors hover:bg-muted/50'>
+                      <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground'>
                         Group
                       </th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                      <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground'>
                         Values
                       </th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[80px]">
+                      <th className='h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[80px]'>
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="[&_tr:last-child]:border-0">
+                  <tbody className='[&_tr:last-child]:border-0'>
                     {specifications.map((spec, index) => {
-                      const group = specGroups.find(
-                        (g) => g.id === spec.specGroupId
-                      );
+                      // Check if it's a manually created spec group or existing one
+                      const isManual = spec.specGroupTitle && spec.specGroupKeys;
+                      const groupTitle = isManual
+                        ? spec.specGroupTitle
+                        : specGroups.find((g) => g.id === spec.specGroupId)?.title;
+                      const groupKeys = isManual
+                        ? spec.specGroupKeys
+                        : specGroups.find((g) => g.id === spec.specGroupId)?.keys;
+
                       return (
-                        <tr
-                          key={index}
-                          className="border-b transition-colors hover:bg-muted/50"
-                        >
-                          <td className="p-4 align-middle">{group?.title}</td>
-                          <td className="p-4 align-middle">
-                            <div className="flex flex-wrap gap-1">
+                        <tr key={index} className='border-b transition-colors hover:bg-muted/50'>
+                          <td className='p-4 align-middle'>
+                            {groupTitle}
+                            {isManual && (
+                              <span className='ml-2 text-xs text-muted-foreground'>(New)</span>
+                            )}
+                          </td>
+                          <td className='p-4 align-middle'>
+                            <div className='flex flex-wrap gap-1'>
                               {spec.values.map((value, i) => (
-                                <span
-                                  key={i}
-                                  className="bg-muted px-2 py-0.5 rounded text-xs"
-                                >
-                                  <strong>{group?.keys[i]}:</strong> {value}
+                                <span key={i} className='bg-muted px-2 py-0.5 rounded text-xs'>
+                                  <strong>{groupKeys?.[i]}:</strong> {value}
                                 </span>
                               ))}
                             </div>
                           </td>
-                          <td className="p-4 align-middle">
+                          <td className='p-4 align-middle'>
                             <Button
-                              size="sm"
-                              variant="destructive"
+                              size='sm'
+                              variant='destructive'
                               onClick={() => handleRemoveSpec(index)}
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className='h-3 w-3' />
                             </Button>
                           </td>
                         </tr>

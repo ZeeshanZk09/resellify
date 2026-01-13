@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
 import { getAllBrands } from '@/actions/brands/brands';
 import { getCategories, getSubCategoriesById } from '@/actions/category/category';
 import { getCategorySpecs } from '@/actions/category/specifications';
-import { SpecGroup } from '@/shared/lib/generated/prisma/client';
 import Button from '@/shared/components/ui-v2/button';
 import DropDownList from '@/shared/components/ui-v2/dropDown';
 import Input from '@/shared/components/ui-v2/input';
-import { TBrand } from '@/shared/types';
-import { TAddProductFormValues } from '@/shared/types/product';
-import { TDropDown } from '@/shared/types/uiElements';
+import type { SpecGroup } from '@/shared/lib/generated/prisma/client';
+import type { TBrand } from '@/shared/types';
+import type { TAddProductFormValues } from '@/shared/types/product';
+import type { TDropDown } from '@/shared/types/uiElements';
 import { cn } from '@/shared/utils/styling';
 
 const categoryListFirstItem: TDropDown = {
@@ -55,7 +55,7 @@ const ProductForm = ({ formValues: props, onChange }: TProps) => {
           if (subResult.res) {
             subResult.res.forEach((sub) => {
               dropDownData.push({
-                text: category.name + ' - ' + sub.name,
+                text: `${category.name} - ${sub.name}`,
                 value: sub.id,
               });
             });

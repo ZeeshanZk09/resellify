@@ -1,5 +1,14 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
+import { checkEmail } from "@/actions/auth/login";
+import { loginFormSchemaEmail } from "@/shared/lib/schemas";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -7,19 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Button } from "../ui/button";
-
-import { Input } from "../ui/input";
-import { Loader } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { checkEmail } from "@/actions/auth/login";
 import ErrorAlert from "../ui/error-alert";
-import SuccessAlert from "../ui/success-alert";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { loginFormSchemaEmail } from "@/shared/lib/schemas";
 import {
   Form,
   FormControl,
@@ -28,6 +25,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { Input } from "../ui/input";
+import SuccessAlert from "../ui/success-alert";
 import OAuth from "./o-auth";
 
 const SignInForm = () => {

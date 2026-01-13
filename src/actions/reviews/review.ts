@@ -1,21 +1,26 @@
-'use server';
-import { auth } from '@/auth';
-import prisma from '@/shared/lib/prisma';
+"use server";
+import { auth } from "@/auth";
+import prisma from "@/shared/lib/prisma";
 
-export type GetAllReviews = Awaited<ReturnType<typeof getReviews>>['reviews'];
+export type GetAllReviews = Awaited<ReturnType<typeof getReviews>>["reviews"];
 export type CreateReview = Awaited<ReturnType<typeof createReview>>;
 
-async function createReview(productId: string, rating: number, title: string, comment: string) {
+async function createReview(
+  productId: string,
+  rating: number,
+  title: string,
+  comment: string,
+) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return { error: 'Unauthorized' };
+    if (!session?.user?.id) return { error: "Unauthorized" };
 
     const product = await prisma.product.findUnique({
       where: {
         id: productId,
       },
     });
-    if (!product) return { error: 'Product not found', status: 404 };
+    if (!product) return { error: "Product not found", status: 404 };
 
     const review = await prisma.review.create({
       data: {
@@ -43,17 +48,23 @@ async function createReview(productId: string, rating: number, title: string, co
       data: {
         averageRating:
           productReviewCount && productReviewCount.reviews.length > 0
-            ? productReviewCount.reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) /
-              productReviewCount.reviews.length
+            ? productReviewCount.reviews.reduce(
+                (sum, r) => sum + (r.rating ?? 0),
+                0,
+              ) / productReviewCount.reviews.length
             : 0,
         reviewCount: (product.reviewCount ?? 0) + 1,
       },
     });
 
-    return { success: 'Review added successfully', status: 200, review: review };
+    return {
+      success: "Review added successfully",
+      status: 200,
+      review: review,
+    };
   } catch (error) {
     console.error(error);
-    return { error: 'Failed to add review', status: 500 };
+    return { error: "Failed to add review", status: 500 };
   }
 }
 
@@ -62,7 +73,7 @@ async function getReviews(productId: string, limit = 10) {
     const reviews = await prisma.review.findMany({
       where: { productId },
       take: limit,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       include: {
         user: {
           select: {
@@ -76,7 +87,7 @@ async function getReviews(productId: string, limit = 10) {
     return { reviews, status: 200 };
   } catch (error) {
     console.error(error);
-    return { error: 'Failed to fetch reviews', status: 500 };
+    return { error: "Failed to fetch reviews", status: 500 };
   }
 }
 export { createReview, getReviews };

@@ -1,10 +1,11 @@
 'use server';
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import sharp from 'sharp';
 import { auth } from '@/auth';
 import prisma from '@/shared/lib/prisma';
-import fs from 'fs/promises';
-import path from 'path';
-import sharp from 'sharp';
+
 const UPLOAD_DIR = path.join(process.cwd(), './../../public/uploads/products');
 
 /* -----------------------------------------

@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { useFormContext, Controller, useWatch } from "react-hook-form";
-import { Plus, Trash2, Palette } from "lucide-react";
+import { Palette, Plus, Trash2 } from "lucide-react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
+import type { GetCategoryOptionSets } from "@/actions/category/categoryOptions";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -9,6 +11,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,13 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Label } from "@/shared/components/ui/label";
-import { GetCategoryOptionSets } from "@/actions/category/categoryOptions";
-import { OptionType } from "@/shared/lib/generated/prisma/enums";
-import {
+import type {
   Option,
   OptionSet as PrismaOptionSet,
 } from "@/shared/lib/generated/prisma/browser";
+import type { OptionType } from "@/shared/lib/generated/prisma/enums";
 import { cn } from "@/shared/lib/utils";
 
 // --- Local types ---
@@ -159,7 +160,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
             ...set,
             options: [...(set.options || []), newOption],
           };
-        }
+        },
       );
 
       setValue("selectedOptionSets", updatedSets);
@@ -168,7 +169,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
         [setId]: "",
       }));
     },
-    [selectedSets, setValue]
+    [selectedSets, setValue],
   );
 
   const handleRemoveOption = useCallback(
@@ -182,15 +183,15 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
           return {
             ...set,
             options: (set.options || []).filter(
-              (opt: Option) => opt.id !== optionId
+              (opt: Option) => opt.id !== optionId,
             ),
           };
-        }
+        },
       );
 
       setValue("selectedOptionSets", updatedSets);
     },
-    [selectedSets, setValue]
+    [selectedSets, setValue],
   );
 
   const handleOptionValueChange = useCallback(
@@ -200,7 +201,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
         [setId]: value,
       }));
     },
-    []
+    [],
   );
 
   const handleNewOptionSetChange = useCallback(
@@ -210,7 +211,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
         [field]: value,
       }));
     },
-    []
+    [],
   );
 
   const handleSetSelection = useCallback(
@@ -221,7 +222,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
 
       setValue("selectedOptionSets", updatedSets);
     },
-    [selectedSets, setValue]
+    [selectedSets, setValue],
   );
 
   const renderOptionInput = (set: LocalOptionSet): React.ReactNode => {
@@ -379,7 +380,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
               <tbody className="[&_tr:last-child]:border-0">
                 {filteredOptionSets.map((set: LocalOptionSet) => {
                   const isSelected = selectedSets.some(
-                    (s: LocalOptionSet) => s.id === set.id
+                    (s: LocalOptionSet) => s.id === set.id,
                   );
                   const currentSet = isSelected
                     ? selectedSets.find((s: LocalOptionSet) => s.id === set.id)
@@ -405,10 +406,10 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
                                 type="checkbox"
                                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                 checked={currentValue.some(
-                                  (s: LocalOptionSet) => s.id === set.id
+                                  (s: LocalOptionSet) => s.id === set.id,
                                 )}
                                 onChange={(
-                                  e: React.ChangeEvent<HTMLInputElement>
+                                  e: React.ChangeEvent<HTMLInputElement>,
                                 ) => {
                                   handleSetSelection(set, e.target.checked);
                                 }}
@@ -422,7 +423,7 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
                       <td className="p-4 align-middle font-medium">
                         <span
                           className={cn(
-                            isSelected && "font-semibold text-primary"
+                            isSelected && "font-semibold text-primary",
                           )}
                         >
                           {set.name}
@@ -443,24 +444,41 @@ const OptionSetsStep: React.FC<OptionSetsStepProps> = ({
                                 key={opt.id}
                                 className={cn(
                                   "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors gap-1",
-                                  set.type === "COLOR" && "text-white"
+                                  set.type === "COLOR" && "text-white",
                                 )}
                                 style={{
                                   backgroundColor:
                                     set.type === "COLOR"
                                       ? (() => {
-                                          const colorName = opt.name?.toLowerCase().trim();
-                                          if (colorName && /^#[0-9a-f]{6}$/.test(colorName)) {
+                                          const colorName = opt.name
+                                            ?.toLowerCase()
+                                            .trim();
+                                          if (
+                                            colorName &&
+                                            /^#[0-9a-f]{6}$/.test(colorName)
+                                          ) {
                                             return colorName;
                                           }
-                                          if (colorName && /^[a-z]+$/.test(colorName)) {
+                                          if (
+                                            colorName &&
+                                            /^[a-z]+$/.test(colorName)
+                                          ) {
                                             const hash = colorName
                                               .split("")
-                                              .reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
-                                            const hex = (hash & 0xffffff).toString(16).padStart(6, "0");
+                                              .reduce(
+                                                (acc, char) =>
+                                                  char.charCodeAt(0) +
+                                                  ((acc << 5) - acc),
+                                                0,
+                                              );
+                                            const hex = (hash & 0xffffff)
+                                              .toString(16)
+                                              .padStart(6, "0");
                                             return `#${hex}`;
                                           }
-                                          return `#${Math.floor(Math.random() * 16777215)
+                                          return `#${Math.floor(
+                                            Math.random() * 16777215,
+                                          )
                                             .toString(16)
                                             .padStart(6, "0")}`;
                                         })()

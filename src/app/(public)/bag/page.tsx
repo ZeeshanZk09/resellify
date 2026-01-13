@@ -1,10 +1,14 @@
 "use client";
-import { GetCartItems, getCartItems, removeItemFromCart } from "@/actions/cart";
 import { ShoppingBag, Trash } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  type GetCartItems,
+  getCartItems,
+  removeItemFromCart,
+} from "@/actions/cart";
 
 export default function MyBag() {
   // Mock cart items - replace with actual cart data
@@ -17,7 +21,7 @@ export default function MyBag() {
     const res = await getCartItems();
     setCartItems(res?.cartItems || []);
     setCartItemsCount(
-      res?.cartItems?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0
+      res?.cartItems?.reduce((acc, item) => acc + (item.quantity || 0), 0) || 0,
     );
     setProductLoading(false);
   }, []);
@@ -43,21 +47,21 @@ export default function MyBag() {
       stars.push(
         <span key={i} className="text-yellow-400">
           ★
-        </span>
+        </span>,
       );
     }
     if (hasHalfStar) {
       stars.push(
         <span key="half" className="text-yellow-400">
           ☆
-        </span>
+        </span>,
       );
     }
     for (let i = stars.length; i < 5; i++) {
       stars.push(
         <span key={i} className="text-gray-300">
           ☆
-        </span>
+        </span>,
       );
     }
 

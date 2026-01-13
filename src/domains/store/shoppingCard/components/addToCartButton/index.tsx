@@ -3,7 +3,7 @@
 import { useDispatch } from "react-redux";
 
 import { ShoppingIconFill } from "@/shared/components/icons/svgIcons";
-import { TCartItem } from "@/shared/types/shoppingCart";
+import type { TCartItem } from "@/shared/types/shoppingCart";
 import { add } from "@/store/shoppingCart";
 
 type TProps = {

@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Input } from './ui/input';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { Input } from "./ui/input";
 
 export default function SearchInput() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,7 +19,7 @@ export default function SearchInput() {
   }, []);
 
   const handleClear = () => {
-    setQuery('');
+    setQuery("");
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,24 +32,27 @@ export default function SearchInput() {
 
   if (!mounted) {
     return (
-      <div className='hidden sm:flex max-w-lg w-full h-10 bg-muted animate-pulse rounded-md' />
+      <div className="hidden sm:flex max-w-lg w-full h-10 bg-muted animate-pulse rounded-md" />
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className='hidden sm:flex items-center max-w-lg w-full relative'>
+    <form
+      onSubmit={handleSubmit}
+      className="hidden sm:flex items-center max-w-lg w-full relative"
+    >
       <Input
-        type='search'
+        type="search"
         value={query}
         onChange={handleChange}
-        placeholder='Search...'
-        className='bg-background w-full p-2 border-none outline-none text-lg'
+        placeholder="Search..."
+        className="bg-background w-full p-2 border-none outline-none text-lg"
       />
       {query && (
         <button
-          type='button'
+          type="button"
           onClick={handleClear}
-          className='absolute right-2 text-foreground/80 hover:text-foreground'
+          className="absolute right-2 text-foreground/80 hover:text-foreground"
         >
           ✕
         </button>

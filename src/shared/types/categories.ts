@@ -1,3 +1,3 @@
-import { Category } from "../lib/generated/prisma/client";
+import type { Category } from "../lib/generated/prisma/client";
 
-export type TCategory = Category
+export type TCategory = Category;
