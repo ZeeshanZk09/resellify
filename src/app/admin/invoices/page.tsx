@@ -20,15 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  OrderStatus as OrderStatusConst,
-  PaymentMethod as PaymentMethodConst,
-  PaymentStatus as PaymentStatusConst,
-} from "@/shared/lib/generated/prisma/enums";
 import type {
   OrderStatus as OrderStatusType,
   PaymentMethod as PaymentMethodType,
   PaymentStatus as PaymentStatusType,
+} from "@/shared/lib/generated/prisma/enums";
+import {
+  OrderStatus as OrderStatusConst,
+  PaymentMethod as PaymentMethodConst,
+  PaymentStatus as PaymentStatusConst,
 } from "@/shared/lib/generated/prisma/enums";
 
 type OrderStatusFilter = "all" | OrderStatusType;
@@ -149,7 +149,7 @@ export default function AdminInvoicesPage() {
   const [maxTotal, setMaxTotal] = useState("");
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(
-    null
+    null,
   );
   const [selectedInvoice, setSelectedInvoice] =
     useState<AdminInvoiceDetail | null>(null);
@@ -158,9 +158,8 @@ export default function AdminInvoicesPage() {
   const printRef = useRef<HTMLDivElement | null>(null);
 
   const totalPages = useMemo(
-    () =>
-      Math.max(1, Math.ceil(invoicesState.total / invoicesState.pageSize)),
-    [invoicesState.total, invoicesState.pageSize]
+    () => Math.max(1, Math.ceil(invoicesState.total / invoicesState.pageSize)),
+    [invoicesState.total, invoicesState.pageSize],
   );
 
   const loadInvoices = useCallback(
@@ -227,7 +226,7 @@ export default function AdminInvoicesPage() {
       maxTotal,
       invoicesState.page,
       invoicesState.pageSize,
-    ]
+    ],
   );
 
   const loadInvoiceDetail = useCallback(async (invoiceId: string) => {
@@ -335,7 +334,8 @@ export default function AdminInvoicesPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl text-slate-700">
-            Manage <span className="font-semibold text-slate-900">Invoices</span>
+            Manage{" "}
+            <span className="font-semibold text-slate-900">Invoices</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Review, filter, and print customer invoices.
@@ -491,8 +491,8 @@ export default function AdminInvoicesPage() {
 
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs text-muted-foreground">
-                Showing {invoicesState.invoices.length} of{" "}
-                {invoicesState.total} invoices
+                Showing {invoicesState.invoices.length} of {invoicesState.total}{" "}
+                invoices
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -560,16 +560,12 @@ export default function AdminInvoicesPage() {
                               </div>
                               <div className="text-slate-500">
                                 Created{" "}
-                                {new Date(
-                                  invoice.createdAt
-                                ).toLocaleString()}
+                                {new Date(invoice.createdAt).toLocaleString()}
                               </div>
                               {invoice.placedAt && (
                                 <div className="text-slate-500">
                                   Placed{" "}
-                                  {new Date(
-                                    invoice.placedAt
-                                  ).toLocaleString()}
+                                  {new Date(invoice.placedAt).toLocaleString()}
                                 </div>
                               )}
                               <span
@@ -630,9 +626,7 @@ export default function AdminInvoicesPage() {
                             <div className="space-y-1 text-xs text-slate-600">
                               <div>
                                 Total: Rs{" "}
-                                {Number(
-                                  invoice.totalAmount
-                                ).toLocaleString()}
+                                {Number(invoice.totalAmount).toLocaleString()}
                               </div>
                               <div className="text-slate-500">
                                 Subtotal: Rs{" "}
@@ -640,15 +634,13 @@ export default function AdminInvoicesPage() {
                               </div>
                               <div className="text-slate-500">
                                 Shipping: Rs{" "}
-                                {Number(
-                                  invoice.shippingFee
-                                ).toLocaleString()}
+                                {Number(invoice.shippingFee).toLocaleString()}
                                 {invoice.discountAmount > 0 && (
                                   <span>
                                     {" "}
                                     • Discount: Rs{" "}
                                     {Number(
-                                      invoice.discountAmount
+                                      invoice.discountAmount,
                                     ).toLocaleString()}
                                   </span>
                                 )}
@@ -693,9 +685,7 @@ export default function AdminInvoicesPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  disabled={
-                    loadingInvoices || invoicesState.page >= totalPages
-                  }
+                  disabled={loadingInvoices || invoicesState.page >= totalPages}
                   onClick={() => void loadInvoices(invoicesState.page + 1)}
                 >
                   Next
@@ -737,29 +727,21 @@ export default function AdminInvoicesPage() {
                         </div>
                         <div className="text-xs text-slate-500">
                           Created{" "}
-                          {new Date(
-                            selectedInvoice.createdAt
-                          ).toLocaleString()}
+                          {new Date(selectedInvoice.createdAt).toLocaleString()}
                         </div>
                       </div>
                       <div className="text-right text-xs space-y-1">
                         <div>
                           Total: Rs{" "}
-                          {Number(
-                            selectedInvoice.totalAmount
-                          ).toLocaleString()}
+                          {Number(selectedInvoice.totalAmount).toLocaleString()}
                         </div>
                         <div className="text-slate-500">
                           Subtotal: Rs{" "}
-                          {Number(
-                            selectedInvoice.subTotal
-                          ).toLocaleString()}
+                          {Number(selectedInvoice.subTotal).toLocaleString()}
                         </div>
                         <div className="text-slate-500">
                           Shipping: Rs{" "}
-                          {Number(
-                            selectedInvoice.shippingFee
-                          ).toLocaleString()}
+                          {Number(selectedInvoice.shippingFee).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -824,7 +806,7 @@ export default function AdminInvoicesPage() {
                       <div className="text-slate-600">
                         Amount: Rs{" "}
                         {Number(
-                          selectedInvoice.payment.amount
+                          selectedInvoice.payment.amount,
                         ).toLocaleString()}
                       </div>
                       <div className="text-slate-600">
@@ -838,7 +820,7 @@ export default function AdminInvoicesPage() {
                       <div className="text-slate-500">
                         Created{" "}
                         {new Date(
-                          selectedInvoice.payment.createdAt
+                          selectedInvoice.payment.createdAt,
                         ).toLocaleString()}
                       </div>
                     </div>
@@ -933,7 +915,7 @@ export default function AdminInvoicesPage() {
                           <span>
                             {" "}
                             {new Date(
-                              selectedInvoice.createdAt
+                              selectedInvoice.createdAt,
                             ).toLocaleString()}
                           </span>
                         </div>
@@ -959,8 +941,7 @@ export default function AdminInvoicesPage() {
                                   Rs {Number(item.price).toLocaleString()}
                                 </td>
                                 <td className="right">
-                                  Rs{" "}
-                                  {Number(item.lineTotal).toLocaleString()}
+                                  Rs {Number(item.lineTotal).toLocaleString()}
                                 </td>
                               </tr>
                             ))}
@@ -977,7 +958,7 @@ export default function AdminInvoicesPage() {
                           <b className="green">
                             Rs{" "}
                             {Number(
-                              selectedInvoice.totalAmount
+                              selectedInvoice.totalAmount,
                             ).toLocaleString()}
                           </b>
                         </div>
@@ -986,7 +967,7 @@ export default function AdminInvoicesPage() {
                           <b>
                             Rs{" "}
                             {Number(
-                              selectedInvoice.shippingFee
+                              selectedInvoice.shippingFee,
                             ).toLocaleString()}
                           </b>
                         </div>
@@ -995,7 +976,7 @@ export default function AdminInvoicesPage() {
                           <b className="green">
                             Rs{" "}
                             {Number(
-                              selectedInvoice.discountAmount
+                              selectedInvoice.discountAmount,
                             ).toLocaleString()}
                           </b>
                         </div>
@@ -1011,4 +992,3 @@ export default function AdminInvoicesPage() {
     </section>
   );
 }
-

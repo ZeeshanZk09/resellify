@@ -1,5 +1,5 @@
-import Prisma from '@/shared/lib/prisma';
-import { authAdmin, authUser } from '@/shared/lib/utils/auth';
+import Prisma from "@/shared/lib/prisma";
+import { authAdmin, authUser } from "@/shared/lib/utils/auth";
 export async function getAdminDashboard() {
   try {
     // const { userId } = getAuth(request);
@@ -8,14 +8,14 @@ export async function getAdminDashboard() {
     if (!session)
       return {
         success: false,
-        message: 'Unauthorized',
+        message: "Unauthorized",
       };
 
     const isAdmin = await authAdmin();
     if (!isAdmin)
       return {
         success: false,
-        message: 'Unauthorized',
+        message: "Unauthorized",
       };
 
     const orders = await Prisma.order.count();
@@ -46,11 +46,11 @@ export async function getAdminDashboard() {
 
     return {
       success: true,
-      message: 'Dashboard data fetched',
+      message: "Dashboard data fetched",
       data: dashboardData,
     };
   } catch (err: unknown) {
-    console.error('[API] error', err);
+    console.error("[API] error", err);
 
     if (err instanceof Error) {
       return {
@@ -60,7 +60,7 @@ export async function getAdminDashboard() {
     }
     return {
       success: false,
-      message: 'Something went wrong',
+      message: "Something went wrong",
     };
   }
 }
@@ -72,14 +72,14 @@ export async function getStoreDashboard() {
     if (!session)
       return {
         success: false,
-        message: 'Unauthorized',
+        message: "Unauthorized",
       };
 
     const isAdmin = await authAdmin();
     if (!isAdmin)
       return {
         success: false,
-        message: 'Unauthorized',
+        message: "Unauthorized",
       };
 
     const orders = await Prisma.order.findMany({
@@ -126,43 +126,47 @@ export async function getStoreDashboard() {
     const dashboard = {
       ratings,
       totalOrders: Number(orders.length),
-      totalEarnings: Math.round(orders.reduce((acc, order) => acc + Number(order.totalAmount), 0)),
+      totalEarnings: Math.round(
+        orders.reduce((acc, order) => acc + Number(order.totalAmount), 0),
+      ),
       totalProducts: Number(product.length),
       totalRatings: Number(ratings.length),
     };
 
     return {
       success: true,
-      message: 'Dashboard data fetched',
+      message: "Dashboard data fetched",
       data: dashboard,
     };
   } catch (err: unknown) {
-    console.error('[API] error', err);
+    console.error("[API] error", err);
 
     // detect Neon/Prisma network/connect-timeout errors (relaxed check)
     if (err instanceof Error) {
       const isNetworkErr =
-        (typeof err.message === 'string' && err.message.includes('fetch failed')) ||
-        (typeof err === 'object' &&
+        (typeof err.message === "string" &&
+          err.message.includes("fetch failed")) ||
+        (typeof err === "object" &&
           err !== null &&
-          'cause' in err &&
-          typeof (err as { cause?: unknown }).cause === 'object' &&
+          "cause" in err &&
+          typeof (err as { cause?: unknown }).cause === "object" &&
           (err as { cause?: { code?: unknown } }).cause !== null &&
-          'code' in (err as { cause: { code?: unknown } }).cause &&
-          (err as { cause: { code?: unknown } }).cause.code === 'UND_ERR_CONNECT_TIMEOUT') ||
-        (typeof err.name === 'string' && err.name === 'NeonDbError') ||
-        ('code' in err && (err as { code?: unknown }).code === 'ENOTFOUND');
+          "code" in (err as { cause: { code?: unknown } }).cause &&
+          (err as { cause: { code?: unknown } }).cause.code ===
+            "UND_ERR_CONNECT_TIMEOUT") ||
+        (typeof err.name === "string" && err.name === "NeonDbError") ||
+        ("code" in err && (err as { code?: unknown }).code === "ENOTFOUND");
 
       if (isNetworkErr) {
         return {
           success: false,
-          message: err instanceof Error ? err.message : 'Something went wrong',
+          message: err instanceof Error ? err.message : "Something went wrong",
         };
       }
     } else {
       return {
         success: false,
-        message: 'Something went wrong',
+        message: "Something went wrong",
       };
     }
   }

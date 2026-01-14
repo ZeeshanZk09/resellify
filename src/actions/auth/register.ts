@@ -85,7 +85,7 @@ export async function verifyEmail(code: string) {
     const hashedPassword = await hash(password, 12);
 
     // Create user
-    let user;
+    let user: Awaited<ReturnType<typeof prisma.user.create>>;
     try {
       user = await prisma.user.create({
         data: {
@@ -107,7 +107,7 @@ export async function verifyEmail(code: string) {
     const sessionToken =
       Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
 
-    let session;
+    let session: Awaited<ReturnType<typeof prisma.session.create>>;
     try {
       session = await prisma.session.create({
         data: {

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import Prisma from "@/shared/lib/prisma";
 import { authAdmin } from "@/shared/lib/utils/auth";
 
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
       if (!order) {
         return NextResponse.json(
           { message: "Invoice not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
     } catch {
       return NextResponse.json(
         { message: "Failed to fetch invoice" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   }
@@ -163,9 +163,8 @@ export async function GET(req: NextRequest) {
   }
 
   if (minTotalParam || maxTotalParam) {
-    const totalAmount: NonNullable<
-      NonNullable<(typeof where)["totalAmount"]>
-    > = {};
+    const totalAmount: NonNullable<NonNullable<(typeof where)["totalAmount"]>> =
+      {};
     const minTotal = minTotalParam ? Number(minTotalParam) : undefined;
     const maxTotal = maxTotalParam ? Number(maxTotalParam) : undefined;
     if (typeof minTotal === "number" && !Number.isNaN(minTotal)) {
@@ -219,8 +218,7 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { message: "Failed to fetch invoices" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

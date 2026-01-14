@@ -1,14 +1,14 @@
-'use server';
-import type { Session } from 'next-auth';
-import { auth } from '@/auth';
-import type { AddressCreateInput } from '@/shared/lib/generated/prisma/models';
-import prisma from '@/shared/lib/prisma';
-import { authUser } from '@/shared/lib/utils/auth';
+"use server";
+import type { Session } from "next-auth";
+import { auth } from "@/auth";
+import type { AddressCreateInput } from "@/shared/lib/generated/prisma/models";
+import prisma from "@/shared/lib/prisma";
+import { authUser } from "@/shared/lib/utils/auth";
 
 async function getAddress() {
   try {
     const userId = (await auth())?.user.id;
-    if (!userId) return 'Unauthorized.';
+    if (!userId) return "Unauthorized.";
 
     const addresses = await prisma.address.findMany({
       where: {
@@ -16,13 +16,13 @@ async function getAddress() {
       },
     });
 
-    console.log('address-in-server-action: ', addresses);
+    console.log("address-in-server-action: ", addresses);
 
     return addresses;
   } catch (error) {
     console.log(error);
     return {
-      error: 'Failed to get Address.',
+      error: "Failed to get Address.",
     };
   }
 }
@@ -30,7 +30,7 @@ async function getAddress() {
 async function createAddress(data: AddressCreateInput) {
   try {
     const userId = ((await authUser()) as Session).user.id;
-    if (!userId) return 'Unauthorized.';
+    if (!userId) return "Unauthorized.";
 
     const address = await prisma.address.create({
       data: {
@@ -55,7 +55,7 @@ async function createAddress(data: AddressCreateInput) {
   } catch (error) {
     console.log(error);
     return {
-      error: 'Failed to add address.',
+      error: "Failed to add address.",
     };
   }
 }

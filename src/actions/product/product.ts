@@ -1,6 +1,6 @@
 "use server";
-import { auth } from "@/auth";
 import { getCategoryBySlugPath } from "@/actions/category/category";
+import { auth } from "@/auth";
 import prisma from "@/shared/lib/prisma";
 import {
   generateProductMetadata,
@@ -167,7 +167,7 @@ export async function addProduct(input: AddProductInput) {
     const { images, ...inputWithoutImages } = input;
     console.log(
       "[addProduct] Called with input:",
-      JSON.stringify(inputWithoutImages, null, 2)
+      JSON.stringify(inputWithoutImages, null, 2),
     );
     console.log(
       "[addProduct] Images:",
@@ -175,7 +175,7 @@ export async function addProduct(input: AddProductInput) {
         ? Array.isArray(images)
           ? `${images.length} files`
           : "1 file"
-        : "No images"
+        : "No images",
     );
 
     const session = await auth();
@@ -264,7 +264,7 @@ export async function addProduct(input: AddProductInput) {
 
       // Filter out any non-File objects (in case ImageFile objects were passed)
       const validFiles = imageFiles.filter(
-        (img): img is File => img instanceof File
+        (img): img is File => img instanceof File,
       );
 
       if (validFiles.length > 0) {
@@ -274,7 +274,7 @@ export async function addProduct(input: AddProductInput) {
             type: "PRODUCT",
             productId,
           },
-          validFiles.length === 1 ? validFiles[0] : validFiles
+          validFiles.length === 1 ? validFiles[0] : validFiles,
         );
         if (uploadResult.error) {
           console.error("[UPLOAD] Image upload failed:", uploadResult.error);
@@ -309,7 +309,7 @@ export async function addProduct(input: AddProductInput) {
       console.log("[SPECS] Adding specifications", input.specifications);
       const specResult = await addProductSpecsFromForm(
         productId,
-        input.specifications
+        input.specifications,
       );
 
       if (specResult.error) {
@@ -326,7 +326,7 @@ export async function addProduct(input: AddProductInput) {
 
       const variantResult = await addProductVariantsFromForm(
         productId,
-        input.variants
+        input.variants,
       );
 
       if (variantResult.error) {
@@ -364,7 +364,7 @@ export async function addProduct(input: AddProductInput) {
             | InputJsonValue
             | undefined,
         },
-        updatedProduct.images[0].id
+        updatedProduct.images[0].id,
       );
 
       await prisma.product.update({
@@ -428,7 +428,7 @@ export async function addProductSpecs(
     groupTitle: string;
     keys: string[];
     values: string[];
-  }[]
+  }[],
 ) {
   try {
     const session = await auth();
@@ -466,7 +466,7 @@ export async function addProductSpecs(
       } else {
         // Merge keys if new ones are provided
         const mergedKeys = Array.from(
-          new Set([...specGroup.keys, ...spec.keys])
+          new Set([...specGroup.keys, ...spec.keys]),
         );
         if (mergedKeys.length > specGroup.keys.length) {
           specGroup = await prisma.specGroup.update({
@@ -500,7 +500,7 @@ export async function addProductSpecsFromForm(
     specGroupTitle?: string; // For manually created groups
     specGroupKeys?: string[]; // For manually created groups
     values: string[];
-  }>
+  }>,
 ) {
   try {
     const session = await auth();
@@ -524,10 +524,10 @@ export async function addProductSpecsFromForm(
       (spec) =>
         spec.specGroupTitle &&
         spec.specGroupKeys &&
-        spec.specGroupId.startsWith("temp_")
+        spec.specGroupId.startsWith("temp_"),
     );
     const existingSpecs = specs.filter(
-      (spec) => !spec.specGroupTitle || !spec.specGroupId.startsWith("temp_")
+      (spec) => !spec.specGroupTitle || !spec.specGroupId.startsWith("temp_"),
     );
 
     // Get existing spec groups
@@ -559,7 +559,7 @@ export async function addProductSpecsFromForm(
       } else {
         // Merge keys if new ones are provided
         const mergedKeys = Array.from(
-          new Set([...specGroup.keys, ...spec.specGroupKeys])
+          new Set([...specGroup.keys, ...spec.specGroupKeys]),
         );
         if (mergedKeys.length > specGroup.keys.length) {
           specGroup = await prisma.specGroup.update({
@@ -572,7 +572,7 @@ export async function addProductSpecsFromForm(
       // Validate values length matches keys length
       if (spec.values.length !== spec.specGroupKeys.length) {
         console.warn(
-          `[SPECS] Values length (${spec.values.length}) doesn't match keys length (${spec.specGroupKeys.length}) for group ${spec.specGroupTitle}`
+          `[SPECS] Values length (${spec.values.length}) doesn't match keys length (${spec.specGroupKeys.length}) for group ${spec.specGroupTitle}`,
         );
       }
 
@@ -589,11 +589,11 @@ export async function addProductSpecsFromForm(
     // Process existing spec groups
     for (const spec of existingSpecs) {
       const specGroup = existingSpecGroups.find(
-        (sg) => sg.id === spec.specGroupId
+        (sg) => sg.id === spec.specGroupId,
       );
       if (!specGroup) {
         console.warn(
-          `[SPECS] SpecGroup ${spec.specGroupId} not found, skipping`
+          `[SPECS] SpecGroup ${spec.specGroupId} not found, skipping`,
         );
         continue;
       }
@@ -601,7 +601,7 @@ export async function addProductSpecsFromForm(
       // Validate values length matches keys length
       if (spec.values.length !== specGroup.keys.length) {
         console.warn(
-          `[SPECS] Values length (${spec.values.length}) doesn't match keys length (${specGroup.keys.length}) for group ${specGroup.title}`
+          `[SPECS] Values length (${spec.values.length}) doesn't match keys length (${specGroup.keys.length}) for group ${specGroup.title}`,
         );
       }
 
@@ -632,7 +632,7 @@ export async function addProductVariants(
     isDefault?: boolean;
     weightGram?: number | null;
     options?: string[];
-  }[]
+  }[],
 ) {
   try {
     const session = await auth();
@@ -721,7 +721,7 @@ export async function addProductVariantsFromForm(
       optionSetId: string;
       optionId: string;
     }>;
-  }>
+  }>,
 ) {
   try {
     const session = await auth();
@@ -773,7 +773,7 @@ export async function addProductVariantsFromForm(
 
           if (!option) {
             console.warn(
-              `[VARIANTS] Option ${optionLink.optionId} not found, skipping`
+              `[VARIANTS] Option ${optionLink.optionId} not found, skipping`,
             );
             continue;
           }
@@ -781,7 +781,7 @@ export async function addProductVariantsFromForm(
           // Validate optionSetId matches
           if (option.optionSetId !== optionLink.optionSetId) {
             console.warn(
-              `[VARIANTS] OptionSet mismatch for option ${optionLink.optionId}, skipping`
+              `[VARIANTS] OptionSet mismatch for option ${optionLink.optionId}, skipping`,
             );
             continue;
           }
@@ -922,7 +922,7 @@ export const getInitialProducts = async (limit: number = 10) => {
 
 export const loadMoreProducts = async (
   cursorId: string, // Last product ka ID
-  limit: number = 10
+  limit: number = 10,
 ) => {
   try {
     const result = await prisma.product.findMany({
@@ -990,12 +990,12 @@ export const loadMoreProducts = async (
 export const getCategoryProducts = async (
   categorySlug: string,
   subcategorySlug: string,
-  limit: number = 10
+  limit: number = 10,
 ) => {
   try {
     const categoryContext = await getCategoryBySlugPath(
       categorySlug,
-      subcategorySlug
+      subcategorySlug,
     );
 
     if (!("res" in categoryContext) || !categoryContext.res) {
@@ -1066,12 +1066,12 @@ export const loadMoreCategoryProducts = async (
   categorySlug: string,
   subcategorySlug: string,
   cursorId: string,
-  limit: number = 10
+  limit: number = 10,
 ) => {
   try {
     const categoryContext = await getCategoryBySlugPath(
       categorySlug,
-      subcategorySlug
+      subcategorySlug,
     );
 
     if (!("res" in categoryContext) || !categoryContext.res) {
@@ -1288,7 +1288,7 @@ export const getProductBySlug = async (slug: string) => {
 
 export const getRelatedProducts = async (
   productID: string,
-  categoryID: string
+  categoryID: string,
 ) => {
   if (!productID || productID === "") return { error: "Invalid Product ID!" };
   try {
@@ -1387,7 +1387,7 @@ export const getOneProduct = async (productID: string) => {
 
     const pathArray: TPath[] | null = await getPathByCategoryID(
       firstCategory.id,
-      firstCategory.parentId
+      firstCategory.parentId,
     );
     if (!pathArray || pathArray.length === 0) return { error: "Invalid Date" };
 
@@ -1746,7 +1746,7 @@ const generateSpecTable = async (
     specGroupId: string;
     values: string[]; // ProductSpec has 'values' array (not 'specValues')
     specGroup?: { id: string; title: string; keys: string[] };
-  }>
+  }>,
 ) => {
   try {
     // Check if specGroup is already included in the data
@@ -1760,7 +1760,7 @@ const generateSpecTable = async (
         .map((spec) => spec.specGroup)
         .filter(
           (sg): sg is { id: string; title: string; keys: string[] } =>
-            sg !== undefined
+            sg !== undefined,
         );
     } else {
       // Fetch specGroups if not included
@@ -1846,7 +1846,7 @@ export const getTrafficReport = async (skip: number = 0) => {
 
 const getPathByCategoryID = async (
   categoryID: string,
-  parentId: string | null
+  parentId: string | null,
 ) => {
   try {
     if (!categoryID || categoryID === "") return null;

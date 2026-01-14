@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { authAdmin } from "@/shared/lib/utils/auth";
+import { type NextRequest, NextResponse } from "next/server";
+import { deleteCategory, updateCategory } from "@/actions/category/category";
 import db from "@/shared/lib/prisma";
-import { updateCategory, deleteCategory } from "@/actions/category/category";
+import { authAdmin } from "@/shared/lib/utils/auth";
 
 export async function GET() {
   const session = await authAdmin();
@@ -23,7 +23,10 @@ export async function GET() {
     });
     return NextResponse.json({ categories });
   } catch {
-    return NextResponse.json({ error: "Cant read Category Groups" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Cant read Category Groups" },
+      { status: 500 },
+    );
   }
 }
 

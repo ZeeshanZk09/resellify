@@ -101,7 +101,7 @@ export const getAllCategories = async (catId: string) => {
     // }
 
     const parentCategory = categories.find(
-      (category: Category) => category.id === catId
+      (category: Category) => category.id === catId,
     );
 
     return {
@@ -257,7 +257,7 @@ export const getCategoryTree = async () => {
         slug: c.slug,
         description: c.description,
         children: [],
-      })
+      }),
     );
 
     flat.forEach((c) => {
@@ -302,11 +302,11 @@ export const findCategoryByQuery = async (rawQuery: string) => {
     }
 
     const leafCategories = categories.filter((c) =>
-      categories.every((other) => other.parentId !== c.id)
+      categories.every((other) => other.parentId !== c.id),
     );
 
     const exactSlugMatch = leafCategories.find(
-      (c) => c.slug.toLowerCase() === normalized
+      (c) => c.slug.toLowerCase() === normalized,
     );
 
     if (exactSlugMatch) {
@@ -324,7 +324,7 @@ export const findCategoryByQuery = async (rawQuery: string) => {
     }
 
     const nameMatch = leafCategories.find(
-      (c) => c.name.toLowerCase() === normalized
+      (c) => c.name.toLowerCase() === normalized,
     );
 
     if (nameMatch) {
@@ -341,7 +341,7 @@ export const findCategoryByQuery = async (rawQuery: string) => {
     }
 
     const partialNameMatch = leafCategories.find((c) =>
-      c.name.toLowerCase().includes(normalized)
+      c.name.toLowerCase().includes(normalized),
     );
 
     if (partialNameMatch) {
@@ -365,7 +365,7 @@ export const findCategoryByQuery = async (rawQuery: string) => {
 
     if (parentCandidate) {
       const childLeaf = leafCategories.find(
-        (leaf) => leaf.parentId === parentCandidate.id
+        (leaf) => leaf.parentId === parentCandidate.id,
       );
 
       if (childLeaf) {
@@ -387,7 +387,7 @@ export const findCategoryByQuery = async (rawQuery: string) => {
 
 export const getCategoryBySlugPath = async (
   categorySlug: string,
-  subcategorySlug?: string | null
+  subcategorySlug?: string | null,
 ) => {
   try {
     const categories = await db.category.findMany({
@@ -408,7 +408,7 @@ export const getCategoryBySlugPath = async (
     }
 
     const parent = categories.find(
-      (c) => c.slug === categorySlug && c.parentId === null
+      (c) => c.slug === categorySlug && c.parentId === null,
     );
 
     if (!parent) {
@@ -417,7 +417,7 @@ export const getCategoryBySlugPath = async (
 
     if (subcategorySlug) {
       const child = categories.find(
-        (c) => c.slug === subcategorySlug && c.parentId === parent.id
+        (c) => c.slug === subcategorySlug && c.parentId === parent.id,
       );
 
       if (!child) {

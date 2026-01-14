@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import Fuse from "fuse.js";
+import { type NextRequest, NextResponse } from "next/server";
 import { findCategoryByQuery } from "@/actions/category/category";
 import { searchProductByQuery } from "@/actions/product/product";
 

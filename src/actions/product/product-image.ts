@@ -1,39 +1,41 @@
-'use server';
+"use server";
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import sharp from 'sharp';
-import { auth } from '@/auth';
-import prisma from '@/shared/lib/prisma';
+import fs from "node:fs/promises";
+import path from "node:path";
+import sharp from "sharp";
+import { auth } from "@/auth";
+import prisma from "@/shared/lib/prisma";
 
-const UPLOAD_DIR = path.join(process.cwd(), './../../public/uploads/products');
+const UPLOAD_DIR = path.join(process.cwd(), "./../../public/uploads/products");
 
 /* -----------------------------------------
   Utils
 ------------------------------------------ */
 
-type UploadTarget = { type: 'PRODUCT'; productId: string } | { type: 'BRAND'; brandId: string };
+type UploadTarget =
+  | { type: "PRODUCT"; productId: string }
+  | { type: "BRAND"; brandId: string };
 
-const UPLOAD_BASE_DIR = path.join(process.cwd(), 'public/uploads');
+const UPLOAD_BASE_DIR = path.join(process.cwd(), "public/uploads");
 
 const UPLOAD_DIRS = {
-  PRODUCT: 'products',
-  BRAND: 'brands',
+  PRODUCT: "products",
+  BRAND: "brands",
 };
 
 function resolveUploadContext(target: UploadTarget) {
-  if (target.type === 'PRODUCT') {
+  if (target.type === "PRODUCT") {
     return {
       dir: UPLOAD_DIRS.PRODUCT,
       where: { id: target.productId },
-      ownershipKey: 'userId',
+      ownershipKey: "userId",
     };
   }
 
   return {
     dir: UPLOAD_DIRS.BRAND,
     where: { id: target.brandId },
-    ownershipKey: 'userId',
+    ownershipKey: "userId",
   };
 }
 
@@ -49,23 +51,23 @@ export async function uploadImage(
     altText?: string;
     order?: number;
     isPrimary?: boolean;
-  }
+  },
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-      return { error: 'Unauthorized' };
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return { error: "Unauthorized" };
     }
 
     const fileList = Array.isArray(files) ? files : [files];
-    if (fileList.length === 0) return { error: 'File is required' };
+    if (fileList.length === 0) return { error: "File is required" };
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
     const context = resolveUploadContext(target);
 
     /* ---------- Ownership Check ---------- */
     const entity =
-      target.type === 'PRODUCT'
+      target.type === "PRODUCT"
         ? await prisma.product.findUnique({
             where: context.where,
             select: { publishedById: true },
@@ -75,14 +77,15 @@ export async function uploadImage(
             select: { publishedById: true },
           });
 
-    if (!entity || entity.publishedById !== session.user.id) return { error: 'Forbidden' };
+    if (!entity || entity.publishedById !== session.user.id)
+      return { error: "Forbidden" };
 
     /* ---------- FS ---------- */
     const uploadDir = path.join(UPLOAD_BASE_DIR, context.dir);
     await fs.mkdir(uploadDir, { recursive: true });
 
     /* ---------- BRAND LOGO RULE ---------- */
-    if (target.type === 'BRAND') {
+    if (target.type === "BRAND") {
       await prisma.upload.deleteMany({
         where: { brandId: target.brandId },
       });
@@ -93,18 +96,19 @@ export async function uploadImage(
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
 
-      if (!allowedTypes.includes(file.type)) return { error: 'Invalid image type' };
+      if (!allowedTypes.includes(file.type))
+        return { error: "Invalid image type" };
 
-      if (file.size > 3 * 1024 * 1024) return { error: 'Max file size is 3MB' };
+      if (file.size > 3 * 1024 * 1024) return { error: "Max file size is 3MB" };
 
-      const ext = file.name.split('.').pop();
+      const ext = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${ext}`;
       const filePath = path.join(uploadDir, fileName);
 
       const buffer = Buffer.from(await file.arrayBuffer());
       const meta = await sharp(buffer).metadata();
 
-      if (!meta.width || !meta.height) return { error: 'Invalid image' };
+      if (!meta.width || !meta.height) return { error: "Invalid image" };
 
       await fs.writeFile(filePath, buffer);
 
@@ -122,8 +126,8 @@ export async function uploadImage(
           caption: options?.caption,
           order: options?.order ?? i,
           isPrimary: options?.isPrimary ?? i === 0,
-          productId: target.type === 'PRODUCT' ? target.productId : undefined,
-          brandId: target.type === 'BRAND' ? target.brandId : undefined,
+          productId: target.type === "PRODUCT" ? target.productId : undefined,
+          brandId: target.type === "BRAND" ? target.brandId : undefined,
         },
       });
 
@@ -136,8 +140,8 @@ export async function uploadImage(
       urls: uploads.map((u) => u.path),
     };
   } catch (err) {
-    console.error('UPLOAD_ERROR', err);
-    return { error: 'Upload failed' };
+    console.error("UPLOAD_ERROR", err);
+    return { error: "Upload failed" };
   }
 }
 
@@ -147,7 +151,8 @@ export async function uploadImage(
 export async function deleteImage(uploadId: string) {
   try {
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'ADMIN') return { error: 'Unauthorized' };
+    if (!session?.user?.id || session.user.role !== "ADMIN")
+      return { error: "Unauthorized" };
 
     const upload = await prisma.upload.findUnique({
       where: { id: uploadId },
@@ -157,28 +162,29 @@ export async function deleteImage(uploadId: string) {
       },
     });
 
-    if (!upload) return { error: 'Image not found' };
+    if (!upload) return { error: "Image not found" };
 
-    const ownerId = upload.product?.publishedById || upload.brand?.publishedById;
-    if (ownerId !== session.user.id) return { error: 'Forbidden' };
+    const ownerId =
+      upload.product?.publishedById || upload.brand?.publishedById;
+    if (ownerId !== session.user.id) return { error: "Forbidden" };
 
-    const filePath = path.join(process.cwd(), 'public', upload.path);
+    const filePath = path.join(process.cwd(), "public", upload.path);
     await fs.unlink(filePath).catch(() => null);
 
     await prisma.upload.delete({ where: { id: uploadId } });
 
     return { success: true };
   } catch (err) {
-    console.error('DELETE_IMAGE_ERROR', err);
-    return { error: 'Delete failed' };
+    console.error("DELETE_IMAGE_ERROR", err);
+    return { error: "Delete failed" };
   }
 }
 
 export async function setPrimaryImage(productId: string, imageId: string) {
   try {
     const session = await auth();
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-      return { error: 'Unauthorized' };
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return { error: "Unauthorized" };
     }
 
     const product = await prisma.product.findUnique({
@@ -186,7 +192,8 @@ export async function setPrimaryImage(productId: string, imageId: string) {
       select: { publishedById: true },
     });
 
-    if (!product || product.publishedById !== session.user.id) return { error: 'Forbidden' };
+    if (!product || product.publishedById !== session.user.id)
+      return { error: "Forbidden" };
 
     await prisma.upload.updateMany({
       where: { productId },
@@ -200,8 +207,8 @@ export async function setPrimaryImage(productId: string, imageId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('SET_PRIMARY_IMAGE_ERROR', error);
-    return { error: 'Failed to set primary image' };
+    console.error("SET_PRIMARY_IMAGE_ERROR", error);
+    return { error: "Failed to set primary image" };
   }
 }
 // async function ensureUploadDir() {

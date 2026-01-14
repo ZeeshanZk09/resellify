@@ -1,12 +1,10 @@
-"use server";
-import { Decimal } from "@prisma/client/runtime/client";
-import { cookies } from "next/headers";
-import { auth } from "@/auth";
-import prisma from "@/shared/lib/prisma";
+'use server';
+import { Decimal } from '@prisma/client/runtime/client';
+import { cookies } from 'next/headers';
+import { auth } from '@/auth';
+import prisma from '@/shared/lib/prisma';
 
-export type GetCartItems = Awaited<
-  ReturnType<typeof getCartItems>
->["cartItems"];
+export type GetCartItems = Awaited<ReturnType<typeof getCartItems>>['cartItems'];
 
 /**
  * Create a new cart for a user
@@ -19,7 +17,9 @@ export async function createCart(userId: string, expiresAt?: Date) {
         expiresAt,
       },
     });
-  } catch (error) {}
+  } catch (error) {
+    throw new Error('Failed to create cart');
+  }
 }
 
 /**
@@ -45,10 +45,7 @@ export async function getCartById(cartId: string) {
 /**
  * Update cart information
  */
-export async function updateCart(
-  cartId: string,
-  data: Partial<{ expiresAt: Date }>,
-) {
+export async function updateCart(cartId: string, data: Partial<{ expiresAt: Date }>) {
   return await prisma.cart.update({
     where: { id: cartId },
     data,
@@ -69,25 +66,21 @@ export async function deleteCart(cartId: string) {
 /**
  * Add item to cart (create CartItem)
  */
-export async function addItemToCart(
-  productId: string,
-  price?: number,
-  quantity: number = 1,
-) {
+export async function addItemToCart(productId: string, price?: number, quantity: number = 1) {
   try {
     const session = await auth();
     if (!session?.user.id) {
       return {
-        message: "Unauthorized",
+        message: 'Unauthorized',
       };
     }
     const cookieObj = await cookies();
-    const cartId = cookieObj.get("cartId")?.value as string;
-    console.log("add-item-to-cart: ", cartId);
+    const cartId = cookieObj.get('cartId')?.value as string;
+    console.log('add-item-to-cart: ', cartId);
 
     if (!cartId) {
       return {
-        message: "Cart not found",
+        message: 'Cart not found',
       };
     }
 
@@ -99,7 +92,7 @@ export async function addItemToCart(
       },
     });
 
-    let cartItem;
+    let cartItem: Awaited<ReturnType<typeof prisma.cartItem.create>>;
     let updated = false;
     if (existingCartItem) {
       // Update quantity
@@ -112,12 +105,17 @@ export async function addItemToCart(
       });
       updated = true;
     } else {
+      // Validate price is provided
+      if (!price) {
+        throw new Error('Price is required for new cart items');
+      }
+
       // Create new cartItem
       cartItem = await prisma.cartItem.create({
         data: {
           cartId,
           productId,
-          price: new Decimal(price!),
+          price: new Decimal(price),
           quantity,
         },
       });
@@ -129,14 +127,12 @@ export async function addItemToCart(
         price: Number(cartItem.price),
       },
       success: true,
-      message: updated
-        ? "Cart item quantity updated successfully"
-        : "Cart item added successfully",
+      message: updated ? 'Cart item quantity updated successfully' : 'Cart item added successfully',
     };
   } catch (error) {
     console.log(error);
     return {
-      message: "Failed to add item to cart",
+      message: 'Failed to add item to cart',
     };
   }
 }
@@ -146,7 +142,7 @@ export async function addItemToCart(
  */
 export async function updateCartItem(
   cartItemId: string,
-  data: Partial<{ quantity: number; price: Decimal }>,
+  data: Partial<{ quantity: number; price: Decimal }>
 ) {
   return await prisma.cartItem.update({
     where: { id: cartItemId },
@@ -163,19 +159,19 @@ export async function removeItemFromCart(cartItemId: string) {
     if (!session?.user.id)
       return {
         success: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       };
     await prisma.cartItem.delete({
       where: { id: cartItemId },
     });
     return {
       success: true,
-      message: "Cart item deleted successfully.",
+      message: 'Cart item deleted successfully.',
     };
   } catch (error) {
     return {
       success: false,
-      message: "Failed to remove item.",
+      message: 'Failed to remove item.',
     };
   }
 }
@@ -189,11 +185,11 @@ export async function getCartItems() {
     if (!session?.user.id)
       return {
         cartItems: [],
-        message: "Unauthorized",
+        message: 'Unauthorized',
       };
     const cookieObj = await cookies();
-    const cartId = cookieObj.get("cartId")?.value as string;
-    console.log("add-item-to-cart: ", cartId);
+    const cartId = cookieObj.get('cartId')?.value as string;
+    console.log('add-item-to-cart: ', cartId);
 
     const cartItems = await prisma.cartItem.findMany({
       where: { cartId },
@@ -232,13 +228,13 @@ export async function getCartItems() {
     return {
       cartItems: plainItems,
       totalPrice,
-      message: "Cart items fetched successfully",
+      message: 'Cart items fetched successfully',
     };
   } catch (error) {
     console.log(error);
     return {
       cartItems: [],
-      message: "Failed to fetch cart items",
+      message: 'Failed to fetch cart items',
     };
   }
 }

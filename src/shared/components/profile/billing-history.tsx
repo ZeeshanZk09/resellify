@@ -1,13 +1,29 @@
-'use client';
+"use client";
 
-import { format } from 'date-fns';
-import { Calendar, CheckCircle, Clock, CreditCard, ExternalLink, XCircle } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { getUserBillingHistory, getUserSubscription } from '@/actions/billing/subscription';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { format } from "date-fns";
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  ExternalLink,
+  XCircle,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  getUserBillingHistory,
+  getUserSubscription,
+} from "@/actions/billing/subscription";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 
 type PaymentTransaction = {
   id: string;
@@ -69,11 +85,11 @@ export default function BillingHistory() {
             return {
               ...transaction,
               amount:
-                typeof transaction.amount === 'number'
+                typeof transaction.amount === "number"
                   ? transaction.amount
                   : Number(transaction.amount),
             } as PaymentTransaction;
-          })
+          }),
         );
       }
 
@@ -86,13 +102,16 @@ export default function BillingHistory() {
           ...data,
           plan: {
             ...data.plan,
-            price: typeof data.plan.price === 'number' ? data.plan.price : Number(data.plan.price),
+            price:
+              typeof data.plan.price === "number"
+                ? data.plan.price
+                : Number(data.plan.price),
           },
         } as Subscription);
       }
     } catch (error) {
-      console.error('Error loading billing data:', error);
-      toast.error('Failed to load billing information');
+      console.error("Error loading billing data:", error);
+      toast.error("Failed to load billing information");
     } finally {
       setLoading(false);
     }
@@ -101,18 +120,18 @@ export default function BillingHistory() {
   const handleManageBilling = async () => {
     setPortalLoading(true);
     try {
-      const response = await fetch('/api/stripe/portal', {
-        method: 'POST',
+      const response = await fetch("/api/stripe/portal", {
+        method: "POST",
       });
       const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
-        toast.error(data.error || 'Failed to open billing portal');
+        toast.error(data.error || "Failed to open billing portal");
       }
     } catch (error) {
-      console.error('Error opening billing portal:', error);
-      toast.error('Failed to open billing portal');
+      console.error("Error opening billing portal:", error);
+      toast.error("Failed to open billing portal");
     } finally {
       setPortalLoading(false);
     }
@@ -120,85 +139,94 @@ export default function BillingHistory() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'SUCCEEDED':
+      case "SUCCEEDED":
         return (
-          <Badge variant='default' className='bg-green-500'>
-            <CheckCircle className='h-3 w-3 mr-1' />
+          <Badge variant="default" className="bg-green-500">
+            <CheckCircle className="h-3 w-3 mr-1" />
             Paid
           </Badge>
         );
-      case 'PENDING':
+      case "PENDING":
         return (
-          <Badge variant='secondary'>
-            <Clock className='h-3 w-3 mr-1' />
+          <Badge variant="secondary">
+            <Clock className="h-3 w-3 mr-1" />
             Pending
           </Badge>
         );
-      case 'FAILED':
+      case "FAILED":
         return (
-          <Badge variant='destructive'>
-            <XCircle className='h-3 w-3 mr-1' />
+          <Badge variant="destructive">
+            <XCircle className="h-3 w-3 mr-1" />
             Failed
           </Badge>
         );
       default:
-        return <Badge variant='secondary'>{status}</Badge>;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
   if (loading) {
     return (
-      <div className='space-y-6'>
-        <div className='animate-pulse space-y-4'>
-          <div className='h-32 bg-gray-200 rounded'></div>
-          <div className='h-64 bg-gray-200 rounded'></div>
+      <div className="space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       {/* Current Subscription */}
       {subscription && (
         <Card>
           <CardHeader>
-            <div className='flex items-center justify-between'>
+            <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Current Subscription</CardTitle>
-                <CardDescription>Your active subscription details</CardDescription>
+                <CardDescription>
+                  Your active subscription details
+                </CardDescription>
               </div>
               <Badge
-                variant={subscription.status === 'ACTIVE' ? 'default' : 'secondary'}
-                className={subscription.status === 'ACTIVE' ? 'bg-green-500' : ''}
+                variant={
+                  subscription.status === "ACTIVE" ? "default" : "secondary"
+                }
+                className={
+                  subscription.status === "ACTIVE" ? "bg-green-500" : ""
+                }
               >
                 {subscription.status}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className='space-y-4'>
-            <div className='grid grid-cols-2 gap-4'>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className='text-sm text-gray-600'>Plan</p>
-                <p className='font-semibold'>{subscription.plan.name}</p>
+                <p className="text-sm text-gray-600">Plan</p>
+                <p className="font-semibold">{subscription.plan.name}</p>
               </div>
               <div>
-                <p className='text-sm text-gray-600'>Price</p>
-                <p className='font-semibold'>
+                <p className="text-sm text-gray-600">Price</p>
+                <p className="font-semibold">
                   PKR {Number(subscription.plan.price).toLocaleString()}/month
                 </p>
               </div>
               <div>
-                <p className='text-sm text-gray-600'>Started</p>
-                <p className='font-semibold'>
-                  {format(new Date(subscription.startDate), 'MMM dd, yyyy')}
+                <p className="text-sm text-gray-600">Started</p>
+                <p className="font-semibold">
+                  {format(new Date(subscription.startDate), "MMM dd, yyyy")}
                 </p>
               </div>
               {subscription.currentPeriodEnd && (
                 <div>
-                  <p className='text-sm text-gray-600'>Renews</p>
-                  <p className='font-semibold'>
-                    {format(new Date(subscription.currentPeriodEnd), 'MMM dd, yyyy')}
+                  <p className="text-sm text-gray-600">Renews</p>
+                  <p className="font-semibold">
+                    {format(
+                      new Date(subscription.currentPeriodEnd),
+                      "MMM dd, yyyy",
+                    )}
                   </p>
                 </div>
               )}
@@ -206,14 +234,14 @@ export default function BillingHistory() {
             <Button
               onClick={handleManageBilling}
               disabled={portalLoading}
-              variant='outline'
-              className='w-full'
+              variant="outline"
+              className="w-full"
             >
               {portalLoading ? (
-                'Loading...'
+                "Loading..."
               ) : (
                 <>
-                  <ExternalLink className='h-4 w-4 mr-2' />
+                  <ExternalLink className="h-4 w-4 mr-2" />
                   Manage Billing
                 </>
               )}
@@ -230,39 +258,46 @@ export default function BillingHistory() {
         </CardHeader>
         <CardContent>
           {transactions.length === 0 ? (
-            <div className='text-center py-8'>
-              <CreditCard className='h-12 w-12 text-gray-400 mx-auto mb-4' />
-              <p className='text-gray-600'>No billing history found</p>
+            <div className="text-center py-8">
+              <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No billing history found</p>
             </div>
           ) : (
-            <div className='space-y-4'>
+            <div className="space-y-4">
               {transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className='flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors'
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <div className='flex items-center gap-4'>
-                    <div className='p-2 bg-gray-100 rounded-lg'>
-                      <CreditCard className='h-5 w-5 text-gray-600' />
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <CreditCard className="h-5 w-5 text-gray-600" />
                     </div>
                     <div>
-                      <p className='font-semibold'>
-                        {transaction.subscription?.plan.name || 'Subscription Payment'}
+                      <p className="font-semibold">
+                        {transaction.subscription?.plan.name ||
+                          "Subscription Payment"}
                       </p>
-                      <p className='text-sm text-gray-600'>
-                        {transaction.description || 'Monthly subscription'}
+                      <p className="text-sm text-gray-600">
+                        {transaction.description || "Monthly subscription"}
                       </p>
-                      <p className='text-xs text-gray-500 mt-1 flex items-center gap-2'>
-                        <Calendar className='h-3 w-3' />
-                        {format(new Date(transaction.createdAt), 'MMM dd, yyyy')}
+                      <p className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                        <Calendar className="h-3 w-3" />
+                        {format(
+                          new Date(transaction.createdAt),
+                          "MMM dd, yyyy",
+                        )}
                       </p>
                     </div>
                   </div>
-                  <div className='text-right'>
-                    <p className='font-semibold'>
-                      {transaction.currency} {Number(transaction.amount).toLocaleString()}
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      {transaction.currency}{" "}
+                      {Number(transaction.amount).toLocaleString()}
                     </p>
-                    <div className='mt-2'>{getStatusBadge(transaction.status)}</div>
+                    <div className="mt-2">
+                      {getStatusBadge(transaction.status)}
+                    </div>
                   </div>
                 </div>
               ))}

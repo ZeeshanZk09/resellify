@@ -14,9 +14,9 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
+import type { Category } from "@/shared/lib/generated/prisma/browser";
 import { OptionType } from "@/shared/lib/generated/prisma/enums";
 import { generateCategorySlug } from "@/shared/lib/utils/category";
-import type { Category } from "@/shared/lib/generated/prisma/browser";
 export default function CategoryManagerPage() {
   // Category
   const [categoryName, setCategoryName] = useState("");
@@ -100,7 +100,7 @@ export default function CategoryManagerPage() {
       if (value.trim()) {
         const slug = await generateCategorySlug(value);
         setSubcategories((prev) =>
-          prev.map((s) => (s.id === id ? { ...s, slug } : s))
+          prev.map((s) => (s.id === id ? { ...s, slug } : s)),
         );
       }
     }, 500);
@@ -113,7 +113,7 @@ export default function CategoryManagerPage() {
         clearTimeout(categoryTimeoutRef.current);
       }
       subcategoryTimeoutsRef.current.forEach((timeout) =>
-        clearTimeout(timeout)
+        clearTimeout(timeout),
       );
     };
   }, []);
@@ -127,7 +127,7 @@ export default function CategoryManagerPage() {
   };
   const updateSubcategory = (
     id: string,
-    patch: Partial<{ name: string; description: string }>
+    patch: Partial<{ name: string; description: string }>,
   ) => {
     setSubcategories((prev) =>
       prev.map((s) => {
@@ -138,7 +138,7 @@ export default function CategoryManagerPage() {
           handleSubcategoryNameChange(id, patch.name);
         }
         return updated;
-      })
+      }),
     );
   };
   const removeSubcategory = (id: string) => {
@@ -157,10 +157,10 @@ export default function CategoryManagerPage() {
     ]);
   const updateOptionSet = (
     id: string,
-    patch: Partial<{ name: string; type: OptionType }>
+    patch: Partial<{ name: string; type: OptionType }>,
   ) =>
     setOptionSets((prev) =>
-      prev.map((os) => (os.id === id ? { ...os, ...patch } : os))
+      prev.map((os) => (os.id === id ? { ...os, ...patch } : os)),
     );
   const removeOptionSet = (id: string) =>
     setOptionSets((prev) => prev.filter((os) => os.id !== id));
@@ -176,14 +176,14 @@ export default function CategoryManagerPage() {
             { id: cryptoRandomId(), name: "", value: "", position: pos },
           ],
         };
-      })
+      }),
     );
   };
 
   const updateOption = (
     optionSetId: string,
     optionId: string,
-    patch: Partial<{ name: string; value: string }>
+    patch: Partial<{ name: string; value: string }>,
   ) => {
     setOptionSets((prev) =>
       prev.map((os) => {
@@ -191,10 +191,10 @@ export default function CategoryManagerPage() {
         return {
           ...os,
           options: os.options.map((o) =>
-            o.id === optionId ? { ...o, ...patch } : o
+            o.id === optionId ? { ...o, ...patch } : o,
           ),
         };
-      })
+      }),
     );
   };
 
@@ -206,7 +206,7 @@ export default function CategoryManagerPage() {
           .filter((o) => o.id !== optionId)
           .map((o, idx) => ({ ...o, position: idx + 1 }));
         return { ...os, options: newOptions };
-      })
+      }),
     );
   };
 
@@ -268,7 +268,7 @@ export default function CategoryManagerPage() {
   const updateEditField = (
     id: string,
     field: "name" | "description" | "slug",
-    value: string
+    value: string,
   ) => {
     setEditMap((prev) => {
       const current = prev[id];
@@ -317,7 +317,7 @@ export default function CategoryManagerPage() {
         return next;
       });
       setAllCategories((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, ...updated.category } : c))
+        prev.map((c) => (c.id === id ? { ...c, ...updated.category } : c)),
       );
     } catch {
       toast.error("Update failed");
@@ -665,7 +665,7 @@ export default function CategoryManagerPage() {
                               updateEditField(
                                 parent.id,
                                 "description",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           />
@@ -758,7 +758,7 @@ export default function CategoryManagerPage() {
                                         updateEditField(
                                           child.id,
                                           "name",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       onBlur={() =>
@@ -776,7 +776,7 @@ export default function CategoryManagerPage() {
                                         updateEditField(
                                           child.id,
                                           "description",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                     />
@@ -789,7 +789,7 @@ export default function CategoryManagerPage() {
                                         updateEditField(
                                           child.id,
                                           "slug",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                     />

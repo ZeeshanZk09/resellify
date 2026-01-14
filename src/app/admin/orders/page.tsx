@@ -19,15 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  OrderStatus as OrderStatusConst,
-  PaymentMethod as PaymentMethodConst,
-  PaymentStatus as PaymentStatusConst,
-} from "@/shared/lib/generated/prisma/enums";
 import type {
   OrderStatus as OrderStatusType,
   PaymentMethod as PaymentMethodType,
   PaymentStatus as PaymentStatusType,
+} from "@/shared/lib/generated/prisma/enums";
+import {
+  OrderStatus as OrderStatusConst,
+  PaymentMethod as PaymentMethodConst,
+  PaymentStatus as PaymentStatusConst,
 } from "@/shared/lib/generated/prisma/enums";
 
 type OrderStatusFilter = "all" | OrderStatusType;
@@ -168,14 +168,14 @@ export default function AdminOrdersPage() {
 
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<AdminOrderDetail | null>(
-    null
+    null,
   );
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(ordersState.total / ordersState.pageSize)),
-    [ordersState.total, ordersState.pageSize]
+    [ordersState.total, ordersState.pageSize],
   );
 
   const loadOrders = useCallback(
@@ -234,7 +234,7 @@ export default function AdminOrdersPage() {
       toDate,
       ordersState.page,
       ordersState.pageSize,
-    ]
+    ],
   );
 
   const loadOrderDetail = useCallback(async (orderId: string) => {
@@ -265,7 +265,7 @@ export default function AdminOrdersPage() {
         status?: OrderStatusType;
         paymentStatus?: PaymentStatusType;
         notes?: string;
-      }
+      },
     ) => {
       try {
         setUpdatingOrderId(orderId);
@@ -293,11 +293,11 @@ export default function AdminOrdersPage() {
                   paymentStatus: updated.paymentStatus,
                   notes: updated.notes,
                 }
-              : o
+              : o,
           ),
         }));
         setSelectedOrder((prev) =>
-          prev && prev.id === orderId ? { ...prev, ...updated } : prev
+          prev && prev.id === orderId ? { ...prev, ...updated } : prev,
         );
         toast.success("Order updated");
       } catch {
@@ -306,7 +306,7 @@ export default function AdminOrdersPage() {
         setUpdatingOrderId(null);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -555,7 +555,7 @@ export default function AdminOrdersPage() {
                                     {" "}
                                     • Discount: Rs{" "}
                                     {Number(
-                                      order.discountAmount
+                                      order.discountAmount,
                                     ).toLocaleString()}
                                   </span>
                                 )}
@@ -570,8 +570,8 @@ export default function AdminOrdersPage() {
                                   order.paymentStatus === "SUCCEEDED"
                                     ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                                     : order.paymentStatus === "PENDING"
-                                    ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                    : "bg-rose-50 text-rose-700 border border-rose-200"
+                                      ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                      : "bg-rose-50 text-rose-700 border border-rose-200"
                                 }`}
                               >
                                 {order.paymentStatus}
@@ -585,10 +585,10 @@ export default function AdminOrdersPage() {
                                   order.status === "DELIVERED"
                                     ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                                     : order.status === "CANCELLED" ||
-                                      order.status === "RETURNED" ||
-                                      order.status === "REFUNDED"
-                                    ? "bg-rose-50 text-rose-700 border border-rose-200"
-                                    : "bg-slate-100 text-slate-700 border border-slate-200"
+                                        order.status === "RETURNED" ||
+                                        order.status === "REFUNDED"
+                                      ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                      : "bg-slate-100 text-slate-700 border border-slate-200"
                                 }`}
                               >
                                 {order.status}
@@ -809,7 +809,7 @@ export default function AdminOrdersPage() {
                     <div className="text-slate-500">
                       Created{" "}
                       {new Date(
-                        selectedOrder.payment.createdAt
+                        selectedOrder.payment.createdAt,
                       ).toLocaleString()}
                     </div>
                   </div>

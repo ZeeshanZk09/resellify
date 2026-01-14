@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { authAdmin } from "@/shared/lib/utils/auth";
+import { type NextRequest, NextResponse } from "next/server";
 import Prisma from "@/shared/lib/prisma";
+import { authAdmin } from "@/shared/lib/utils/auth";
 
 export async function GET(req: NextRequest) {
   const session = await authAdmin();
@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
   const page = pageParam ? Number(pageParam) || 1 : 1;
   const pageSize = pageSizeParam ? Number(pageSizeParam) || 20 : 20;
 
-  const where: NonNullable<Parameters<typeof Prisma.user.findMany>[0]>["where"] = {};
+  const where: NonNullable<
+    Parameters<typeof Prisma.user.findMany>[0]
+  >["where"] = {};
 
   if (search.trim()) {
     where.OR = [
@@ -74,4 +76,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

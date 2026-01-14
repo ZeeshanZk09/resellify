@@ -111,7 +111,7 @@ const TodayDealCard = ({
 
   return (
     <article
-      className={`${className} min-w-[280px] h-full flex flex-col gap-3 relative rounded-xl bg-card overflow-hidden p-3`}
+      className={`${className} min-w-70 h-full flex flex-col gap-3 relative rounded-xl bg-card overflow-hidden p-3`}
       aria-labelledby="deal-title"
     >
       {/* Image wrapper: fixed visual area to keep cards uniform */}

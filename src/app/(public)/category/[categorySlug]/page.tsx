@@ -38,4 +38,3 @@ export default async function CategoryOnlyPage({
 
   redirect(`/shop?category=${encodeURIComponent(parent.slug)}`);
 }
-

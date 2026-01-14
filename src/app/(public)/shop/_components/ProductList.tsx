@@ -42,7 +42,12 @@ export default function ProductList({
 
       if (loadMoreMode === "category" && categorySlug && subcategorySlug) {
         result = (
-          await loadMoreCategoryProducts(categorySlug, subcategorySlug, lastId, 10)
+          await loadMoreCategoryProducts(
+            categorySlug,
+            subcategorySlug,
+            lastId,
+            10,
+          )
         ).res;
       } else {
         result = (await loadMoreProducts(lastId, 10)).res;

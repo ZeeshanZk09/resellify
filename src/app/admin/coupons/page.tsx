@@ -10,6 +10,16 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -33,16 +43,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/shared/components/ui/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/components/ui/alert-dialog";
 import type {
   Category,
   Coupon,
@@ -96,7 +96,7 @@ export default function AdminCouponsPage() {
     "all" | "active" | "inactive"
   >("all");
   const [couponType, setCouponType] = useState<"all" | "PERCENT" | "FIXED">(
-    "all"
+    "all",
   );
   const [loadingCoupons, setLoadingCoupons] = useState(false);
 
@@ -108,7 +108,7 @@ export default function AdminCouponsPage() {
   });
   const [offerSearch, setOfferSearch] = useState("");
   const [offerStatus, setOfferStatus] = useState<"all" | "active" | "inactive">(
-    "all"
+    "all",
   );
   const [offerTarget, setOfferTarget] = useState<
     "all" | "ALL_PRODUCTS" | "CATEGORY" | "PRODUCT"
@@ -153,12 +153,12 @@ export default function AdminCouponsPage() {
 
   const totalCouponPages = useMemo(
     () => Math.max(1, Math.ceil(couponState.total / couponState.pageSize)),
-    [couponState.total, couponState.pageSize]
+    [couponState.total, couponState.pageSize],
   );
 
   const totalOfferPages = useMemo(
     () => Math.max(1, Math.ceil(offerState.total / offerState.pageSize)),
-    [offerState.total, offerState.pageSize]
+    [offerState.total, offerState.pageSize],
   );
 
   const loadCategories = useCallback(async () => {
@@ -219,7 +219,7 @@ export default function AdminCouponsPage() {
       couponType,
       couponState.page,
       couponState.pageSize,
-    ]
+    ],
   );
 
   const loadOffers = useCallback(
@@ -261,7 +261,7 @@ export default function AdminCouponsPage() {
       offerTarget,
       offerState.page,
       offerState.pageSize,
-    ]
+    ],
   );
 
   useEffect(() => {
@@ -364,7 +364,7 @@ export default function AdminCouponsPage() {
       setCouponState((prev) => ({
         ...prev,
         coupons: prev.coupons.map((c) =>
-          c.id === coupon.id ? { ...c, isActive: !c.isActive } : c
+          c.id === coupon.id ? { ...c, isActive: !c.isActive } : c,
         ),
       }));
       toast.success("Coupon status updated");
@@ -474,7 +474,7 @@ export default function AdminCouponsPage() {
       setOfferState((prev) => ({
         ...prev,
         offers: prev.offers.map((o) =>
-          o.id === offer.id ? { ...o, isActive: !o.isActive } : o
+          o.id === offer.id ? { ...o, isActive: !o.isActive } : o,
         ),
       }));
       toast.success("Offer status updated");
@@ -1088,7 +1088,7 @@ export default function AdminCouponsPage() {
                                       <div>
                                         From{" "}
                                         {new Date(
-                                          coupon.startsAt
+                                          coupon.startsAt,
                                         ).toLocaleString()}
                                       </div>
                                     )}
@@ -1096,7 +1096,7 @@ export default function AdminCouponsPage() {
                                       <div>
                                         Until{" "}
                                         {new Date(
-                                          coupon.endsAt
+                                          coupon.endsAt,
                                         ).toLocaleString()}
                                       </div>
                                     )}
@@ -1611,8 +1611,8 @@ export default function AdminCouponsPage() {
                                     {offer.offType === "ALL_PRODUCTS"
                                       ? "All products"
                                       : offer.offType === "CATEGORY"
-                                      ? "Category"
-                                      : "Product-level deals"}
+                                        ? "Category"
+                                        : "Product-level deals"}
                                   </div>
                                   {offer.appliesToAll && (
                                     <div>Applies to all items in scope</div>
@@ -1642,7 +1642,7 @@ export default function AdminCouponsPage() {
                                       <div>
                                         From{" "}
                                         {new Date(
-                                          offer.startsAt
+                                          offer.startsAt,
                                         ).toLocaleString()}
                                       </div>
                                     )}
@@ -1650,7 +1650,7 @@ export default function AdminCouponsPage() {
                                       <div>
                                         Until{" "}
                                         {new Date(
-                                          offer.endsAt
+                                          offer.endsAt,
                                         ).toLocaleString()}
                                       </div>
                                     )}

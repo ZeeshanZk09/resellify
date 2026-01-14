@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState, useTransition } from "react";
-import { Input } from "./ui/input";
 import { toast } from "sonner";
+import { Input } from "./ui/input";
 
 type SearchApiResult =
   | {
@@ -45,7 +45,7 @@ export default function SearchInput() {
     startTransition(async () => {
       try {
         const response = await fetch(
-          `/api/search?q=${encodeURIComponent(currentQuery)}`
+          `/api/search?q=${encodeURIComponent(currentQuery)}`,
         );
 
         if (!response.ok) {
@@ -63,8 +63,8 @@ export default function SearchInput() {
         if (data.result.type === "category") {
           router.push(
             `/category/${encodeURIComponent(
-              data.result.parentSlug
-            )}/${encodeURIComponent(data.result.categorySlug)}`
+              data.result.parentSlug,
+            )}/${encodeURIComponent(data.result.categorySlug)}`,
           );
           return;
         }

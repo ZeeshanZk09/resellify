@@ -1,11 +1,11 @@
 "use client";
 
 import {
+  type ChangeEvent,
   useCallback,
   useEffect,
   useMemo,
   useState,
-  type ChangeEvent,
 } from "react";
 import { toast } from "sonner";
 import {
@@ -45,13 +45,13 @@ export default function UsersClient({ initialData, currentUserId }: Props) {
   const [role, setRole] = useState<string | "all">("all");
   const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
   const [blocked, setBlocked] = useState<"all" | "blocked" | "unblocked">(
-    "all"
+    "all",
   );
   const [loading, setLoading] = useState(false);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / pageSize)),
-    [total, pageSize]
+    [total, pageSize],
   );
 
   const fetchUsers = useCallback(
@@ -87,7 +87,7 @@ export default function UsersClient({ initialData, currentUserId }: Props) {
         setLoading(false);
       }
     },
-    [search, role, status, blocked, page, pageSize]
+    [search, role, status, blocked, page, pageSize],
   );
 
   useEffect(() => {
@@ -120,15 +120,15 @@ export default function UsersClient({ initialData, currentUserId }: Props) {
 
   const activeCount = useMemo(
     () => users.filter((u) => u.isActive).length,
-    [users]
+    [users],
   );
   const blockedCount = useMemo(
     () => users.filter((u) => u.isBlocked).length,
-    [users]
+    [users],
   );
   const adminCount = useMemo(
     () => users.filter((u) => u.role === "ADMIN").length,
-    [users]
+    [users],
   );
 
   return (

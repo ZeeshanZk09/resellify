@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { toggleUserRole } from "@/actions/admin/users";
 import {
@@ -35,7 +35,7 @@ export function UserRoleToggle({ userId, role: initialRole, disabled }: Props) {
       onValueChange={(value) => {
         const newRole = value as "ADMIN" | "USER";
         setRole(newRole); // Optimistic update
-        
+
         startTransition(async () => {
           const res = await toggleUserRole(userId, newRole);
           if (!res.success) {

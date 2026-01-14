@@ -103,7 +103,7 @@ export const login = async (password: string) => {
       },
     });
 
-    let _session;
+    let _session: Awaited<ReturnType<typeof prisma.session.findFirst>>;
 
     if (existingSession) {
       // ✅ Reuse existing session

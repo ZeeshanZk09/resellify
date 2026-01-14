@@ -1,10 +1,6 @@
 "use server";
 
 import { auth } from "@/auth";
-import {
-  SubscriptionPlanType,
-  SubscriptionStatus,
-} from "@/shared/lib/generated/prisma/enums";
 import prisma from "@/shared/lib/prisma";
 
 export async function getSubscriptionPlans() {

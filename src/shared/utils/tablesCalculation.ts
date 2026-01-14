@@ -2,7 +2,7 @@ export const calculateTablePagination = (
   totalRows: number | null,
   currentPage: number,
   pageSize: number,
-  maxButtons = 10
+  maxButtons = 10,
 ): (number | null)[] => {
   if (!totalRows || !currentPage || Number.isNaN(currentPage)) {
     return [];

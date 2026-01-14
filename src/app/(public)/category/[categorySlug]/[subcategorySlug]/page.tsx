@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { addVisit } from "@/actions/pageVisit/pageVisitServices";
 import {
-  getCategoryBySlugPath,
   getAllCategoriesFlat,
+  getCategoryBySlugPath,
 } from "@/actions/category/category";
+import { addVisit } from "@/actions/pageVisit/pageVisitServices";
 import { getCategoryProducts } from "@/actions/product/product";
 import ProductList from "@/app/(public)/shop/_components/ProductList";
+
 // import ProductList from "../../shop/_components/ProductList";
 
 interface CategoryPageProps {
@@ -51,7 +52,7 @@ export async function generateMetadata({
 
   const categoryContext = await getCategoryBySlugPath(
     decodeURIComponent(categorySlug),
-    decodeURIComponent(subcategorySlug)
+    decodeURIComponent(subcategorySlug),
   );
 
   if (!("res" in categoryContext) || !categoryContext.res) {
@@ -106,7 +107,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const categoryContext = await getCategoryBySlugPath(
     decodedCategorySlug,
-    decodedSubcategorySlug
+    decodedSubcategorySlug,
   );
 
   if (!("res" in categoryContext) || !categoryContext.res) {
@@ -118,7 +119,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const productsResult = await getCategoryProducts(
     decodedCategorySlug,
     decodedSubcategorySlug,
-    10
+    10,
   );
 
   const products = "res" in productsResult ? productsResult.res : null;

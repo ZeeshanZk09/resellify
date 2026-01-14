@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import type { Session } from "next-auth";
 import Prisma from "@/shared/lib/prisma";
 import { authAdmin } from "@/shared/lib/utils/auth";
-import { Session } from "next-auth";
 
 function convertDecimals(obj: any): any {
   if (Array.isArray(obj)) {
@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
       if (!order) {
         return NextResponse.json(
           { message: "Order not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
     } catch {
       return NextResponse.json(
         { message: "Failed to fetch order" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   }
@@ -233,7 +233,7 @@ export async function GET(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { message: "Failed to fetch orders" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -259,14 +259,14 @@ export async function PUT(req: NextRequest) {
     if (!id) {
       return NextResponse.json(
         { message: "Order id is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!status && !paymentStatus && typeof notes !== "string") {
       return NextResponse.json(
         { message: "Nothing to update" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -341,7 +341,7 @@ export async function PUT(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { message: "Failed to update order" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

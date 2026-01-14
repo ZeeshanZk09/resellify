@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 // import { getCategories } from "@/actions/category/category";
 // import { Category } from "@/shared/lib/generated/prisma/browser";
@@ -39,41 +39,57 @@
 //   );
 // }
 
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Loader2 } from "lucide-react";
 // ProductCreationWizard.jsx
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { FieldValues, FormProvider, type SubmitHandler, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { type GetCategoryTree, getCategoryTree } from '@/actions/category/category';
+import { type FormEvent, useCallback, useEffect, useState } from "react";
+import {
+  FieldValues,
+  FormProvider,
+  type SubmitHandler,
+  useForm,
+} from "react-hook-form";
+import { toast } from "sonner";
+import {
+  type GetCategoryTree,
+  getCategoryTree,
+} from "@/actions/category/category";
 import {
   type GetCategoryOptionSets,
   getCategoryOptionSets,
-} from '@/actions/category/categoryOptions';
-import { type GetSpecGroups, getSpecGroups } from '@/actions/category/specifications';
+} from "@/actions/category/categoryOptions";
+import {
+  type GetSpecGroups,
+  getSpecGroups,
+} from "@/actions/category/specifications";
 import {
   type AddProductInput,
   addProduct,
   addProductSpecs,
   addProductVariants,
-} from '@/actions/product/product';
-import { uploadImage } from '@/actions/product/product-image';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import type { OptionSet } from '@/shared/lib/generated/prisma/browser';
-import BasicInfoStep from './_components/BasicInformationForm';
-import CategoryStep from './_components/CategoryStep';
-import OptionSetsStep from './_components/OptionSetsStep';
-import ReviewStep from './_components/ReviewStep';
-import SpecificationsStep from './_components/SpecificationsStep';
-import VariantsStep from './_components/VariantsStep';
+} from "@/actions/product/product";
+import { uploadImage } from "@/actions/product/product-image";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import type { OptionSet } from "@/shared/lib/generated/prisma/browser";
+import BasicInfoStep from "./_components/BasicInformationForm";
+import CategoryStep from "./_components/CategoryStep";
+import OptionSetsStep from "./_components/OptionSetsStep";
+import ReviewStep from "./_components/ReviewStep";
+import SpecificationsStep from "./_components/SpecificationsStep";
+import VariantsStep from "./_components/VariantsStep";
 
 const steps = [
-  'Category Selection',
-  'Option Sets',
-  'Basic Information',
-  'Specifications',
-  'Variants',
-  'Review & Create',
+  "Category Selection",
+  "Option Sets",
+  "Basic Information",
+  "Specifications",
+  "Variants",
+  "Review & Create",
 ] as const;
 
 // Define complete form data type
@@ -112,10 +128,10 @@ interface ApiError {
 // Type guard for ApiError
 function isApiError(error: unknown): error is ApiError {
   return (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error !== null &&
-    'message' in error &&
-    typeof (error as ApiError).message === 'string'
+    "message" in error &&
+    typeof (error as ApiError).message === "string"
   );
 }
 
@@ -127,8 +143,8 @@ function isError(error: unknown): error is Error {
 export default function ProductCreationWizard() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const [preloadedData, setPreloadedData] = useState<{
     categories: GetCategoryTree;
     optionSets: GetCategoryOptionSets;
@@ -140,7 +156,7 @@ export default function ProductCreationWizard() {
   });
 
   useEffect(() => {
-    console.log('[INIT] Product form mounted');
+    console.log("[INIT] Product form mounted");
   }, []);
 
   const methods = useForm<ProductFormData>({
@@ -152,15 +168,15 @@ export default function ProductCreationWizard() {
       selectedOptionSets: [],
 
       // Step 3: Basic Info
-      title: '',
-      slug: '',
-      sku: '',
+      title: "",
+      slug: "",
+      sku: "",
       basePrice: 0,
       salePrice: 0,
-      shortDescription: '',
-      description: '',
-      status: 'DRAFT',
-      visibility: 'UNLISTED',
+      shortDescription: "",
+      description: "",
+      status: "DRAFT",
+      visibility: "UNLISTED",
       images: [],
       inventory: 0,
       lowStockThreshold: 5,
@@ -177,11 +193,11 @@ export default function ProductCreationWizard() {
     },
   });
 
-  console.log('[FORM] Default values loaded', methods.getValues());
+  console.log("[FORM] Default values loaded", methods.getValues());
 
   // Load pre-requisite data
   useEffect(() => {
-    console.log('[FETCH] Loading prerequisite data...');
+    console.log("[FETCH] Loading prerequisite data...");
     let timer: NodeJS.Timeout;
     fetchPreloadedData().then(() => {
       timer = setTimeout(() => {
@@ -194,12 +210,12 @@ export default function ProductCreationWizard() {
   const fetchPreloadedData = useCallback(async (): Promise<void> => {
     try {
       // setLoading(true);
-      setError('');
+      setError("");
 
-      console.time('[FETCH] Preloaded Data');
+      console.time("[FETCH] Preloaded Data");
       const [categoriesRes, optionSetsRes, specGroupsRes] = await Promise.all([
         getCategoryTree().then((res) => {
-          console.log('[FETCH] Categories:', res?.res);
+          console.log("[FETCH] Categories:", res?.res);
           // methods.setValue(
           //   "selectedCategoryIds",
           //   res?.res?.map((cat) => cat.id) || []
@@ -209,7 +225,7 @@ export default function ProductCreationWizard() {
         getCategoryOptionSets(),
         getSpecGroups(),
       ]);
-      console.timeEnd('[FETCH] Preloaded Data');
+      console.timeEnd("[FETCH] Preloaded Data");
 
       setPreloadedData({
         categories: categoriesRes.res ?? [],
@@ -217,12 +233,14 @@ export default function ProductCreationWizard() {
         specGroups: specGroupsRes.res ?? [],
       });
 
-      console.log('[FETCH] Categories:', categoriesRes.res);
-      console.log('[FETCH] Option Sets:', optionSetsRes.res);
-      console.log('[FETCH] Spec Groups:', specGroupsRes.res);
+      console.log("[FETCH] Categories:", categoriesRes.res);
+      console.log("[FETCH] Option Sets:", optionSetsRes.res);
+      console.log("[FETCH] Spec Groups:", specGroupsRes.res);
     } catch (err: unknown) {
-      console.error('[ERROR] Failed loading preloaded data', err);
-      const errorMessage = isError(err) ? err.message : 'Failed to load required data';
+      console.error("[ERROR] Failed loading preloaded data", err);
+      const errorMessage = isError(err)
+        ? err.message
+        : "Failed to load required data";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -230,7 +248,9 @@ export default function ProductCreationWizard() {
     }
   }, [methods]);
 
-  const handleNext = async (e?: FormEvent<HTMLButtonElement>): Promise<void> => {
+  const handleNext = async (
+    e?: FormEvent<HTMLButtonElement>,
+  ): Promise<void> => {
     // Prevent any form submission
     if (e) {
       e.preventDefault();
@@ -241,7 +261,7 @@ export default function ProductCreationWizard() {
 
     // Don't proceed if we're already on the last step
     if (activeStep >= steps.length - 1) {
-      console.warn('[STEP] Already on last step, cannot proceed');
+      console.warn("[STEP] Already on last step, cannot proceed");
       return;
     }
 
@@ -257,14 +277,14 @@ export default function ProductCreationWizard() {
       });
     } else {
       const errors = methods.formState.errors;
-      console.warn('[STEP] Validation failed', errors);
+      console.warn("[STEP] Validation failed", errors);
 
       // Show first validation error
       const firstError = Object.values(errors)[0];
       if (firstError?.message) {
         toast.error(firstError.message as string);
       } else {
-        toast.error('Please fill in all required fields');
+        toast.error("Please fill in all required fields");
       }
     }
   };
@@ -279,46 +299,49 @@ export default function ProductCreationWizard() {
 
   const processProductSubmission = async (
     data: ProductFormData,
-    isDraft: boolean = false
+    isDraft: boolean = false,
   ): Promise<void> => {
     try {
       setLoading(true);
-      setError('');
-      setSuccess('');
+      setError("");
+      setSuccess("");
 
-      console.group('[SUBMIT] Product Data');
+      console.group("[SUBMIT] Product Data");
       const { images: formImages, ...dataWithoutImages } = data;
-      console.log('Raw Form Data (without images):', dataWithoutImages);
-      console.log('Is Draft:', isDraft);
-      console.log('Images type:', typeof formImages);
+      console.log("Raw Form Data (without images):", dataWithoutImages);
+      console.log("Is Draft:", isDraft);
+      console.log("Images type:", typeof formImages);
       console.log(
-        'Images:',
+        "Images:",
         formImages
           ? Array.isArray(formImages)
             ? `${formImages.length} files`
             : formImages instanceof File
-            ? '1 file'
-            : typeof formImages
-          : 'No images'
+              ? "1 file"
+              : typeof formImages
+          : "No images",
       );
       if (formImages) {
         if (Array.isArray(formImages)) {
           console.log(
-            'Image files:',
-            formImages.map((img, i) => `${i + 1}. ${img instanceof File ? img.name : typeof img}`)
+            "Image files:",
+            formImages.map(
+              (img, i) =>
+                `${i + 1}. ${img instanceof File ? img.name : typeof img}`,
+            ),
           );
         } else if (formImages instanceof File) {
-          console.log('Image file:', formImages.name);
+          console.log("Image file:", formImages.name);
         }
       }
-      console.log('Categories:', data.selectedCategoryIds);
-      console.log('Option Sets:', data.selectedOptionSets);
-      console.log('Specifications:', data.specifications);
-      console.log('Variants:', data.variants);
+      console.log("Categories:", data.selectedCategoryIds);
+      console.log("Option Sets:", data.selectedOptionSets);
+      console.log("Specifications:", data.specifications);
+      console.log("Variants:", data.variants);
       console.groupEnd();
 
       // Step 1: Create basic product
-      console.time('[API] addProduct');
+      console.time("[API] addProduct");
 
       // Format specifications for API (preserve specGroupTitle and specGroupKeys for manual creation)
       const formattedSpecs =
@@ -350,8 +373,8 @@ export default function ProductCreationWizard() {
         sku: data.sku,
         shortDescription: data.shortDescription,
         description: data.description,
-        status: isDraft ? 'DRAFT' : data.status,
-        visibility: isDraft ? 'PRIVATE' : data.visibility,
+        status: isDraft ? "DRAFT" : data.status,
+        visibility: isDraft ? "PRIVATE" : data.visibility,
         inventory: Number(data.inventory),
         lowStockThreshold: data.lowStockThreshold,
         metaKeywords: data.metaKeywords,
@@ -361,26 +384,28 @@ export default function ProductCreationWizard() {
         specifications: formattedSpecs,
         variants: formattedVariants,
       });
-      console.timeEnd('[API] addProduct');
+      console.timeEnd("[API] addProduct");
 
       if (productRes.error) {
         const errorMessage =
-          typeof productRes.error === 'string' ? productRes.error : 'Failed to create product';
+          typeof productRes.error === "string"
+            ? productRes.error
+            : "Failed to create product";
         toast.error(errorMessage);
         return;
       }
 
-      console.log('[SUCCESS] Product created successfully');
+      console.log("[SUCCESS] Product created successfully");
       const successMessage = isDraft
-        ? 'Product saved as draft successfully!'
-        : 'Product created successfully!';
+        ? "Product saved as draft successfully!"
+        : "Product created successfully!";
       setSuccess(successMessage);
       toast.success(successMessage);
 
       methods.reset();
       setActiveStep(0);
     } catch (err: unknown) {
-      console.error('[ERROR] Product creation failed', err);
+      console.error("[ERROR] Product creation failed", err);
 
       let errorMessage: string;
 
@@ -388,10 +413,10 @@ export default function ProductCreationWizard() {
         errorMessage = err.message;
       } else if (isError(err)) {
         errorMessage = err.message;
-      } else if (typeof err === 'string') {
+      } else if (typeof err === "string") {
         errorMessage = err;
       } else {
-        errorMessage = 'Failed to create product';
+        errorMessage = "Failed to create product";
       }
 
       setError(errorMessage);
@@ -402,27 +427,29 @@ export default function ProductCreationWizard() {
   };
 
   const saveAsDraft = async (): Promise<void> => {
-    console.log('[STEP] Saving as draft...');
+    console.log("[STEP] Saving as draft...");
     const data = methods.getValues();
     await processProductSubmission(data, true);
   };
 
-  const handleSubmit: SubmitHandler<ProductFormData> = async (data): Promise<void> => {
+  const handleSubmit: SubmitHandler<ProductFormData> = async (
+    data,
+  ): Promise<void> => {
     // Only allow submission on the Review step (last step)
     if (activeStep !== steps.length - 1) {
-      console.warn('[SUBMIT] Form submission prevented - not on Review step');
+      console.warn("[SUBMIT] Form submission prevented - not on Review step");
       return;
     }
 
-    console.log('[SUBMIT] Product Data', data);
+    console.log("[SUBMIT] Product Data", data);
 
     await processProductSubmission(
       {
         ...data,
-        status: 'PUBLISHED',
-        visibility: 'PUBLIC',
+        status: "PUBLISHED",
+        visibility: "PUBLIC",
       },
-      false
+      false,
     );
   };
 
@@ -434,23 +461,31 @@ export default function ProductCreationWizard() {
     } else {
       // If not on last step, just prevent default and do nothing
       // The Next button will handle navigation
-      console.log('[FORM] Submission prevented - use Next button to continue');
+      console.log("[FORM] Submission prevented - use Next button to continue");
     }
   };
 
   const renderStep = (step: number): React.ReactNode => {
-    const watchedCategoryIds = methods.watch('selectedCategoryIds');
+    const watchedCategoryIds = methods.watch("selectedCategoryIds");
 
     switch (step) {
       case 0:
-        return <CategoryStep categories={preloadedData.categories!} loading={loading} />;
+        return (
+          <CategoryStep
+            categories={preloadedData.categories!}
+            loading={loading}
+          />
+        );
       case 1: {
-        const selectedCategoryIds = watchedCategoryIds?.map((id: string) => id.toString()) ?? [];
+        const selectedCategoryIds =
+          watchedCategoryIds?.map((id: string) => id.toString()) ?? [];
 
         if (selectedCategoryIds.length === 0) {
-          toast.warning('No categories selected. Please go back and select at least one category.');
+          toast.warning(
+            "No categories selected. Please go back and select at least one category.",
+          );
           return (
-            <div className='p-4 text-center text-muted-foreground'>
+            <div className="p-4 text-center text-muted-foreground">
               Please select categories in the previous step first.
             </div>
           );
@@ -468,7 +503,11 @@ export default function ProductCreationWizard() {
       case 3:
         return <SpecificationsStep specGroups={preloadedData.specGroups!} />;
       case 4:
-        return <VariantsStep selectedOptionSets={methods.watch('selectedOptionSets')} />;
+        return (
+          <VariantsStep
+            selectedOptionSets={methods.watch("selectedOptionSets")}
+          />
+        );
       case 5:
         return <ReviewStep />;
       default:
@@ -478,44 +517,46 @@ export default function ProductCreationWizard() {
 
   return (
     <FormProvider {...methods}>
-      <div className='max-w-6xl mx-auto p-6 py-14'>
+      <div className="max-w-6xl mx-auto p-6 py-14">
         {/* Title */}
-        <h1 className='text-2xl font-semibold mb-6'>Create New Product</h1>
+        <h1 className="text-2xl font-semibold mb-6">Create New Product</h1>
 
         {/* Stepper */}
-        <div className='flex items-center gap-4 mb-8'>
+        <div className="flex items-center gap-4 mb-8">
           {steps.map((label, index) => (
-            <div key={label} className='flex items-center gap-2'>
+            <div key={label} className="flex items-center gap-2">
               <div
                 className={`h-8 w-8 flex items-center justify-center rounded-full text-sm font-medium
               ${
                 index <= activeStep
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-muted-foreground text-muted-foreground'
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-muted-foreground text-muted-foreground"
               }
             `}
               >
-                {index < activeStep ? <Check className='h-4 w-4' /> : index + 1}
+                {index < activeStep ? <Check className="h-4 w-4" /> : index + 1}
               </div>
               <span
                 className={`text-sm ${
-                  index === activeStep ? 'font-medium' : 'text-muted-foreground'
+                  index === activeStep ? "font-medium" : "text-muted-foreground"
                 }`}
               >
                 {label}
               </span>
-              {index !== steps.length - 1 && <div className='w-6 h-px bg-muted-foreground/30' />}
+              {index !== steps.length - 1 && (
+                <div className="w-6 h-px bg-muted-foreground/30" />
+              )}
             </div>
           ))}
         </div>
 
         {/* Form Card */}
-        <Card className='mb-6'>
-          <CardHeader className='flex justify-between items-start'>
+        <Card className="mb-6">
+          <CardHeader className="flex justify-between items-start">
             <CardTitle>{steps[activeStep]}</CardTitle>
             <Button
-              type='button'
-              variant='destructive'
+              type="button"
+              variant="destructive"
               onClick={saveAsDraft}
               disabled={loading || activeStep < 3}
             >
@@ -524,14 +565,14 @@ export default function ProductCreationWizard() {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleFormSubmit} className='space-y-6' noValidate>
+            <form onSubmit={handleFormSubmit} className="space-y-6" noValidate>
               {renderStep(activeStep)}
 
               {/* Navigation Buttons */}
-              <div className='flex justify-between pt-6'>
+              <div className="flex justify-between pt-6">
                 <Button
-                  type='button'
-                  variant={'outline'}
+                  type="button"
+                  variant={"outline"}
                   disabled={activeStep === 0}
                   onClick={handleBack}
                 >
@@ -539,12 +580,18 @@ export default function ProductCreationWizard() {
                 </Button>
 
                 {activeStep === steps.length - 1 ? (
-                  <Button type='submit' disabled={loading} className='min-w-[140px]'>
-                    {loading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                    {loading ? 'Creating...' : 'Create Product'}
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="min-w-[140px]"
+                  >
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {loading ? "Creating..." : "Create Product"}
                   </Button>
                 ) : (
-                  <Button type='button' onClick={handleNext} disabled={loading}>
+                  <Button type="button" onClick={handleNext} disabled={loading}>
                     Next
                   </Button>
                 )}
@@ -555,17 +602,17 @@ export default function ProductCreationWizard() {
 
         {/* Error Alert */}
         {error && (
-          <div className='p-4 mb-4 text-red-700 bg-red-50 border border-red-200 rounded-md'>
-            <p className='font-medium'>Error</p>
-            <p className='text-sm'>{error}</p>
+          <div className="p-4 mb-4 text-red-700 bg-red-50 border border-red-200 rounded-md">
+            <p className="font-medium">Error</p>
+            <p className="text-sm">{error}</p>
           </div>
         )}
 
         {/* Success Alert */}
         {success && (
-          <div className='p-4 mb-4 text-green-700 bg-green-50 border border-green-200 rounded-md'>
-            <p className='font-medium'>Success</p>
-            <p className='text-sm'>{success}</p>
+          <div className="p-4 mb-4 text-green-700 bg-green-50 border border-green-200 rounded-md">
+            <p className="font-medium">Success</p>
+            <p className="text-sm">{success}</p>
           </div>
         )}
       </div>

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Loader2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { deleteProduct } from '@/actions/product/product';
+import { Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { deleteProduct } from "@/actions/product/product";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/shared/components/ui/alert-dialog';
+} from "@/shared/components/ui/alert-dialog";
 
 interface DeleteProductDialogProps {
   productId: string | null;
@@ -44,12 +44,12 @@ export default function DeleteProductDialog({
         return;
       }
 
-      toast.success('Product deleted successfully');
+      toast.success("Product deleted successfully");
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error deleting product:', error);
-      toast.error('Failed to delete product');
+      console.error("Error deleting product:", error);
+      toast.error("Failed to delete product");
     } finally {
       setLoading(false);
     }
@@ -61,8 +61,9 @@ export default function DeleteProductDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Product</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;{productName}&quot;? This action cannot be undone
-            and will permanently delete the product and all associated data.
+            Are you sure you want to delete &quot;{productName}&quot;? This
+            action cannot be undone and will permanently delete the product and
+            all associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -70,10 +71,10 @@ export default function DeleteProductDialog({
           <AlertDialogAction
             onClick={handleDelete}
             disabled={loading}
-            className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {loading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-            {loading ? 'Deleting...' : 'Delete Product'}
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? "Deleting..." : "Delete Product"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

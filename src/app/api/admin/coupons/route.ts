@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import Prisma from "@/shared/lib/prisma";
 import { authAdmin } from "@/shared/lib/utils/auth";
 
@@ -368,4 +368,3 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
-

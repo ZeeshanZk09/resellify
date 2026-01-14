@@ -16,7 +16,7 @@ const CollectionCard = ({ collection }: TProps) => {
     collection.products.some(
       (p) =>
         Array.isArray(p?.product?.images) &&
-        p.product.images.some((i) => Boolean(i?.path))
+        p.product.images.some((i) => Boolean(i?.path)),
     );
   const anyImagePath = (() => {
     if (!anyImageExistsOnAnyCatOrSubCat) return undefined;

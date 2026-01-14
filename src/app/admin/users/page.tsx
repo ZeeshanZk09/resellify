@@ -1,7 +1,7 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { getUsers } from "@/actions/admin/users";
+import { auth } from "@/auth";
 import UsersClient from "./usersClient";
 
 export const dynamic = "force-dynamic";
