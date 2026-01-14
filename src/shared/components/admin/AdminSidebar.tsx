@@ -5,8 +5,10 @@ import {
   HomeIcon,
   LayoutListIcon,
   Menu,
+  ReceiptIcon,
   SquarePenIcon,
   SquarePlusIcon,
+  Store,
   TicketPercentIcon,
   User,
 } from "lucide-react";
@@ -23,18 +25,9 @@ export default function AdminSidebar() {
     { name: "Dashboard", href: "/admin", icon: HomeIcon },
     { name: "Users", href: "/admin/users", icon: User },
     { name: "Coupons", href: "/admin/coupons", icon: TicketPercentIcon },
-    { name: "Add Product", href: "/admin/add-product", icon: SquarePlusIcon },
-    {
-      name: "Manage Product",
-      href: "/admin/manage-product",
-      icon: SquarePenIcon,
-    },
-    {
-      name: "Manage Category",
-      href: "/admin/manage-categories",
-      icon: Copy,
-    },
+    { name: "Inventory", href: "/admin/add-product", icon: Store },
     { name: "Orders", href: "/admin/orders", icon: LayoutListIcon },
+    { name: "Invoices", href: "/admin/invoices", icon: ReceiptIcon },
   ];
 
   return (

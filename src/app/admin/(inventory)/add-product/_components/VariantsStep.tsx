@@ -45,7 +45,7 @@ export default function VariantsStep({
 }: VariantsStepProps) {
   const { control, watch, setValue } = useFormContext();
   const [variantMethod, setVariantMethod] = useState<"matrix" | "manual">(
-    "matrix",
+    "matrix"
   );
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string[]>
@@ -71,20 +71,20 @@ export default function VariantsStep({
 
   const generateVariants = () => {
     const selectedOptionArrays = Object.values(selectedOptions).filter(
-      (arr) => arr.length > 0,
+      (arr) => arr.length > 0
     );
     if (selectedOptionArrays.length === 0) return;
 
     const generateCombinations = (
       arrays: string[][],
       index = 0,
-      current: string[] = [],
+      current: string[] = []
     ): string[][] => {
       if (index === arrays.length) return [current];
       const result: string[][] = [];
       for (const optionId of arrays[index]) {
         result.push(
-          ...generateCombinations(arrays, index + 1, [...current, optionId]),
+          ...generateCombinations(arrays, index + 1, [...current, optionId])
         );
       }
       return result;
@@ -106,12 +106,12 @@ export default function VariantsStep({
           })
           .filter(
             (
-              obj,
+              obj
             ): obj is {
               optionSetId: string;
               optionId: string;
               option: Option;
-            } => obj !== null,
+            } => obj !== null
           );
 
         const variantTitle = optionObjects
@@ -121,7 +121,7 @@ export default function VariantsStep({
           opt.option.name
             .replace(/[^a-zA-Z0-9]/g, "")
             .toUpperCase()
-            .substring(0, 3),
+            .substring(0, 3)
         );
         const baseSku = (watch("sku") as string) || "PROD";
 
@@ -137,8 +137,9 @@ export default function VariantsStep({
             optionId: obj.optionId,
           })),
           weightGram: null,
+          images: [],
         };
-      },
+      }
     );
 
     setValue("variants", generatedVariants);
@@ -159,6 +160,7 @@ export default function VariantsStep({
       isDefault: variants.length === 0,
       options: manualVariant.options,
       weightGram: null,
+      images: [],
     };
 
     setValue("variants", [...variants, newVariant]);
@@ -168,7 +170,7 @@ export default function VariantsStep({
   const updateVariantField = (
     index: number,
     field: keyof FormVariant,
-    value: any,
+    value: any
   ) => {
     const updated = [...variants];
     updated[index] = { ...updated[index], [field]: value };
@@ -242,7 +244,7 @@ export default function VariantsStep({
                       <div className="flex flex-wrap gap-1.5">
                         {set.options?.map((option) => {
                           const active = selectedOptions[set.id]?.includes(
-                            option.id,
+                            option.id
                           );
                           return (
                             <button
@@ -274,7 +276,7 @@ export default function VariantsStep({
                 <Button
                   onClick={generateVariants}
                   disabled={Object.values(selectedOptions).every(
-                    (arr) => arr.length === 0,
+                    (arr) => arr.length === 0
                   )}
                 >
                   <Sparkles className="h-4 w-4 mr-2" /> Generate Variants
@@ -363,8 +365,8 @@ export default function VariantsStep({
                                 i === index
                                   ? isChecked
                                   : isChecked
-                                    ? false
-                                    : v.isDefault,
+                                  ? false
+                                  : v.isDefault,
                             }));
                             setValue("variants", updated);
                           }}
