@@ -52,7 +52,7 @@ const CategoryListItem = ({ categoryData, setCatId, className }: TProps) => {
       onMouseLeave={() => setHovered(false)}
     >
       <Link
-        href={"/categories/" + slug}
+        href={"/category/" + slug}
         className="text-foreground/80 transition-colors duration-300 hover:text-foreground"
       >
         <div className="w-7 inline-block">
@@ -77,11 +77,11 @@ const CategoryListItem = ({ categoryData, setCatId, className }: TProps) => {
         )}
       </div>
       {subCategories && subCategories.length > 0 && (
-        <div className="w-[300px] subCat absolute z-[12] left-56 top-0 flex flex-col p-3 bg-card rounded-lg overflow-hidden shadow-md transition-all duration-400 invisible opacity-0 group-hover:visible group-hover:opacity-100">
+        <div className="w-[300px] subCat absolute z-12 left-56 top-0 flex flex-col p-3 bg-card rounded-lg overflow-hidden shadow-md transition-all duration-400 invisible opacity-0 group-hover:visible group-hover:opacity-100">
           {subCategories.map((item, index) => (
             <div className="w-full flex flex-col" key={item.id ?? index}>
               <Link
-                href={"/categories/" + slug + "/" + item.slug}
+                href={"/category/" + slug + "/" + item.slug}
                 className="text-card-foreground px-3 py-2 border border-background rounded-md transition-all duration-300 hover:border-background/80 hover:bg-background/80"
               >
                 {item.name}

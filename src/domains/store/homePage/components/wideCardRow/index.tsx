@@ -52,8 +52,7 @@ export const WideCardRow = ({ cards }: TProps) => {
         // Title: the category name
         const title = category?.name || "Deals";
 
-        // URL: link to category deals
-        const url = category?.slug ? `/categories/${category.slug}` : "#";
+        const url = category?.slug ? `/category/${category.slug}` : "#";
 
         return (
           <WideCard

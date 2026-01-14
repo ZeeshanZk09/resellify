@@ -22,7 +22,7 @@ export const TopSellingProductsList = ({
         <div
           className={`flex justify-between gap-3.5 ${
             TopProducts && TopProducts.length > 4
-              ? "overflow-x-scroll [&::-webkit-scrollbar]:h-1  [&::-webkit-scrollbar-track]:bg-foreground/20  [&::-webkit-scrollbar-thumb]:bg-foreground/20"
+              ? "overflow-x-scroll [&::-webkit-scrollbar]:h-0"
               : "w-full justify-between"
           }`}
         >

@@ -101,7 +101,7 @@ export const getAllCategories = async (catId: string) => {
     // }
 
     const parentCategory = categories.find(
-      (category: Category) => category.id === catId,
+      (category: Category) => category.id === catId
     );
 
     return {
@@ -257,7 +257,7 @@ export const getCategoryTree = async () => {
         slug: c.slug,
         description: c.description,
         children: [],
-      }),
+      })
     );
 
     flat.forEach((c) => {
@@ -270,6 +270,174 @@ export const getCategoryTree = async () => {
     });
 
     return { res: roots };
+  } catch {
+    return { error: "Cant read Category Groups" };
+  }
+};
+
+export const findCategoryByQuery = async (rawQuery: string) => {
+  const query = rawQuery.trim();
+
+  if (!query) {
+    return { data: null, error: "Empty query" };
+  }
+
+  const normalized = query.toLowerCase();
+
+  try {
+    const categories = await db.category.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        parentId: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!categories || categories.length === 0) {
+      return { data: null, error: "No categories found" };
+    }
+
+    const leafCategories = categories.filter((c) =>
+      categories.every((other) => other.parentId !== c.id)
+    );
+
+    const exactSlugMatch = leafCategories.find(
+      (c) => c.slug.toLowerCase() === normalized
+    );
+
+    if (exactSlugMatch) {
+      const parent =
+        categories.find((c) => c.id === exactSlugMatch.parentId) ||
+        exactSlugMatch;
+
+      return {
+        data: {
+          parentSlug: parent.slug,
+          categorySlug: exactSlugMatch.slug,
+        },
+        error: null,
+      };
+    }
+
+    const nameMatch = leafCategories.find(
+      (c) => c.name.toLowerCase() === normalized
+    );
+
+    if (nameMatch) {
+      const parent =
+        categories.find((c) => c.id === nameMatch.parentId) || nameMatch;
+
+      return {
+        data: {
+          parentSlug: parent.slug,
+          categorySlug: nameMatch.slug,
+        },
+        error: null,
+      };
+    }
+
+    const partialNameMatch = leafCategories.find((c) =>
+      c.name.toLowerCase().includes(normalized)
+    );
+
+    if (partialNameMatch) {
+      const parent =
+        categories.find((c) => c.id === partialNameMatch.parentId) ||
+        partialNameMatch;
+
+      return {
+        data: {
+          parentSlug: parent.slug,
+          categorySlug: partialNameMatch.slug,
+        },
+        error: null,
+      };
+    }
+
+    const parentCandidate =
+      categories.find((c) => c.slug.toLowerCase() === normalized) ??
+      categories.find((c) => c.name.toLowerCase() === normalized) ??
+      categories.find((c) => c.name.toLowerCase().includes(normalized));
+
+    if (parentCandidate) {
+      const childLeaf = leafCategories.find(
+        (leaf) => leaf.parentId === parentCandidate.id
+      );
+
+      if (childLeaf) {
+        return {
+          data: {
+            parentSlug: parentCandidate.slug,
+            categorySlug: childLeaf.slug,
+          },
+          error: null,
+        };
+      }
+    }
+
+    return { data: null, error: "Category not found" };
+  } catch {
+    return { data: null, error: "Cant read Category Groups" };
+  }
+};
+
+export const getCategoryBySlugPath = async (
+  categorySlug: string,
+  subcategorySlug?: string | null
+) => {
+  try {
+    const categories = await db.category.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        parentId: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!categories || categories.length === 0) {
+      return { error: "Can't read categories" };
+    }
+
+    const parent = categories.find(
+      (c) => c.slug === categorySlug && c.parentId === null
+    );
+
+    if (!parent) {
+      return { error: "Category not found" };
+    }
+
+    if (subcategorySlug) {
+      const child = categories.find(
+        (c) => c.slug === subcategorySlug && c.parentId === parent.id
+      );
+
+      if (!child) {
+        return { error: "Subcategory not found" };
+      }
+
+      return {
+        res: {
+          parent,
+          category: child,
+        },
+      };
+    }
+
+    return {
+      res: {
+        parent,
+        category: parent,
+      },
+    };
   } catch {
     return { error: "Cant read Category Groups" };
   }

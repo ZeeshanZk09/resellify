@@ -4,6 +4,9 @@ import {
   CompanyLogoList,
   HomeCategoryList,
   HomeSlider,
+  LatestBlogPosts,
+  MarketingFeatures,
+  Newsletter,
   TodayDealCards,
   TopSellingProductsList,
   WideCardRow,
@@ -42,11 +45,14 @@ export default async function Home() {
           <HomeCategoryList />
           <HomeSlider slides={SlidesData} key={Math.random() * 10000} />
         </div>
+        <MarketingFeatures />
         <WideCardRow cards={offers} />
         <TodayDealCards TodayDeals={todaysDeals} />
         <CollectionCards CollectionsData={collections} />
         <TopSellingProductsList TopProducts={topSellingProducts} />
         <CompanyLogoList COMPANIES_LOGOS={brands} />
+        <LatestBlogPosts />
+        <Newsletter />
       </div>
     </div>
   );

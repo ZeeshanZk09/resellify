@@ -19,7 +19,7 @@ export const TodayDealCards = ({
       <div
         className={cn(
           `flex gap-3.5 pb-7`,
-          "overflow-x-scroll [&::-webkit-scrollbar]:h-1  [&::-webkit-scrollbar-track]:bg-foreground/20  [&::-webkit-scrollbar-thumb]:bg-foreground/20",
+          "overflow-x-scroll [&::-webkit-scrollbar]:h-0"
         )}
       >
         {TodayDeals?.map((deal) => {
@@ -32,7 +32,7 @@ export const TodayDealCards = ({
           console.log(
             "productDescription: ",
             deal?.description || undefined,
-            deal?.shortDescription!,
+            deal?.shortDescription!
           );
 
           return (
@@ -51,7 +51,7 @@ export const TodayDealCards = ({
                   (option) => ({
                     name: option.option.name,
                     value: option.option.value ?? "N/A",
-                  }),
+                  })
                 ) ?? ([] as { name: string; value: string | null }[])
               }
               dealEndTime={deal?.endsAt!}

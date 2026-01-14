@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/shared/components/ui/textarea";
 import { OptionType } from "@/shared/lib/generated/prisma/enums";
 import { generateCategorySlug } from "@/shared/lib/utils/category";
+import type { Category } from "@/shared/lib/generated/prisma/browser";
 export default function CategoryManagerPage() {
   // Category
   const [categoryName, setCategoryName] = useState("");
@@ -99,7 +100,7 @@ export default function CategoryManagerPage() {
       if (value.trim()) {
         const slug = await generateCategorySlug(value);
         setSubcategories((prev) =>
-          prev.map((s) => (s.id === id ? { ...s, slug } : s)),
+          prev.map((s) => (s.id === id ? { ...s, slug } : s))
         );
       }
     }, 500);
@@ -112,7 +113,7 @@ export default function CategoryManagerPage() {
         clearTimeout(categoryTimeoutRef.current);
       }
       subcategoryTimeoutsRef.current.forEach((timeout) =>
-        clearTimeout(timeout),
+        clearTimeout(timeout)
       );
     };
   }, []);
@@ -126,7 +127,7 @@ export default function CategoryManagerPage() {
   };
   const updateSubcategory = (
     id: string,
-    patch: Partial<{ name: string; description: string }>,
+    patch: Partial<{ name: string; description: string }>
   ) => {
     setSubcategories((prev) =>
       prev.map((s) => {
@@ -137,7 +138,7 @@ export default function CategoryManagerPage() {
           handleSubcategoryNameChange(id, patch.name);
         }
         return updated;
-      }),
+      })
     );
   };
   const removeSubcategory = (id: string) => {
@@ -156,10 +157,10 @@ export default function CategoryManagerPage() {
     ]);
   const updateOptionSet = (
     id: string,
-    patch: Partial<{ name: string; type: OptionType }>,
+    patch: Partial<{ name: string; type: OptionType }>
   ) =>
     setOptionSets((prev) =>
-      prev.map((os) => (os.id === id ? { ...os, ...patch } : os)),
+      prev.map((os) => (os.id === id ? { ...os, ...patch } : os))
     );
   const removeOptionSet = (id: string) =>
     setOptionSets((prev) => prev.filter((os) => os.id !== id));
@@ -175,14 +176,14 @@ export default function CategoryManagerPage() {
             { id: cryptoRandomId(), name: "", value: "", position: pos },
           ],
         };
-      }),
+      })
     );
   };
 
   const updateOption = (
     optionSetId: string,
     optionId: string,
-    patch: Partial<{ name: string; value: string }>,
+    patch: Partial<{ name: string; value: string }>
   ) => {
     setOptionSets((prev) =>
       prev.map((os) => {
@@ -190,10 +191,10 @@ export default function CategoryManagerPage() {
         return {
           ...os,
           options: os.options.map((o) =>
-            o.id === optionId ? { ...o, ...patch } : o,
+            o.id === optionId ? { ...o, ...patch } : o
           ),
         };
-      }),
+      })
     );
   };
 
@@ -205,7 +206,7 @@ export default function CategoryManagerPage() {
           .filter((o) => o.id !== optionId)
           .map((o, idx) => ({ ...o, position: idx + 1 }));
         return { ...os, options: newOptions };
-      }),
+      })
     );
   };
 
@@ -215,6 +216,137 @@ export default function CategoryManagerPage() {
       return (crypto as any).randomUUID();
     return Math.random().toString(36).slice(2, 9);
   }
+
+  const [allCategories, setAllCategories] = useState<
+    Array<Category & { parentId: string | null }>
+  >([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  const loadCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const res = await fetch("/api/admin/categories", { cache: "no-store" });
+      if (!res.ok) {
+        toast.error("Failed to load categories");
+        setLoadingCategories(false);
+        return;
+      }
+      const data = (await res.json()) as {
+        categories: Array<Category & { parentId: string | null }>;
+      };
+      setAllCategories(data.categories || []);
+    } catch {
+      toast.error("Failed to load categories");
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadCategories();
+  }, []);
+
+  const [editMap, setEditMap] = useState<
+    Record<
+      string,
+      { name: string; description: string; slug: string; dirty: boolean }
+    >
+  >({});
+
+  const startEdit = (cat: Category & { parentId: string | null }) => {
+    setEditMap((prev) => ({
+      ...prev,
+      [cat.id]: {
+        name: cat.name,
+        description: cat.description || "",
+        slug: cat.slug,
+        dirty: false,
+      },
+    }));
+  };
+
+  const updateEditField = (
+    id: string,
+    field: "name" | "description" | "slug",
+    value: string
+  ) => {
+    setEditMap((prev) => {
+      const current = prev[id];
+      if (!current) return prev;
+      const next = { ...current, [field]: value, dirty: true };
+      return { ...prev, [id]: next };
+    });
+  };
+
+  const applyAutoSlug = async (id: string) => {
+    const current = editMap[id];
+    if (!current) return;
+    if (current.name.trim()) {
+      const slug = await generateCategorySlug(current.name.trim());
+      setEditMap((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], slug, dirty: true },
+      }));
+    }
+  };
+
+  const saveEdit = async (id: string) => {
+    const current = editMap[id];
+    if (!current) return;
+    try {
+      const res = await fetch("/api/admin/categories", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          name: current.name.trim() || undefined,
+          description: current.description.trim() || undefined,
+          slug: current.slug.trim() || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Update failed");
+        return;
+      }
+      const updated = await res.json();
+      toast.success("Category updated");
+      setEditMap((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      setAllCategories((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, ...updated.category } : c))
+      );
+    } catch {
+      toast.error("Update failed");
+    }
+  };
+
+  const deleteCat = async (id: string) => {
+    try {
+      const res = await fetch("/api/admin/categories", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Delete failed");
+        return;
+      }
+      toast.success("Category deleted");
+      setAllCategories((prev) => prev.filter((c) => c.id !== id));
+      setEditMap((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch {
+      toast.error("Delete failed");
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -461,6 +593,238 @@ export default function CategoryManagerPage() {
           </form>
         </CardContent>
       </Card>
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-semibold">Manage Categories</h2>
+          <Button type="button" onClick={() => void loadCategories()}>
+            Refresh
+          </Button>
+        </div>
+        {loadingCategories ? (
+          <div className="p-4 text-sm text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="space-y-4">
+            {allCategories
+              .filter((c) => c.parentId === null)
+              .map((parent) => (
+                <Card key={parent.id}>
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-lg font-medium">Parent Category</div>
+                      {editMap[parent.id] ? (
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            onClick={() => saveEdit(parent.id)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            type="button"
+                            onClick={() => deleteCat(parent.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            onClick={() => startEdit(parent)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            type="button"
+                            onClick={() => deleteCat(parent.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {editMap[parent.id] ? (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <label className="block">
+                          <div className="text-xs mb-1">Name</div>
+                          <Input
+                            value={editMap[parent.id].name}
+                            onChange={(e) =>
+                              updateEditField(parent.id, "name", e.target.value)
+                            }
+                            onBlur={() => void applyAutoSlug(parent.id)}
+                          />
+                        </label>
+                        <label className="block">
+                          <div className="text-xs mb-1">Description</div>
+                          <Input
+                            value={editMap[parent.id].description}
+                            onChange={(e) =>
+                              updateEditField(
+                                parent.id,
+                                "description",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </label>
+                        <label className="block">
+                          <div className="text-xs mb-1">Slug</div>
+                          <Input
+                            value={editMap[parent.id].slug}
+                            onChange={(e) =>
+                              updateEditField(parent.id, "slug", e.target.value)
+                            }
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <div className="text-xs mb-1">Name</div>
+                          <div className="text-sm">{parent.name}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs mb-1">Description</div>
+                          <div className="text-sm">
+                            {parent.description || ""}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs mb-1">Slug</div>
+                          <div className="text-sm">{parent.slug}</div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="pt-2">
+                      <div className="text-sm font-medium mb-2">
+                        Subcategories
+                      </div>
+                      <div className="space-y-2">
+                        {allCategories
+                          .filter((c) => c.parentId === parent.id)
+                          .map((child) => (
+                            <div
+                              key={child.id}
+                              className="p-2 border rounded-md"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="text-sm font-medium">
+                                  Subcategory
+                                </div>
+                                {editMap[child.id] ? (
+                                  <div className="flex gap-2">
+                                    <Button
+                                      type="button"
+                                      onClick={() => saveEdit(child.id)}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      type="button"
+                                      onClick={() => deleteCat(child.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-2">
+                                    <Button
+                                      type="button"
+                                      onClick={() => startEdit(child)}
+                                    >
+                                      Edit
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      type="button"
+                                      onClick={() => deleteCat(child.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                              {editMap[child.id] ? (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                                  <label className="block">
+                                    <div className="text-xs mb-1">Name</div>
+                                    <Input
+                                      value={editMap[child.id].name}
+                                      onChange={(e) =>
+                                        updateEditField(
+                                          child.id,
+                                          "name",
+                                          e.target.value
+                                        )
+                                      }
+                                      onBlur={() =>
+                                        void applyAutoSlug(child.id)
+                                      }
+                                    />
+                                  </label>
+                                  <label className="block">
+                                    <div className="text-xs mb-1">
+                                      Description
+                                    </div>
+                                    <Input
+                                      value={editMap[child.id].description}
+                                      onChange={(e) =>
+                                        updateEditField(
+                                          child.id,
+                                          "description",
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  </label>
+                                  <label className="block">
+                                    <div className="text-xs mb-1">Slug</div>
+                                    <Input
+                                      value={editMap[child.id].slug}
+                                      onChange={(e) =>
+                                        updateEditField(
+                                          child.id,
+                                          "slug",
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  </label>
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                                  <div>
+                                    <div className="text-xs mb-1">Name</div>
+                                    <div className="text-sm">{child.name}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs mb-1">
+                                      Description
+                                    </div>
+                                    <div className="text-sm">
+                                      {child.description || ""}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs mb-1">Slug</div>
+                                    <div className="text-sm">{child.slug}</div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

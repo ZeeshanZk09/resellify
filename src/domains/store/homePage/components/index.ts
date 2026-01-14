@@ -6,3 +6,5 @@ export { HomeSlider } from "./slider";
 export { TodayDealCards } from "./todayDealCard";
 export { TopSellingProductsList } from "./topSellingProductsList";
 export { WideCardRow } from "./wideCardRow";
+export { MarketingFeatures } from "./marketing/MarketingFeatures";
+export { Newsletter } from "./marketing/Newsletter";

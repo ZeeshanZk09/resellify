@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   type GetInitialProducts,
+  loadMoreCategoryProducts,
   loadMoreProducts,
 } from "@/actions/product/product";
 import ProductCard from "@/domains/product/components/productCard";
@@ -10,10 +11,16 @@ import ProductSkeleton from "./ProductSkeleton";
 interface ProductListProps {
   initialProducts: NonNullable<GetInitialProducts>;
   filteredProducts: NonNullable<GetInitialProducts>;
+  loadMoreMode?: "all" | "category";
+  categorySlug?: string;
+  subcategorySlug?: string;
 }
 export default function ProductList({
   initialProducts,
   filteredProducts,
+  loadMoreMode = "all",
+  categorySlug,
+  subcategorySlug,
 }: ProductListProps) {
   const [products, setProducts] =
     useState<NonNullable<GetInitialProducts>>(initialProducts);
@@ -29,7 +36,17 @@ export default function ProductList({
 
     setIsLoading(true);
     try {
-      const result = (await loadMoreProducts(lastId, 10)).res;
+      let result:
+        | Awaited<ReturnType<typeof loadMoreProducts>>["res"]
+        | Awaited<ReturnType<typeof loadMoreCategoryProducts>>["res"];
+
+      if (loadMoreMode === "category" && categorySlug && subcategorySlug) {
+        result = (
+          await loadMoreCategoryProducts(categorySlug, subcategorySlug, lastId, 10)
+        ).res;
+      } else {
+        result = (await loadMoreProducts(lastId, 10)).res;
+      }
 
       if (result?.products?.length! > 0) {
         setProducts((prev) => [...prev, ...(result?.products || [])]);
