@@ -1,10 +1,10 @@
-"use server";
-import { z } from "zod";
-import type { Category } from "@/shared/lib/generated/prisma/client";
-import db from "@/shared/lib/prisma";
-import { authAdmin, authUser } from "@/shared/lib/utils/auth";
-import { generateCategorySlug } from "@/shared/lib/utils/category";
-import { TCategory } from "@/shared/types/categories";
+'use server';
+import { z } from 'zod';
+import type { Category } from '@/shared/lib/generated/prisma/client';
+import db from '@/shared/lib/prisma';
+import { authAdmin, authUser } from '@/shared/lib/utils/auth';
+import { generateCategorySlug } from '@/shared/lib/utils/category';
+import { TCategory } from '@/shared/types/categories';
 
 //eslint-disable-next-line
 const GetAllCategories = z.object({
@@ -44,14 +44,36 @@ export const getCategories = async () => {
         parentId: null,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     if (!result) return { error: "Can't read categories" };
-    return { res: result as Category[] };
+    return { res: result };
   } catch {
-    return { error: "Cant read Category Groups" };
+    return { error: 'Cant read Category Groups' };
+  }
+};
+
+export type GetCategoriesForMarqueeType = Awaited<ReturnType<typeof getCategoriesForMarquee>>;
+
+export const getCategoriesForMarquee = async () => {
+  try {
+    const result = await db.category.findMany({
+      select: {
+        name: true,
+        slug: true,
+        id: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    if (!result) return { error: "Can't read categories" };
+    return { res: result };
+  } catch {
+    return { error: 'Cant read Category Groups' };
   }
 };
 
@@ -62,14 +84,14 @@ export const getSubCategoriesById = async (catId: string) => {
         parentId: catId,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     if (!result) return { error: "Can't read categories" };
     return { res: result as Category[] };
   } catch {
-    return { error: "Cant read Category Groups" };
+    return { error: 'Cant read Category Groups' };
   }
 };
 
@@ -80,7 +102,7 @@ export const getAllCategories = async (catId: string) => {
         parentId: null,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
       include: {
         children: true,
@@ -100,16 +122,14 @@ export const getAllCategories = async (catId: string) => {
     //   });
     // }
 
-    const parentCategory = categories.find(
-      (category: Category) => category.id === catId,
-    );
+    const parentCategory = categories.find((category: Category) => category.id === catId);
 
     return {
       categories,
       subCategories: parentCategory?.children ?? [],
     };
   } catch {
-    return { error: "Cant read Category Groups" };
+    return { error: 'Cant read Category Groups' };
   }
 };
 
@@ -117,7 +137,7 @@ export const getAllCategoriesFlat = async () => {
   try {
     const result = await db.category.findMany({
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
       select: {
         id: true,
@@ -133,7 +153,7 @@ export const getAllCategoriesFlat = async () => {
     if (!result) return { error: "Can't read categories" };
     return { res: result as (Category & { parentId?: string | null })[] };
   } catch {
-    return { error: "Cant read Category Groups" };
+    return { error: 'Cant read Category Groups' };
   }
 };
 // export const getAllCategoriesJSON = async () => {
@@ -150,7 +170,7 @@ export const getAllCategoriesFlat = async () => {
 // };
 
 export const addCategory = async (data: TAddCategory) => {
-  if (!AddCategory.safeParse(data).success) return { error: "Invalid Data!" };
+  if (!AddCategory.safeParse(data).success) return { error: 'Invalid Data!' };
   try {
     const session = await authAdmin();
     if ((session as { error: string }).error)
@@ -167,7 +187,7 @@ export const addCategory = async (data: TAddCategory) => {
         updatedAt: data.updatedAt ?? null,
       },
     });
-    if (!result) return { error: "cant add to database" };
+    if (!result) return { error: 'cant add to database' };
     return { res: result };
   } catch (error) {
     return { error: JSON.stringify(error) };
@@ -175,8 +195,7 @@ export const addCategory = async (data: TAddCategory) => {
 };
 
 export const updateCategory = async (data: TUpdateCategory) => {
-  if (!UpdateCategory.safeParse(data).success)
-    return { error: "Data is no valid" };
+  if (!UpdateCategory.safeParse(data).success) return { error: 'Data is no valid' };
 
   const { id, ...values } = data;
 
@@ -213,7 +232,7 @@ export const deleteCategory = async (id: string) => {
     });
 
     if (!result) return { error: "Can't delete it!" };
-    return { res: result || null, message: "Category deleted successfully" };
+    return { res: result || null, message: 'Category deleted successfully' };
   } catch {
     return { error: "Can't delete it!" };
   }
@@ -227,9 +246,7 @@ export type CategoryTreeNode = {
   children: CategoryTreeNode[];
 };
 
-export type GetCategoryTree = Awaited<
-  ReturnType<typeof getCategoryTree>
->["res"];
+export type GetCategoryTree = Awaited<ReturnType<typeof getCategoryTree>>['res'];
 export const getCategoryTree = async () => {
   try {
     const flat = await db.category.findMany({
@@ -243,7 +260,7 @@ export const getCategoryTree = async () => {
         createdAt: true,
         updatedAt: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
     if (!flat) return { error: "Can't read categories" };
 
@@ -257,7 +274,7 @@ export const getCategoryTree = async () => {
         slug: c.slug,
         description: c.description,
         children: [],
-      }),
+      })
     );
 
     flat.forEach((c) => {
@@ -271,7 +288,7 @@ export const getCategoryTree = async () => {
 
     return { res: roots };
   } catch {
-    return { error: "Cant read Category Groups" };
+    return { error: 'Cant read Category Groups' };
   }
 };
 
@@ -279,7 +296,7 @@ export const findCategoryByQuery = async (rawQuery: string) => {
   const query = rawQuery.trim();
 
   if (!query) {
-    return { data: null, error: "Empty query" };
+    return { data: null, error: 'Empty query' };
   }
 
   const normalized = query.toLowerCase();
@@ -293,26 +310,22 @@ export const findCategoryByQuery = async (rawQuery: string) => {
         parentId: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     if (!categories || categories.length === 0) {
-      return { data: null, error: "No categories found" };
+      return { data: null, error: 'No categories found' };
     }
 
     const leafCategories = categories.filter((c) =>
-      categories.every((other) => other.parentId !== c.id),
+      categories.every((other) => other.parentId !== c.id)
     );
 
-    const exactSlugMatch = leafCategories.find(
-      (c) => c.slug.toLowerCase() === normalized,
-    );
+    const exactSlugMatch = leafCategories.find((c) => c.slug.toLowerCase() === normalized);
 
     if (exactSlugMatch) {
-      const parent =
-        categories.find((c) => c.id === exactSlugMatch.parentId) ||
-        exactSlugMatch;
+      const parent = categories.find((c) => c.id === exactSlugMatch.parentId) || exactSlugMatch;
 
       return {
         data: {
@@ -323,13 +336,10 @@ export const findCategoryByQuery = async (rawQuery: string) => {
       };
     }
 
-    const nameMatch = leafCategories.find(
-      (c) => c.name.toLowerCase() === normalized,
-    );
+    const nameMatch = leafCategories.find((c) => c.name.toLowerCase() === normalized);
 
     if (nameMatch) {
-      const parent =
-        categories.find((c) => c.id === nameMatch.parentId) || nameMatch;
+      const parent = categories.find((c) => c.id === nameMatch.parentId) || nameMatch;
 
       return {
         data: {
@@ -340,14 +350,10 @@ export const findCategoryByQuery = async (rawQuery: string) => {
       };
     }
 
-    const partialNameMatch = leafCategories.find((c) =>
-      c.name.toLowerCase().includes(normalized),
-    );
+    const partialNameMatch = leafCategories.find((c) => c.name.toLowerCase().includes(normalized));
 
     if (partialNameMatch) {
-      const parent =
-        categories.find((c) => c.id === partialNameMatch.parentId) ||
-        partialNameMatch;
+      const parent = categories.find((c) => c.id === partialNameMatch.parentId) || partialNameMatch;
 
       return {
         data: {
@@ -364,9 +370,7 @@ export const findCategoryByQuery = async (rawQuery: string) => {
       categories.find((c) => c.name.toLowerCase().includes(normalized));
 
     if (parentCandidate) {
-      const childLeaf = leafCategories.find(
-        (leaf) => leaf.parentId === parentCandidate.id,
-      );
+      const childLeaf = leafCategories.find((leaf) => leaf.parentId === parentCandidate.id);
 
       if (childLeaf) {
         return {
@@ -379,15 +383,15 @@ export const findCategoryByQuery = async (rawQuery: string) => {
       }
     }
 
-    return { data: null, error: "Category not found" };
+    return { data: null, error: 'Category not found' };
   } catch {
-    return { data: null, error: "Cant read Category Groups" };
+    return { data: null, error: 'Cant read Category Groups' };
   }
 };
 
 export const getCategoryBySlugPath = async (
   categorySlug: string,
-  subcategorySlug?: string | null,
+  subcategorySlug?: string | null
 ) => {
   try {
     const categories = await db.category.findMany({
@@ -399,7 +403,7 @@ export const getCategoryBySlugPath = async (
         parentId: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -407,21 +411,17 @@ export const getCategoryBySlugPath = async (
       return { error: "Can't read categories" };
     }
 
-    const parent = categories.find(
-      (c) => c.slug === categorySlug && c.parentId === null,
-    );
+    const parent = categories.find((c) => c.slug === categorySlug && c.parentId === null);
 
     if (!parent) {
-      return { error: "Category not found" };
+      return { error: 'Category not found' };
     }
 
     if (subcategorySlug) {
-      const child = categories.find(
-        (c) => c.slug === subcategorySlug && c.parentId === parent.id,
-      );
+      const child = categories.find((c) => c.slug === subcategorySlug && c.parentId === parent.id);
 
       if (!child) {
-        return { error: "Subcategory not found" };
+        return { error: 'Subcategory not found' };
       }
 
       return {
@@ -439,6 +439,6 @@ export const getCategoryBySlugPath = async (
       },
     };
   } catch {
-    return { error: "Cant read Category Groups" };
+    return { error: 'Cant read Category Groups' };
   }
 };

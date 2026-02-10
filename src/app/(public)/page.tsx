@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { getHome } from "@/actions/landing-dashboard/dashboard";
+import { Suspense } from 'react';
+import { getHome } from '@/actions/landing-dashboard/dashboard';
 import {
   CollectionCards,
   CompanyLogoList,
@@ -13,13 +13,12 @@ import {
   TopSellingProductsList,
   TrendingInCity,
   WideCardRow,
-} from "@/domains/store/homePage/components";
-import { SlidesData } from "@/domains/store/homePage/constants";
-import {
-  FlashSaleSkeleton,
-  ProductGridSkeleton,
-} from "@/shared/components/skeletons";
-import TrustBadges from "@/shared/components/trust/TrustBadges";
+} from '@/domains/store/homePage/components';
+import { SlidesData } from '@/domains/store/homePage/constants';
+import { FlashSaleSkeleton, ProductGridSkeleton } from '@/shared/components/skeletons';
+import TrustBadges from '@/shared/components/trust/TrustBadges';
+import CategoryMarquee from './_components/category-marquee';
+import { getCategoriesForMarquee } from '@/actions/category/category';
 // import { threeSaleCards, twoSaleCards } from '@/domains/store/homePage/constants';
 
 export const revalidate = 0; // Revalidate data on every request for real-time updates
@@ -27,7 +26,7 @@ export const revalidate = 0; // Revalidate data on every request for real-time u
 // Mock function to get user's city - replace with actual geolocation
 function getUserCity() {
   // TODO: Implement IP geolocation or user preference
-  return "Karachi";
+  return 'Karachi';
 }
 
 // Mock function to get flash sales - integrate with your actual data source
@@ -73,42 +72,36 @@ async function getTrendingInCity(city: string) {
 }
 
 export default async function Home() {
-  const {
-    topSellingProducts,
-    todaysDeals,
-    offers,
-    error,
-    details,
-    collections,
-    brands,
-  } = await getHome();
+  const { topSellingProducts, todaysDeals, offers, error, details, collections, brands } =
+    await getHome();
 
   const userCity = getUserCity();
   const { deals: flashSales, endsAt: flashSaleEndsAt } = await getFlashSales();
   const trendingProducts = await getTrendingInCity(userCity);
 
   console.log(
-    "HOME: ",
+    'HOME: ',
     topSellingProducts,
     todaysDeals,
     offers,
     error,
     details,
     collections,
-    brands,
+    brands
   );
 
   return (
-    <div className="bg-mint-500 flex flex-col justify-between max-w-7xl px-5 mx-auto">
-      <div className="storeContainer flex-col">
+    <div className='bg-mint-500 flex flex-col justify-between max-w-7xl px-5 mx-auto'>
+      <div className='storeContainer flex-col'>
+        <CategoryMarquee categoriesPromise={getCategoriesForMarquee()} />
         {/* Hero Section with Categories */}
-        <div className="flex flex-col sm:flex-row gap-5 mt-5">
+        <div className='flex flex-col sm:flex-row gap-5 mt-5'>
           <HomeCategoryList />
           <HomeSlider slides={SlidesData} key={Math.random() * 10000} />
         </div>
 
         {/* Trust Badges - Critical for COD users */}
-        <TrustBadges className="my-6" />
+        <TrustBadges className='my-6' />
 
         {/* Marketing Features */}
         <MarketingFeatures />
@@ -116,11 +109,7 @@ export default async function Home() {
         {/* Flash Sales Section - High Priority for Conversion */}
         {flashSales && flashSales.length > 0 && (
           <Suspense fallback={<FlashSaleSkeleton />}>
-            <FlashSaleSection
-              deals={flashSales}
-              endsAt={flashSaleEndsAt}
-              title="⚡ Flash Sale"
-            />
+            <FlashSaleSection deals={flashSales} endsAt={flashSaleEndsAt} title='⚡ Flash Sale' />
           </Suspense>
         )}
 

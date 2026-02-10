@@ -1,23 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
-function useMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  return isMobile;
+function subscribe(callback: () => void) {
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
 }
 
-export { useMobile };
+function getSnapshot() {
+  return window.innerWidth <= 768;
+}
+
+function getServerSnapshot() {
+  return false; // Default to false on server
+}
+
+export function useMobile() {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}

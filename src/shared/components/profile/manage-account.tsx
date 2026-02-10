@@ -1,22 +1,17 @@
-"use client";
-import { CreditCard, Shield, User } from "lucide-react";
-import type React from "react";
-import { useEffect, useState } from "react";
-import { getUser } from "@/actions/profile/user-accounts";
-import { Separator } from "@/shared/components/ui/separator";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/shared/components/ui/tabs";
-import type { Role } from "@/shared/lib/generated/prisma/enums";
-import { useAuth } from "../auth-provider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import BillingHistory from "./billing-history";
-import DeleteAccount from "./delete-account";
-import PasswordForm from "./password-form";
-import ProfileForm from "./profile-form";
+'use client';
+import { CreditCard, Shield, User } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { getUser } from '@/actions/profile/user-accounts';
+import { Separator } from '@/shared/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import type { Role } from '@/shared/lib/generated/prisma/enums';
+import { useAuth } from '../auth-provider';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import BillingHistory from './billing-history';
+import DeleteAccount from './delete-account';
+import PasswordForm from './password-form';
+import ProfileForm from './profile-form';
 
 type Props = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,119 +19,65 @@ type Props = {
 };
 
 const ManageAccount = ({ setOpen, open }: Props) => {
-  const [activeTab, setActiveTab] = useState("profile");
-  const [accounts, setAccounts] = useState<
-    | {
-        name: string;
-        id: string;
-        email: string;
-        emailVerified: Date | null;
-        password: string;
-        phoneNumber: string | null;
-        role: Role;
-        isActive: boolean;
-        isBlocked: boolean;
-        isPlusMember: boolean;
-        plusUntil: Date | null;
-        createdAt: Date;
-        updatedAt: Date | null;
-      }[]
-    | null
-  >(null);
-  useEffect(() => {
-    async function getUsers() {
-      const user = await getUser();
-      console.log("user: ", user);
-      //   debugger;
-      setAccounts([user] as
-        | [
-            {
-              name: string;
-              id: string;
-              email: string;
-              emailVerified: Date | null;
-              password: string;
-              phoneNumber: string | null;
-              role: Role;
-              isActive: boolean;
-              isBlocked: boolean;
-              isPlusMember: boolean;
-              plusUntil: Date | null;
-              createdAt: Date;
-              updatedAt: Date | null;
-            },
-          ]
-        | null);
-    }
-    getUsers();
-  }, []);
-
-  console.log("accounts: ", accounts);
+  const [activeTab, setActiveTab] = useState('profile');
+  const { user } = useAuth();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className='sm:max-w-2xl'>
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
-        <div className="flex-1">
+        <div className='flex-1'>
           <Tabs
-            defaultValue="profile"
+            defaultValue='profile'
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className='w-full'
           >
-            <TabsList className="mb-6 flex space-x-2">
-              <TabsTrigger value="profile" className="flex items-center">
-                <User className="h-4 w-4 mr-2" />
+            <TabsList className='mb-6 flex space-x-2'>
+              <TabsTrigger value='profile' className='flex items-center'>
+                <User className='h-4 w-4 mr-2' />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="account" className="flex items-center">
-                <Shield className="h-4 w-4 mr-2" />
+              <TabsTrigger value='account' className='flex items-center'>
+                <Shield className='h-4 w-4 mr-2' />
                 Account
               </TabsTrigger>
-              <TabsTrigger value="billing" className="flex items-center">
-                <CreditCard className="h-4 w-4 mr-2" />
+              <TabsTrigger value='billing' className='flex items-center'>
+                <CreditCard className='h-4 w-4 mr-2' />
                 Billing
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="profile">
+            <TabsContent value='profile'>
               <ProfileForm />
             </TabsContent>
-            <TabsContent value="account">
-              <div className="space-y-6">
+            <TabsContent value='account'>
+              <div className='space-y-6'>
                 <PasswordForm />
 
-                {accounts && accounts?.length > 0 && (
+                {user && (
                   <>
-                    {" "}
+                    {' '}
                     <Separator />
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Connected accounts</h4>
-                      {accounts.map((el) => (
-                        <div key={el.id}>
-                          <div className="flex gap-2">
-                            <h4 className="text-sm capitalize">{el.email}</h4>
-                            <div>
-                              <p className="opacity-70 text-sm">• {el.email}</p>
-                              {/* <p className='text-xs ml-2 opacity-60 mt-0.5'>
-                                This account has been{' '}
-                                <b>{user?.provider == el ? 'connected ' : 'disconnected'}</b>.
-                              </p> */}
-                            </div>
-
-                            {/* <Button size={"sm"} variant={"ghost"} className="ml-auto text-xs !text-destructive">Delete</Button> */}
+                    <div className='space-y-2'>
+                      <h4 className='font-medium'>Connected accounts</h4>
+                      <div>
+                        <div className='flex gap-2'>
+                          <h4 className='text-sm capitalize'>{user.email}</h4>
+                          <div>
+                            <p className='opacity-70 text-sm'>• {user.email}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>{" "}
+                      </div>
+                    </div>{' '}
                   </>
                 )}
                 <Separator />
                 <DeleteAccount />
               </div>
             </TabsContent>
-            <TabsContent value="billing">
+            <TabsContent value='billing'>
               <BillingHistory />
             </TabsContent>
           </Tabs>

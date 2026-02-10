@@ -1,33 +1,31 @@
-"use server";
-import { auth } from "@/auth";
-import prisma from "@/shared/lib/prisma";
+'use server';
+import { auth } from '@/auth';
+import prisma from '@/shared/lib/prisma';
 
-export const deleteAccount = async (command: string) => {
+export const deleteAccount = async (prevState: any, formData: FormData) => {
   try {
     const session = await auth();
     const user_email = session?.user?.email;
     if (!user_email) {
-      return { error: "User not found" };
+      return { error: 'User not found' };
     }
+    const command = formData.get('command') as string;
     if (!command) {
       return { error: `Please enter "Delete account"` };
     }
-    if (command !== "Delete account") {
-      return { error: "Incorrect command" };
+    if (command !== 'Delete account') {
+      return { error: 'Incorrect command' };
     }
-    // 1. Delete related accounts
+
+    // Delete user (Prisma will handle cascading if configured, but let's be explicit if needed)
+    // Actually, based on previous code, it was deleting it twice which is weird.
     await prisma.user.delete({
       where: { email: user_email },
     });
 
-    // 3. Finally, delete the user
-    await prisma.user.delete({
-      where: { email: user_email },
-    });
-
-    return { success: "Account deleted successfully!" };
+    return { success: 'Account deleted successfully!' };
   } catch (error) {
-    console.log(error);
-    return { error: (error as Error).message || "Somting wenth wrong" };
+    console.error(error);
+    return { error: (error as Error).message || 'Something went wrong' };
   }
 };

@@ -1,490 +1,216 @@
-"use client";
+'use client';
 
-import { DialogTrigger } from "@radix-ui/react-dialog";
-import { PlusIcon, SendIcon } from "lucide-react";
-import type React from "react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { createAddress, getAddress } from "@/actions/address";
-import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import type { Address } from "@/shared/lib/generated/prisma/client";
+import { DialogTrigger } from '@radix-ui/react-dialog';
+import { PlusIcon, Trash2, MapPin } from 'lucide-react';
+import type React from 'react';
+import { use, useState, Suspense, useActionState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { getAddress, createAddressAction, deleteAddressAction } from '@/actions/address';
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import type { Address } from '@/shared/lib/generated/prisma/client';
+import { cn } from '@/shared/lib/utils';
+
+const addressPromise = getAddress();
 
 export default function AddressPage() {
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
-    null,
+  return (
+    <Suspense fallback={<AddressSkeleton />}>
+      <AddressContent initialAddressPromise={addressPromise} />
+    </Suspense>
   );
-  const [addressLoading, setAddressLoading] = useState(true);
+}
+
+function AddressSkeleton() {
+  return (
+    <div className='max-w-4xl mx-auto p-4 sm:p-6 space-y-6'>
+      <div className='flex justify-between items-center'>
+        <div className='h-8 w-48 bg-gray-200 animate-pulse rounded' />
+        <div className='h-10 w-32 bg-gray-200 animate-pulse rounded' />
+      </div>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        {[1, 2].map((i) => (
+          <div
+            key={`addr-skeleton-${i}`}
+            className='h-40 bg-gray-50 animate-pulse rounded-xl border border-gray-100'
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AddressContent({ initialAddressPromise }: { initialAddressPromise: Promise<Address[]> }) {
+  const initialData = use(initialAddressPromise);
+  const [addresses, setAddresses] = useState<Address[]>(initialData);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(() => {
+    const chosen = initialData.find((a) => a.isDefault) || initialData[0];
+    return chosen?.id || null;
+  });
 
   const [open, setOpen] = useState(false);
-  const [addressForm, setAddressForm] = useState({
-    fullName: "",
-    label: "",
-    phone: "",
-    whatsappNumber: "",
-    line1: "",
-    line2: "",
-    city: "",
-    area: "",
-    state: "",
-    postalCode: "",
-    country: "Pakistan",
-    isDefault: false,
-  });
-  const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-  // Fix: Load addresses on mount
-  const fetchAddresses = useCallback(async () => {
-    setAddressLoading(true); // Set loading start
-    try {
-      const addrList = (await getAddress()) as Address[];
-      setAddresses(addrList || []);
-      // Fix: Don't select if no addresses exist
-      if (addrList && addrList.length > 0) {
-        const chosen = addrList.find((a) => a.isDefault) || addrList[0];
-        setSelectedAddressId(chosen?.id || null);
-      } else {
-        setSelectedAddressId(null);
-      }
-    } catch (e) {
-      console.log(e);
-      setAddresses([]);
-      setSelectedAddressId(null);
-      toast.error("Could not fetch addresses!");
-    } finally {
-      setAddressLoading(false); // Set loading end
-    }
-  }, []);
+  const [state, formAction, isPending] = useActionState(createAddressAction, { error: '' });
 
   useEffect(() => {
-    // Only fetch once on mount
-    fetchAddresses();
-  }, [fetchAddresses]);
-
-  // Address form input change
-  function handleFormChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value, type, checked } = e.target;
-    setAddressForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-  }
-
-  // Validate address fields required per schema
-  function validateAddressForm(): boolean {
-    const errs: { [k: string]: string } = {};
-    if (!addressForm.fullName.trim()) errs.fullName = "Required";
-    if (!addressForm.phone.trim()) errs.phone = "Required";
-    if (!addressForm.line1.trim()) errs.line1 = "Required";
-    if (!addressForm.city.trim()) errs.city = "Required";
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  }
-
-  async function handleSubmitAddress(e: React.FormEvent) {
-    e.preventDefault();
-    if (!validateAddressForm()) {
-      toast.error("Please fix errors before submitting.");
-      return;
-    }
-
-    try {
-      // Explicitly pick the required fields for AddressCreateInput
-      const {
-        fullName,
-        label,
-        phone,
-        whatsappNumber,
-        line1,
-        line2,
-        city,
-        area,
-        state,
-        postalCode,
-        country,
-        isDefault,
-      } = addressForm;
-
-      const cleanAddress = {
-        fullName: fullName.trim(),
-        label: label.trim(),
-        phone: phone.trim(),
-        whatsappNumber: whatsappNumber.trim(),
-        line1: line1.trim(),
-        line2: line2.trim(),
-        city: city.trim(),
-        area: area.trim(),
-        state: state.trim(),
-        postalCode: postalCode.trim(),
-        country: country.trim(),
-      };
-
-      const created = await createAddress(cleanAddress);
-      toast.success("Address added!");
+    if (state?.success) {
+      toast.success(state.success);
       setOpen(false);
-      setAddressForm({
-        fullName: "",
-        label: "",
-        phone: "",
-        whatsappNumber: "",
-        line1: "",
-        line2: "",
-        city: "",
-        area: "",
-        state: "",
-        postalCode: "",
-        country: "Pakistan",
-        isDefault: false,
-      });
-      await fetchAddresses();
-      // Select as the currently selected address if there is one
-      if (created && (created as Address).id) {
-        setSelectedAddressId((created as Address).id);
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Error adding address.");
+      // Refresh addresses list
+      getAddress().then(setAddresses);
+    } else if (state.error) {
+      toast.error(state.error);
     }
-  }
+  }, [state]);
 
-  // Remove debug log or minimize its invocations
-  // console.log('Address-page: ', addresses, selectedAddressId);
+  const handleDelete = async (id: string) => {
+    const res = await deleteAddressAction(id);
+    if (res.success) {
+      toast.success(res.success);
+      setAddresses((prev) => prev.filter((a) => a.id !== id));
+      if (selectedAddressId === id) {
+        setSelectedAddressId(null);
+      }
+    } else {
+      toast.error(res.error);
+    }
+  };
 
   return (
-    <section className=" max-w-4xl mx-auto p-4 md:py-10 space-y-8 ">
-      <div className="flex justify-between items-center">
-        <h2 className="font-semibold text-lg mb-2">Shipping Address</h2>
-
-        {/* Add address button always shows */}
+    <section className='max-w-4xl mx-auto p-4 md:py-10 space-y-8'>
+      <div className='flex justify-between items-center'>
+        <h2 className='font-semibold text-lg'>Shipping Address</h2>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
-              <PlusIcon
-                width={22}
-                className="h-4 w-4"
-                fill="currentColor"
-                strokeWidth={1.5}
-                stroke="currentColor"
-              />
-              <span className="text-sm">Add Address</span>
+            <Button variant='outline' size='sm'>
+              <PlusIcon className='h-4 w-4 mr-2' />
+              Add Address
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className='sm:max-w-md'>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-medium text-foreground">
-                Add New Address
-              </DialogTitle>
+              <DialogTitle>Add New Address</DialogTitle>
             </DialogHeader>
-            <form
-              className="flex flex-col gap-2"
-              onSubmit={handleSubmitAddress}
-              autoComplete="off"
-            >
-              <div className="flex flex-col gap-2">
-                <Label
-                  className="text-sm font-medium text-foreground"
-                  htmlFor="fullName"
-                >
-                  Full Name*
-                </Label>
-                <Input
-                  name="fullName"
-                  placeholder="Receiver Name"
-                  className="w-full"
-                  value={addressForm.fullName}
-                  onChange={handleFormChange}
-                  required
-                />
-                {errors.fullName && (
-                  <span className="text-xs text-red-500">
-                    {errors.fullName}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 flex flex-col gap-2">
-                <Label
-                  className="text-sm font-medium text-foreground"
-                  htmlFor="phone"
-                >
-                  Phone*
-                </Label>
-                <Input
-                  name="phone"
-                  placeholder="0300XXXXXXXX"
-                  className="w-full"
-                  value={addressForm.phone}
-                  onChange={handleFormChange}
-                  required
-                  inputMode="tel"
-                />
-                {errors.phone && (
-                  <span className="text-xs text-red-500">{errors.phone}</span>
-                )}
-              </div>
-              <div className="flex-1 flex flex-col gap-2">
-                <Label
-                  className="text-sm font-medium text-foreground"
-                  htmlFor="whatsappNumber"
-                >
-                  WhatsApp
-                </Label>
-                <Input
-                  name="whatsappNumber"
-                  placeholder="03XXXXXXXXX"
-                  className="w-full"
-                  value={addressForm.whatsappNumber}
-                  onChange={handleFormChange}
-                  inputMode="tel"
-                />
+            <form action={formAction} className='space-y-4 py-4'>
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='fullName'>Full Name*</Label>
+                  <Input id='fullName' name='fullName' placeholder='Receiver Name' required />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='phone'>Phone*</Label>
+                  <Input id='phone' name='phone' placeholder='0300XXXXXXX' required />
+                </div>
               </div>
 
-              <div className="flex flex-row gap-2">
-                {/* <div className='flex-1 flex flex-col gap-2'>
-                    <Label className='text-sm font-medium text-foreground' htmlFor='label'>
-                      Label
-                    </Label>
-                    <Input
-                      name='label'
-                      placeholder='Home, Office'
-                      className='w-full'
-                      value={addressForm.label}
-                      onChange={handleFormChange}
-                    />
-                  </div> */}
-                {/* <div className='flex-1 flex flex-col gap-2'>
-                    <Label className='text-sm font-medium text-foreground' htmlFor='isDefault'>
-                      <span>Set as default</span>
-                      <input
-                        type='checkbox'
-                        name='isDefault'
-                        checked={addressForm.isDefault}
-                        onChange={handleFormChange}
-                        className='ml-2 scale-125 align-middle'
-                      />
-                    </Label>
-                  </div> */}
+              <div className='space-y-2'>
+                <Label htmlFor='line1'>Address Line 1*</Label>
+                <Input id='line1' name='line1' placeholder='House/Flat No, Street' required />
               </div>
-              <div className="flex flex-col gap-2">
-                <Label
-                  className="text-sm font-medium text-foreground"
-                  htmlFor="line1"
-                >
-                  Address Line 1*
-                </Label>
-                <Input
-                  name="line1"
-                  placeholder="e.g. Flat #, Floor, Building"
-                  className="w-full"
-                  value={addressForm.line1}
-                  onChange={handleFormChange}
-                  required
-                />
-                {errors.line1 && (
-                  <span className="text-xs text-red-500">{errors.line1}</span>
-                )}
-              </div>
-              <div className="flex flex-row gap-2">
-                <div className="flex-1 flex flex-col gap-2">
-                  <Label
-                    className="text-sm font-medium text-foreground"
-                    htmlFor="line2"
-                  >
-                    Address Line 2
-                  </Label>
-                  <Input
-                    name="line2"
-                    placeholder="(optional)"
-                    className="w-full"
-                    value={addressForm.line2}
-                    onChange={handleFormChange}
-                  />
+
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='city'>City*</Label>
+                  <Input id='city' name='city' placeholder='City' required />
                 </div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <Label
-                    className="text-sm font-medium text-foreground"
-                    htmlFor="area"
-                  >
-                    Area
-                  </Label>
-                  <Input
-                    name="area"
-                    placeholder="Johar, Gulshan, etc."
-                    className="w-full"
-                    value={addressForm.area}
-                    onChange={handleFormChange}
-                  />
+                <div className='space-y-2'>
+                  <Label htmlFor='area'>Area/Locality</Label>
+                  <Input id='area' name='area' placeholder='Area' />
                 </div>
               </div>
-              <div className="flex flex-row gap-2">
-                <div className="flex-1 flex flex-col gap-2">
-                  <Label
-                    className="text-sm font-medium text-foreground"
-                    htmlFor="city"
-                  >
-                    City*
-                  </Label>
-                  <Input
-                    name="city"
-                    placeholder="Karachi"
-                    className="w-full"
-                    value={addressForm.city}
-                    onChange={handleFormChange}
-                    required
-                  />
-                  {errors.city && (
-                    <span className="text-xs text-red-500">{errors.city}</span>
-                  )}
+
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='label'>Label (Optional)</Label>
+                  <Input id='label' name='label' placeholder='Home, Office, etc.' />
                 </div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <Label
-                    className="text-sm font-medium text-foreground"
-                    htmlFor="state"
-                  >
-                    State
-                  </Label>
-                  <Input
-                    name="state"
-                    placeholder="Sindh"
-                    className="w-full"
-                    value={addressForm.state}
-                    onChange={handleFormChange}
+                <div className='flex items-center space-x-2 pt-8'>
+                  <input
+                    type='checkbox'
+                    id='isDefault'
+                    name='isDefault'
+                    value='true'
+                    className='w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500'
                   />
+                  <Label htmlFor='isDefault'>Set as default</Label>
                 </div>
               </div>
-              <div className="flex flex-row gap-2">
-                <div className="flex-1 flex flex-col gap-2">
-                  <Label
-                    className="text-sm font-medium text-foreground"
-                    htmlFor="country"
-                  >
-                    Country*
-                  </Label>
-                  <Input
-                    name="country"
-                    placeholder="Pakistan"
-                    className="w-full"
-                    value={addressForm.country}
-                    onChange={handleFormChange}
-                    required
-                  />
-                </div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <Label
-                    className="text-sm font-medium text-foreground"
-                    htmlFor="postalCode"
-                  >
-                    Postal Code
-                  </Label>
-                  <Input
-                    name="postalCode"
-                    placeholder="(optional)"
-                    className="w-full"
-                    value={addressForm.postalCode}
-                    onChange={handleFormChange}
-                  />
-                </div>
-              </div>
-              <Button
-                type="submit"
-                variant="default"
-                className="w-full mt-1"
-                aria-label="Save Address"
-              >
-                <SendIcon
-                  width={24}
-                  className="h-4 w-4"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                />
-                Save Address
+
+              <input type='hidden' name='country' value='Pakistan' />
+
+              <Button type='submit' className='w-full' disabled={isPending}>
+                {isPending ? 'Saving...' : 'Save Address'}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </div>
-      {addressLoading ? (
-        <>
-          <div className="space-y-2 mb-2 animate-pulse">
-            {[...Array(1)].map((_, idx) => (
-              <div
-                key={idx}
-                className="border border-gray-200 rounded-md p-3 flex items-center gap-4 bg-gray-50"
-              >
-                <div className="rounded-full bg-gray-200 h-5 w-5 mr-2" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/3" />
-                  <div className="h-3 bg-gray-200 rounded w-2/3" />
-                  <div className="h-3 bg-gray-100 rounded w-1/4" />
-                </div>
-                <div className="ml-auto h-3 w-12 bg-gray-200 rounded" />
-              </div>
-            ))}
+
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        {addresses.length === 0 ? (
+          <div className='col-span-full py-12 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200'>
+            <MapPin className='h-12 w-12 mx-auto text-gray-300 mb-3' />
+            <p className='text-gray-500'>No addresses saved yet.</p>
           </div>
-        </>
-      ) : !addressLoading && addresses.length === 0 ? (
-        <div className="text-gray-500 p-2">
-          No addresses found. Please add one.
-        </div>
-      ) : (
-        <ul className="space-y-2 mb-2">
-          {addresses.map((addr) => (
-            <li
+        ) : (
+          addresses.map((addr) => (
+            <div
               key={addr.id}
-              className={`border rounded-md p-3 flex items-center gap-4 ${
+              role='button'
+              tabIndex={0}
+              onClick={() => setSelectedAddressId(addr.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setSelectedAddressId(addr.id);
+                }
+              }}
+              className={cn(
+                'relative p-5 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-md',
                 selectedAddressId === addr.id
-                  ? "border-primary"
-                  : "border-gray-200"
-              }`}
+                  ? 'border-green-600 bg-green-50/50 shadow-sm'
+                  : 'border-gray-100 bg-white hover:border-gray-200'
+              )}
             >
-              <input
-                type="radio"
-                name="address"
-                checked={selectedAddressId === addr.id}
-                onChange={() => setSelectedAddressId(addr.id)}
-                className="accent-primary"
-                id={addr.id}
-              />
-              <label htmlFor={addr.id} className="flex-1 cursor-pointer">
-                <div className="font-medium flex items-center gap-2">
-                  {addr.fullName}
-                  {addr.isDefault && (
-                    <span className="text-xs rounded bg-green-50 text-green-500 border border-green-200 px-1 py-0.5 ml-2">
-                      Default
-                    </span>
-                  )}
+              <div className='flex justify-between items-start mb-3'>
+                <div>
+                  <h3 className='font-bold text-gray-900'>{addr.fullName}</h3>
+                  <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 mt-1 uppercase'>
+                    {addr.label || 'Home'}
+                  </span>
                 </div>
-                <div className="text-sm text-gray-600">
-                  {addr.line1}
-                  {addr.line2 ? `, ${addr.line2}` : ""}
-                  {addr.area ? `, ${addr.area}` : ""}, {addr.city}
-                  {addr.state ? `, ${addr.state}` : ""}, {addr.country}
-                  {addr.postalCode ? `, ${addr.postalCode}` : ""}
-                </div>
-                <div className="text-xs text-gray-500">Phone: {addr.phone}</div>
-                {addr.whatsappNumber && (
-                  <div className="text-xs text-green-600">
-                    WhatsApp: {addr.whatsappNumber}
-                  </div>
-                )}
-              </label>
-              {addr.label && (
-                <span className="ml-auto bg-primary/10 text-primary px-2 py-0.5 rounded text-xs">
-                  {addr.label}
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(addr.id);
+                  }}
+                >
+                  <Trash2 className='h-4 w-4' />
+                </Button>
+              </div>
+
+              <div className='space-y-1 text-sm text-gray-600'>
+                <p className='line-clamp-2'>{addr.line1}</p>
+                {addr.line2 && <p className='line-clamp-1'>{addr.line2}</p>}
+                <p>
+                  {addr.city}, {addr.state || ''}
+                </p>
+                <p className='font-medium text-gray-900 mt-2'>{addr.phone}</p>
+              </div>
+
+              {addr.isDefault && (
+                <span className='absolute bottom-5 right-5 text-[10px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full'>
+                  DEFAULT
                 </span>
               )}
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          ))
+        )}
+      </div>
     </section>
   );
 }

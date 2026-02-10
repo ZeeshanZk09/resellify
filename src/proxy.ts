@@ -1,15 +1,18 @@
-// proxy.ts
-import { apiPrefixAuth, authRoutes, puplicRoutes } from "@/shared/lib/route";
-import { auth } from "./auth";
+// middleware.ts
+import { apiPrefixAuth, authRoutes, publicRoutes } from '@/shared/lib/route';
+import { auth } from './auth';
 
 export default auth((req) => {
   const { nextUrl } = req;
   try {
     const isLogedIn = !!req.auth;
-    console.log("proxy.ts => req.auth: ", req.auth);
+    console.log('middleware.ts => req.auth: ', req.auth);
 
     const isApiAuthRoute = nextUrl.pathname.startsWith(apiPrefixAuth);
-    const isPuplic = puplicRoutes.includes(nextUrl.pathname);
+    const isPublic = publicRoutes.some((route) => {
+      if (route === '/') return nextUrl.pathname === '/';
+      return nextUrl.pathname.startsWith(route);
+    });
     const isAuthRoutes = authRoutes.includes(nextUrl.pathname);
 
     if (isApiAuthRoute) {
@@ -18,24 +21,24 @@ export default auth((req) => {
 
     if (isAuthRoutes) {
       if (isLogedIn) {
-        return Response.redirect(new URL("/", nextUrl));
+        return Response.redirect(new URL('/', nextUrl));
       }
       return;
     }
 
-    if (!isPuplic && !isLogedIn) {
-      return Response.redirect(new URL("/auth/sign-in", nextUrl));
+    if (!isPublic && !isLogedIn) {
+      return Response.redirect(new URL('/auth/sign-in', nextUrl));
     }
     return;
   } catch (error) {
-    console.error("Proxy error:", error);
-    return Response.redirect(new URL("/auth/sign-in", nextUrl));
+    console.error('Middleware error:', error);
+    return Response.redirect(new URL('/auth/sign-in', nextUrl));
   }
 });
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
   ],
 };

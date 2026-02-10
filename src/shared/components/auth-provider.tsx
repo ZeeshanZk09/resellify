@@ -1,12 +1,12 @@
-"use client";
-import type { Session, User } from "@auth/core/types";
-import { SessionProvider } from "next-auth/react";
-import { createContext, useContext, useEffect, useState } from "react";
-import { getUser } from "@/actions/profile/user-accounts";
-import type { Role } from "@/shared/lib/generated/prisma/enums";
+'use client';
+import type { Session, User } from '@auth/core/types';
+import { SessionProvider } from 'next-auth/react';
+import { createContext, use, useMemo, useEffect, useState } from 'react';
+import { getUser } from '@/actions/profile/user-accounts';
+import type { Role } from '@/shared/lib/generated/prisma/enums';
 
 type Props = {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
   session?: Session | null;
 };
 
@@ -18,7 +18,7 @@ export type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children, session }: Props) => {
-  const [user, setUser] = useState<Partial<User> | null>(session?.user || null);
+  const [user, setUser] = useState<Partial<User> | null>(session?.user ?? null);
   const update = (data: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...data } : null));
   };
@@ -40,29 +40,29 @@ export const AuthProvider = ({ children, session }: Props) => {
           createdAt: Date;
           updatedAt: Date | null;
         };
-        setUser(user || null);
+        setUser(user ?? null);
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error('Error fetching user:', error);
         setUser(null);
       }
     }
     fetchUser();
   }, []);
 
-  console.log("user-in-provider: ", user);
+  const value = useMemo(() => ({ user, update }), [user]);
+
+  console.log('user-in-provider: ', user);
   return (
     <SessionProvider session={session}>
-      <AuthContext.Provider value={{ user, update }}>
-        {children}
-      </AuthContext.Provider>
+      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
     </SessionProvider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = use(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
