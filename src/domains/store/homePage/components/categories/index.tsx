@@ -7,7 +7,7 @@ import type { Category } from '@/shared/lib/generated/prisma/browser';
 import CategoryListItem from './catListItem';
 
 // Create a stable promise for category fetching
-const categoriesPromise = getAllCategories('');
+const categoriesPromise = getAllCategories();
 
 export const HomeCategoryList = () => {
   return (

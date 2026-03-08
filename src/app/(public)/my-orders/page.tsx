@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { use, useRef, Suspense } from 'react';
 import { type GetMyOrders, getMyOrders } from '@/actions/order';
 import { Button } from '@/shared/components/ui/button';
+const initialOrdersPromise = getMyOrders();
 
 function OrderSkeleton() {
   return (
@@ -45,11 +46,7 @@ function OrderSkeleton() {
   );
 }
 
-function MyOrdersContent({
-  ordersPromise,
-}: {
-  ordersPromise: Promise<{ orders: any[] | undefined }>;
-}) {
+function MyOrdersContent({ ordersPromise }: { ordersPromise: typeof initialOrdersPromise }) {
   const { orders } = use(ordersPromise) as { orders: GetMyOrders };
   const router = useRouter();
   const printRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -368,12 +365,10 @@ function MyOrdersContent({
   );
 }
 
-const initialOrdersPromise = getMyOrders();
-
 export default function MyOrders() {
   return (
     <Suspense fallback={<OrderSkeleton />}>
-      <MyOrdersContent ordersPromise={initialOrdersPromise()} />
+      <MyOrdersContent ordersPromise={initialOrdersPromise} />
     </Suspense>
   );
 }

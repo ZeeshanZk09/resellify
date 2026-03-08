@@ -95,40 +95,31 @@ export const getSubCategoriesById = async (catId: string) => {
   }
 };
 
-export const getAllCategories = async (catId: string) => {
+export const getAllCategories = async (catId?: string) => {
   try {
-    const categories = await db.category.findMany({
-      where: {
-        parentId: null,
-      },
+    if (catId) {
+      const result = await db.category.findMany({
+        where: {
+          parentId: catId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (!result) return { error: "Can't read categories" };
+      return { res: result as Category[] };
+    }
+    const result = await db.category.findMany({
       orderBy: {
         createdAt: 'desc',
       },
-      include: {
-        children: true,
-      },
     });
-    if (!categories) return { error: "Can't read categories" };
 
-    // let subCategories;
-    // if (catId) {
-    //   subCategories = await db.category.findMany({
-    //     where: {
-    //       parentId: catId,
-    //     },
-    //     orderBy: {
-    //       createdAt: 'desc',
-    //     },
-    //   });
-    // }
-
-    const parentCategory = categories.find((category: Category) => category.id === catId);
-
-    return {
-      categories,
-      subCategories: parentCategory?.children ?? [],
-    };
-  } catch {
+    if (!result) return { error: "Can't read categories" };
+    return { res: result as Category[] };
+  } catch (error) {
+    console.log(error)
     return { error: 'Cant read Category Groups' };
   }
 };
